@@ -3,186 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medidor Automático con Detección de Objetos</title>
+    <title>MastApp - Dirty Talk con Voz Real</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
             text-align: center;
-            background-color: #f0f0f0;
             margin: 0;
             padding: 20px;
         }
         #video {
-            width: 640px;
-            height: 480px;
-            border: 2px solid #333;
-            margin: 10px;
+            width: 100%;
+            max-width: 400px;
+            border: 2px solid #fff;
+            border-radius: 10px;
         }
-        #canvas {
+        #gallery {
             display: none;
+            margin-top: 20px;
         }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            font-size: 16px;
+        .photo {
+            width: 200px;
+            height: 150px;
+            background: #333;
             margin: 10px;
-            cursor: pointer;
-            border: none;
+            display: inline-block;
             border-radius: 5px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #result {
-            font-size: 24px;
-            color: #333;
-            margin: 20px;
+            overflow: hidden;
         }
         #status {
-            color: red;
+            margin-top: 20px;
+            font-size: 18px;
         }
-        .highlighter {
-            position: absolute;
-            border: 2px solid green;
-            background: rgba(0, 255, 0, 0.1);
+        #dirtyTalk {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ffcc00;
+            font-style: italic;
+        }
+        button {
+            background: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #cc0000;
+        }
+        audio {
+            display: none;
         }
     </style>
-    <!-- TensorFlow.js y COCO-SSD -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-    <!-- OpenCV.js para fallback -->
-    <script async src="https://docs.opencv.org/4.5.0/opencv.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@latest"></script>
 </head>
 <body>
-    <h1>Medidor Automático con Detección Específica de Objetos</h1>
-    <p>Usa la cámara para capturar y detectar objetos automáticamente. La medición se basa en el bounding box del objeto detectado. Coloca un objeto de referencia para calibrar.</p>
+    <h1>MastApp: Dirty Talk Voiced Edition</h1>
+    <p>Local y privado. Sube MP3 voiced pa' full immersion.</p>
     
-    <video id="video" autoplay></video>
+    <video id="video" autoplay muted playsinline></video>
     <br>
-    <button id="capture">Capturar y Detectar</button>
-    <canvas id="canvas" width="640" height="480" style="border: 1px solid #ccc; display: block; margin: 10px auto;"></canvas>
-    <div id="status">Cargando modelos...</div>
-    <div id="result"></div>
+    <button id="startBtn">Iniciar Cámara</button>
+    <div id="status">Estado: Esperando...</div>
+    <div id="dirtyTalk"></div>
+    
+    <div id="gallery">
+        <h2>Fotos Aleatorias</h2>
+        <div id="photos"></div>
+    </div>
 
-    <script type="text/javascript">
-        let model = undefined;
-        let cvReady = false;
+    <!-- Audios gemidos -->
+    <audio id="moan1" preload="auto" loop><source src="moan1.mp3" type="audio/mpeg"></audio>
+    <audio id="moan2" preload="auto" loop><source src="moan2.mp3" type="audio/mpeg"></audio>
+    <audio id="moan3" preload="auto" loop><source src="moan3.mp3" type="audio/mpeg"></audio>
+
+    <!-- Audios voiced dirty talk: sube clips reales aquí -->
+    <audio id="dirty1" preload="auto"><source src="dirty1.mp3" type="audio/mpeg"><!-- Ej: "Más rápido, papi..." --></audio>
+    <audio id="dirty2" preload="auto"><source src="dirty2.mp3" type="audio/mpeg"></audio>
+    <audio id="dirty3" preload="auto"><source src="dirty3.mp3" type="audio/mpeg"></audio>
+    <audio id="dirty4" preload="auto"><source src="dirty4.mp3" type="audio/mpeg"></audio>
+    <audio id="dirty5" preload="auto"><source src="dirty5.mp3" type="audio/mpeg"></audio>
+
+    <script>
         let video = document.getElementById('video');
-        let canvas = document.getElementById('canvas');
-        let ctx = canvas.getContext('2d');
-        let src, gray, thresh, contours, hierarchy;
+        let status = document.getElementById('status');
+        let dirtyTalkDiv = document.getElementById('dirtyTalk');
+        let gallery = document.getElementById('gallery');
+        let photosDiv = document.getElementById('photos');
+        let detector;
+        let isNaked = false;
+        let penisDetected = false;
+        let masturbationSpeed = 0;
+        let currentMoanAudio = null;
+        let currentDirtyAudio = null;
+        let speechSynth = window.speechSynthesis;
+        let lastDirtyTime = 0;
 
-        // Cargar modelo COCO-SSD
-        cocoSsd.load().then(loadedModel => {
-            model = loadedModel;
-            updateStatus('TensorFlow.js listo.');
-            if (cvReady) initializeCamera();
-        }).catch(err => {
-            updateStatus('Error cargando TF.js: ' + err);
-        });
-
-        // OpenCV ready
-        var Module = {
-            onRuntimeInitialized() {
-                cvReady = true;
-                updateStatus('OpenCV listo.');
-                if (model) initializeCamera();
-            }
+        // Frases fallback TTS (si no hay voiced audio)
+        const dirtyPhrases = {
+            low: ['Eres tan sexy...', 'Me excito viéndote.'],
+            medium: ['Me estoy tocando por ti.', 'Ven y hazme tuya.'],
+            high: ['¡Fóllame ya!', 'Más fuerte, no pares.']
         };
 
-        function updateStatus(msg) {
-            document.getElementById('status').innerHTML = msg;
+        const moanAudios = [
+            document.getElementById('moan1'),
+            document.getElementById('moan2'),
+            document.getElementById('moan3'),
+        ];
+
+        const dirtyAudios = [
+            document.getElementById('dirty1'),
+            document.getElementById('dirty2'),
+            document.getElementById('dirty3'),
+            document.getElementById('dirty4'),
+            document.getElementById('dirty5'),
+        ].filter(audio => audio.src); // Solo si tienen src válido
+
+        const pornPhotos = [
+            'https://example.com/porno1.jpg',
+            'https://example.com/porno2.jpg',
+            'https://example.com/porno3.jpg',
+        ];
+
+        function initAudio() {
+            moanAudios.forEach(audio => {
+                audio.volume = 0;
+                audio.playbackRate = 0.8;
+            });
+            dirtyAudios.forEach(audio => {
+                audio.volume = 0;
+                audio.playbackRate = 0.8;
+            });
         }
 
-        function initializeCamera() {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    video.srcObject = stream;
-                    updateStatus('Cámara activa. Captura para medir.');
-                })
-                .catch(err => {
-                    updateStatus('Error cámara: ' + err);
+        function vibrateWithSpeed(speed) {
+            if (!navigator.vibrate) return;
+            const intensity = Math.floor(speed * 50);
+            navigator.vibrate([100, intensity]);
+        }
+
+        // Dirty talk: Prefiere voiced audio, fallback TTS
+        function sayDirtyTalk(speed) {
+            const now = Date.now();
+            if (now - lastDirtyTime < 5000 || (currentDirtyAudio && !currentDirtyAudio.ended)) return;
+            lastDirtyTime = now;
+
+            let phrases;
+            if (speed <= 3) phrases = dirtyPhrases.low;
+            else if (speed <= 7) phrases = dirtyPhrases.medium;
+            else phrases = dirtyPhrases.high;
+
+            if (dirtyAudios.length > 0 && currentDirtyAudio === null) {
+                // Voiced audio
+                currentDirtyAudio = dirtyAudios[Math.floor(Math.random() * dirtyAudios.length)];
+                const volume = 0.7 + (speed / 10) * 0.2;
+                const rate = 0.9 + (speed / 10) * 0.3;
+                currentDirtyAudio.volume = volume;
+                currentDirtyAudio.playbackRate = rate;
+                currentDirtyAudio.play().then(() => {
+                    dirtyTalkDiv.textContent = '[Voz: Dirty Talk]'; // Placeholder visual
+                }).catch(err => {
+                    console.log('Error voiced:', err);
+                    // Fallback TTS
+                    fallbackTTS(phrase, speed);
                 });
+                currentDirtyAudio.onended = () => { currentDirtyAudio = null; dirtyTalkDiv.textContent = ''; };
+            } else {
+                // Fallback TTS
+                const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+                const utterance = new SpeechSynthesisUtterance(phrase);
+                utterance.lang = 'es-ES';
+                utterance.pitch = 1.2 + (speed / 10) * 0.5;
+                utterance.rate = 0.9 + (speed / 10) * 0.3;
+                utterance.volume = 0.7 + (speed / 10) * 0.2;
+                utterance.onend = () => { dirtyTalkDiv.textContent = ''; };
+                speechSynth.speak(utterance);
+                dirtyTalkDiv.textContent = phrase;
+            }
         }
 
-        document.getElementById('capture').addEventListener('click', () => {
-            ctx.drawImage(video, 0, 0, 640, 480);
-            if (model) {
-                detectAndMeasure();
-            } else {
-                processFallback();
+        function playMoan(speed) {
+            if (currentMoanAudio) {
+                currentMoanAudio.pause();
+                currentMoanAudio.currentTime = 0;
+            }
+            currentMoanAudio = moanAudios[Math.floor(Math.random() * moanAudios.length)];
+            if (currentMoanAudio) {
+                const volume = Math.min(0.8, (speed / 10) * 0.8);
+                const rate = 0.8 + (speed / 10) * 1.2;
+                currentMoanAudio.volume = volume;
+                currentMoanAudio.playbackRate = rate;
+                currentMoanAudio.play().catch(err => console.log('Error moan:', err));
+            }
+        }
+
+        async function detectNudity(poses) {
+            if (poses.length === 0) return false;
+            const keypoints = poses[0].keypoints;
+            const leftShoulder = keypoints.find(kp => kp.name === 'left_shoulder');
+            const rightShoulder = keypoints.find(kp => kp.name === 'right_shoulder');
+            const leftHip = keypoints.find(kp => kp.name === 'left_hip');
+            const rightHip = keypoints.find(kp => kp.name === 'right_hip');
+            if (leftShoulder?.score > 0.5 && rightShoulder?.score > 0.5 && leftHip?.score > 0.5 && rightHip?.score > 0.5) {
+                const torsoLength = Math.abs(leftHip.y - leftShoulder.y);
+                return torsoLength > 100;
+            }
+            return false;
+        }
+
+        function detectPenis(poses) {
+            if (poses.length === 0) return false;
+            const leftHip = poses[0].keypoints.find(kp => kp.name === 'left_hip');
+            const rightHip = poses[0].keypoints.find(kp => kp.name === 'right_hip');
+            return leftHip?.score > 0.7 && rightHip?.score > 0.7;
+        }
+
+        let prevHandPos = { x: 0, y: 0 };
+        let frameCount = 0;
+        function detectSpeed(poses) {
+            frameCount++;
+            if (frameCount % 10 !== 0) return masturbationSpeed;
+            if (poses.length === 0) return 0;
+            const rightWrist = poses[0].keypoints.find(kp => kp.name === 'right_wrist');
+            if (rightWrist?.score > 0.6) {
+                const currentPos = { x: rightWrist.x, y: rightWrist.y };
+                if (prevHandPos.x !== 0) {
+                    const distance = Math.sqrt(Math.pow(currentPos.x - prevHandPos.x, 2) + Math.pow(currentPos.y - prevHandPos.y, 2));
+                    masturbationSpeed = Math.min(10, distance * 5);
+                }
+                prevHandPos = currentPos;
+            }
+            return masturbationSpeed;
+        }
+
+        function showRandomPhotos() {
+            photosDiv.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const img = document.createElement('div');
+                img.className = 'photo';
+                img.style.backgroundImage = `url(${pornPhotos[Math.floor(Math.random() * pornPhotos.length)]})`;
+                img.style.backgroundSize = 'cover';
+                photosDiv.appendChild(img);
+            }
+            gallery.style.display = 'block';
+        }
+
+        async function detectLoop() {
+            if (detector && video.readyState === 4) {
+                const poses = await detector.estimatePoses(video);
+                isNaked = await detectNudity(poses);
+                penisDetected = detectPenis(poses);
+                const speed = detectSpeed(poses);
+
+                if (isNaked) {
+                    status.textContent = 'Desnudo detectado. Fotos on.';
+                    showRandomPhotos();
+                } else {
+                    status.textContent = 'No desnudo aún...';
+                    gallery.style.display = 'none';
+                }
+
+                if (penisDetected && isNaked) {
+                    status.textContent += ` | Pene on. Speed: ${speed.toFixed(1)}`;
+                    playMoan(speed);
+                    vibrateWithSpeed(speed);
+                    if (speed > 2) sayDirtyTalk(speed);
+                } else {
+                    if (currentMoanAudio) {
+                        currentMoanAudio.pause();
+                        currentMoanAudio.currentTime = 0;
+                    }
+                    if (currentDirtyAudio) {
+                        currentDirtyAudio.pause();
+                        currentDirtyAudio.currentTime = 0;
+                        currentDirtyAudio = null;
+                    }
+                    dirtyTalkDiv.textContent = '';
+                }
+
+                requestAnimationFrame(detectLoop);
+            }
+        }
+
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                video.srcObject = stream;
+                initAudio();
+                detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
+                status.textContent = 'Cámara up. Acelera pa\' voiced dirty.';
+                detectLoop();
+            } catch (err) {
+                status.textContent = 'Error cámara: ' + err.message;
             }
         });
 
-        async function detectAndMeasure() {
-            const predictions = await model.detect(video); // Detecta en video (o usa cv.imread(canvas) para imagen estática)
-            
-            if (predictions.length > 0) {
-                // Encontrar la detección con mayor score
-                let bestPred = predictions.reduce((prev, curr) => (curr.score > prev.score) ? curr : prev);
-                
-                if (bestPred.score > 0.5) { // Umbral de confianza
-                    const bbox = bestPred.bbox;
-                    const width = bbox[2];
-                    const height = bbox[3];
-                    const lengthPx = Math.max(width, height); // Longitud como lado mayor
-                    
-                    // Dibujar bounding box
-                    ctx.strokeStyle = 'green';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(bbox[0], bbox[1], width, height);
-                    
-                    // Etiqueta
-                    ctx.fillStyle = 'green';
-                    ctx.font = '16px Arial';
-                    ctx.fillText(`${bestPred.class} (${(bestPred.score * 100).toFixed(0)}%)`, bbox[0], bbox[1] - 5);
-                    
-                    // Medir en cm
-                    const pixelToCm = 0.05; // Ajusta para calibrar
-                    const measuredLength = lengthPx * pixelToCm;
-                    document.getElementById('result').innerHTML = `Objeto detectado: ${bestPred.class}. Longitud aproximada: ${measuredLength.toFixed(2)} cm`;
-                    return;
-                }
-            }
-            
-            // Fallback a contornos si no hay detección confiable
-            updateStatus('Sin detección específica, usando contornos...');
-            processFallback();
-        }
-
-        function processFallback() {
-            src = cv.imread(canvas);
-            gray = new cv.Mat();
-            thresh = new cv.Mat();
-            contours = new cv.MatVector();
-            hierarchy = new cv.Mat();
-
-            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-            cv.threshold(gray, thresh, 127, 255, cv.THRESH_BINARY);
-
-            cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-            let maxLength = 0;
-
-            for (let i = 0; i < contours.size(); ++i) {
-                let cnt = contours.get(i);
-                let rect = cv.boundingRect(cnt);
-                let length = Math.max(rect.width, rect.height);
-                if (length > maxLength) {
-                    maxLength = length;
-                }
-                cnt.delete();
-            }
-
-            const pixelToCm = 0.05;
-            const measuredLength = maxLength * pixelToCm;
-            document.getElementById('result').innerHTML = `Longitud por contornos (fallback): ${measuredLength.toFixed(2)} cm`;
-
-            // Limpieza
-            src.delete(); gray.delete(); thresh.delete(); contours.delete(); hierarchy.delete();
-        }
+        console.log('Voiced dirty listo. Sube MP3 y siente el fuego!');
     </script>
 </body>
 </html>
