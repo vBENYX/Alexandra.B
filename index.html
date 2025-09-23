@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MastApp - Visuales AR ante Cámara</title>
+    <title>MastApp - Debug Cámara</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +22,7 @@
             max-width: 400px;
             border: 2px solid #fff;
             border-radius: 10px;
-            display: none; /* Oculto, canvas lo dibuja */
+            display: none;
         }
         #overlayCanvas {
             position: absolute;
@@ -33,90 +33,28 @@
             border-radius: 10px;
             pointer-events: none;
         }
-        #gallery {
-            display: none;
-            margin-top: 20px;
-        }
-        .photo {
-            width: 200px;
-            height: 150px;
-            background: #333;
-            margin: 10px;
-            display: inline-block;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        #status {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-        #orgasmCountdown {
-            display: none;
-            font-size: 48px;
-            color: #ff0000;
-            margin: 10px;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        #dirtyTalk {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #ffcc00;
-            font-style: italic;
-        }
-        #progressBar {
-            width: 200px;
-            height: 20px;
-            background: #333;
-            border-radius: 10px;
-            margin: 10px auto;
-            overflow: hidden;
-            display: none;
-        }
-        #progressFill {
-            height: 100%;
-            background: linear-gradient(to right, #ff0000, #ffcc00);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        .particle {
-            position: absolute;
-            font-size: 20px;
-            pointer-events: none;
-            animation: floatUp 1s ease-out forwards;
-        }
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-50px) scale(0.5); }
-        }
-        button {
-            background: #ff0000;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-        }
-        button:hover {
-            background: #cc0000;
-        }
-        audio {
-            display: none;
-        }
+        #gallery { display: none; margin-top: 20px; }
+        .photo { width: 200px; height: 150px; background: #333; margin: 10px; display: inline-block; border-radius: 5px; overflow: hidden; }
+        #status { margin-top: 20px; font-size: 18px; }
+        #orgasmCountdown { display: none; font-size: 48px; color: #ff0000; margin: 10px; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        #dirtyTalk { margin-top: 10px; font-size: 14px; color: #ffcc00; font-style: italic; }
+        #progressBar { width: 200px; height: 20px; background: #333; border-radius: 10px; margin: 10px auto; overflow: hidden; display: none; }
+        #progressFill { height: 100%; background: linear-gradient(to right, #ff0000, #ffcc00); width: 0%; transition: width 0.5s ease; }
+        .particle { position: absolute; font-size: 20px; pointer-events: none; animation: floatUp 1s ease-out forwards; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(0.5); } }
+        button { background: #ff0000; color: #fff; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin: 10px; }
+        button:hover { background: #cc0000; }
+        audio { display: none; }
+        #debugInfo { color: #ffcc00; font-size: 12px; margin-top: 10px; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@nsfwjs/core@2.4.2/dist/index.min.js"></script>
 </head>
 <body>
-    <h1>MastApp: Visuales AR - Overlays en Cámara</h1>
-    <p>Local y privado. Mira los boxes y efectos en tu feed.</p>
+    <h1>MastApp: Debug Cámara Mejorado</h1>
+    <p>Si no jala, checa console (F12) y permisos.</p>
     
     <div id="container">
         <video id="video" autoplay muted playsinline></video>
@@ -125,6 +63,7 @@
     <br>
     <button id="startBtn">Iniciar Cámara</button>
     <div id="status">Estado: Esperando...</div>
+    <div id="debugInfo"></div>
     <div id="orgasmCountdown"></div>
     <div id="progressBar"><div id="progressFill"></div></div>
     <div id="dirtyTalk"></div>
@@ -134,7 +73,7 @@
         <div id="photos"></div>
     </div>
 
-    <!-- Audios (mismos que antes) -->
+    <!-- Audios (mismos) -->
     <audio id="moan1" preload="auto" loop><source src="moan1.mp3" type="audio/mpeg"></audio>
     <audio id="moan2" preload="auto" loop><source src="moan2.mp3" type="audio/mpeg"></audio>
     <audio id="moan3" preload="auto" loop><source src="moan3.mp3" type="audio/mpeg"></audio>
@@ -149,6 +88,7 @@
         let canvas = document.getElementById('overlayCanvas');
         let ctx = canvas.getContext('2d');
         let status = document.getElementById('status');
+        let debugInfo = document.getElementById('debugInfo');
         let orgasmCountdown = document.getElementById('orgasmCountdown');
         let progressBar = document.getElementById('progressBar');
         let progressFill = document.getElementById('progressFill');
@@ -166,7 +106,7 @@
         let speechSynth = window.speechSynthesis;
         let lastDirtyTime = 0;
 
-        // Predictor vars (mismos)
+        // Predictor vars (abreviados pa' espacio)
         let speedHistory = [];
         let orgasmMode = false;
         let countdownInterval;
@@ -181,10 +121,9 @@
         let direction = 0;
         let strokeThreshold = 20;
 
-        // Bounding box coords (pa' visual)
+        // Bounding box
         let boxX, boxY, boxW, boxH;
 
-        // Partículas
         function createParticle(x, y) {
             const particle = document.createElement('div');
             particle.innerHTML = '❤️';
@@ -195,7 +134,6 @@
             setTimeout(() => particle.remove(), 1000);
         }
 
-        // Frases (mismos)
         const climaxPhrases = ['¡Estás cerca, no pares!', '¡Ya viene el clímax, acelera!', '¡Siente cómo sube, papi!', '¡Uno más y explotas!'];
         const dirtyPhrases = { low: ['Eres tan sexy...', 'Me excito viéndote.'], medium: ['Me estoy tocando por ti.', 'Ven y hazme tuya.'], high: ['¡Fóllame ya!', 'Más fuerte, no pares.'] };
 
@@ -246,7 +184,6 @@
         }
 
         function sayDirtyTalk(speed) {
-            // Mismo que antes...
             const now = Date.now();
             if (now - lastDirtyTime < 5000 || (currentDirtyAudio && !currentDirtyAudio.ended)) return;
             lastDirtyTime = now;
@@ -306,7 +243,6 @@
         }
 
         async function detectNudity(poses) {
-            // Mismo...
             if (poses.length === 0) return false;
             const keypoints = poses[0].keypoints;
             const leftShoulder = keypoints.find(kp => kp.name === 'left_shoulder');
@@ -327,7 +263,6 @@
             const rightHip = keypoints.find(kp => kp.name === 'right_hip');
             if (!leftHip || !rightHip || leftHip.score < 0.7 || rightHip.score < 0.7) return false;
 
-            // Set box coords pa' visual
             boxX = Math.min(leftHip.x, rightHip.x) - 50;
             boxY = Math.max(leftHip.y, rightHip.y) - 100;
             boxW = Math.abs(leftHip.x - rightHip.x) + 100;
@@ -361,170 +296,4 @@
                 return 0;
             }
             const rightWrist = poses[0].keypoints.find(kp => kp.name === 'right_wrist');
-            if (!rightWrist || rightWrist.score < 0.6) {
-                prevHandY = null;
-                return 0;
-            }
-
-            const currentY = rightWrist.y;
-            if (prevHandY === null) {
-                prevHandY = currentY;
-                return 0;
-            }
-
-            const deltaY = currentY - prevHandY;
-            handVelocity = Math.abs(deltaY);
-            masturbationSpeed = Math.min(10, handVelocity * 10);
-
-            // Stroke + partícula
-            const newDirection = deltaY > 0 ? -1 : 1;
-            if (direction !== 0 && direction !== newDirection && handVelocity > strokeThreshold) {
-                strokeCount++;
-                createParticle(rightWrist.x, rightWrist.y); // ❤️ desde mano
-            }
-            direction = newDirection;
-            prevHandY = currentY;
-
-            // History y predictor (mismo)
-            const now = Date.now();
-            if (now - lastSampleTime >= SAMPLE_INTERVAL) {
-                speedHistory.push({time: now, speed: masturbationSpeed});
-                if (speedHistory.length > HISTORY_SIZE) speedHistory.shift();
-                lastSampleTime = now;
-                // Progress bar: % basado en avg speed
-                const avgSpeed = speedHistory.reduce((sum, s) => sum + s.speed, 0) / speedHistory.length;
-                progressFill.style.width = Math.min(100, (avgSpeed / 10) * 100) + '%';
-
-                if (speedHistory.length >= 5 && masturbationSpeed > 2) {
-                    const recentAvg = speedHistory.slice(-5).reduce((sum, s) => sum + s.speed, 0) / 5;
-                    const prevAvg = speedHistory.length > 5 ? speedHistory.slice(0, -5).reduce((sum, s) => sum + s.speed, 0) / (speedHistory.length - 5) : 1;
-                    if (recentAvg > prevAvg * ACCEL_THRESHOLD) {
-                        triggerOrgasmPredictor();
-                    }
-                }
-            }
-
-            return masturbationSpeed;
-        }
-
-        async function showRandomPhotos() {
-            // Mismo fetch...
-            photosDiv.innerHTML = '';
-            try {
-                for (let i = 0; i < 3; i++) {
-                    const res = await fetch(`https://api.unsplash.com/photos/random?query=abstract&client_id=YOUR_UNSPLASH_KEY`);
-                    const data = await res.json();
-                    const img = document.createElement('div');
-                    img.className = 'photo';
-                    img.style.backgroundImage = `url(${data.urls.small})`;
-                    img.style.backgroundSize = 'cover';
-                    photosDiv.appendChild(img);
-                }
-            } catch (err) {
-                console.log('Fetch error:', err);
-                const fallbackUrls = ['https://via.placeholder.com/200x150/ff0000/ffffff?text=Hot+1', 'https://via.placeholder.com/200x150/ff6600/ffffff?text=Hot+2', 'https://via.placeholder.com/200x150/ff9900/ffffff?text=Hot+3'];
-                fallbackUrls.forEach(url => {
-                    const img = document.createElement('div');
-                    img.className = 'photo';
-                    img.style.backgroundImage = `url(${url})`;
-                    img.style.backgroundSize = 'cover';
-                    photosDiv.appendChild(img);
-                });
-            }
-            gallery.style.display = 'block';
-        }
-
-        // Draw loop: video + overlays
-        function drawLoop() {
-            if (video.readyState === 4) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                // Bounding box pene
-                if (penisDetected && boxX) {
-                    ctx.strokeStyle = masturbationSpeed > 5 ? '#00ff00' : '#ff0000'; // Verde si rápido
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(boxX, boxY, boxW, boxH);
-                    // Pulso con speed
-                    ctx.globalAlpha = 0.5 + (masturbationSpeed / 10) * 0.5;
-                    ctx.fillStyle = ctx.strokeStyle;
-                    ctx.fillRect(boxX, boxY, boxW, boxH);
-                    ctx.globalAlpha = 1;
-                }
-
-                // Contador strokes en esquina
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 24px Arial';
-                ctx.fillText(`Strokes: ${strokeCount}`, 10, 30);
-
-                requestAnimationFrame(drawLoop);
-            }
-        }
-
-        async function detectLoop() {
-            if (detector && video.readyState === 4) {
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = video.videoWidth;
-                tempCanvas.height = video.videoHeight;
-                tempCanvas.getContext('2d').drawImage(video, 0, 0);
-                const poses = await detector.estimatePoses(video);
-                isNaked = await detectNudity(poses);
-                penisDetected = await detectPenis(poses, tempCanvas);
-                const speed = detectSpeedAndStrokes(poses);
-
-                if (isNaked) {
-                    status.textContent = `Desnudo on. Movs: ${strokeCount} | Speed: ${speed.toFixed(1)}`;
-                    progressBar.style.display = 'block';
-                    showRandomPhotos();
-                } else {
-                    status.textContent = 'No desnudo aún...';
-                    gallery.style.display = 'none';
-                    strokeCount = 0;
-                    progressBar.style.display = 'none';
-                }
-
-                if (penisDetected && isNaked) {
-                    status.textContent += ' | Pene on.';
-                    playMoan(speed);
-                    vibrateWithSpeed(speed);
-                    if (speed > 2 && !orgasmMode) sayDirtyTalk(speed);
-                } else {
-                    if (currentMoanAudio) {
-                        currentMoanAudio.pause();
-                        currentMoanAudio.currentTime = 0;
-                    }
-                    if (currentDirtyAudio) {
-                        currentDirtyAudio.pause();
-                        currentDirtyAudio.currentTime = 0;
-                        currentDirtyAudio = null;
-                    }
-                    dirtyTalkDiv.textContent = '';
-                }
-
-                requestAnimationFrame(detectLoop);
-            }
-        }
-
-        document.getElementById('startBtn').addEventListener('click', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                video.srcObject = stream;
-                video.style.display = 'none'; // Canvas maneja
-                canvas.style.display = 'block';
-                await video.play();
-                initAudio();
-                detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
-                nsfwModel = await nsfwjs.load();
-                status.textContent = 'Cámara up con overlays. ¡Mira los efectos!';
-                drawLoop(); // Inicia draw
-                detectLoop();
-            } catch (err) {
-                status.textContent = 'Error: ' + err.message;
-            }
-        });
-
-        console.log('Visuales AR up. ¡Boxes, partículas y barra pa\' el hype!');
-    </script>
-</body>
-</html>
+            if (!rightWrist || right
