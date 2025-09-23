@@ -488,6 +488,45 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        /* Modal de exportación */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+        }
+
         /* Asistente IA Xpo */
         .xpo-assistant {
             position: fixed;
@@ -727,6 +766,10 @@
                 width: 350px;
                 height: 450px;
             }
+
+            .modal-buttons {
+                flex-direction: row;
+            }
         }
 
         /* Prevenir zoom en iOS */
@@ -819,8 +862,8 @@
                 <h2>Historial de Registros</h2>
                 <div class="btn-container">
                     <button class="btn btn-primary" id="exportBtn">
-                        <i class="fas fa-file-pdf"></i>
-                        Exportar PDF
+                        <i class="fas fa-file-export"></i>
+                        Exportar
                     </button>
                     <button class="btn btn-danger" id="clearAllBtn">
                         <i class="fas fa-trash"></i>
@@ -836,6 +879,23 @@
             <div class="history-list" id="historyList">
                 <!-- Los registros se cargarán aquí dinámicamente -->
             </div>
+        </div>
+    </div>
+    
+    <!-- Modal de exportación -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <h3>Exportar registros</h3>
+            <p>Selecciona el formato de exportación:</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="exportPdfBtn">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-xpo" id="exportWebBtn">
+                    <i class="fas fa-globe"></i> Página Web
+                </button>
+            </div>
+            <button class="btn btn-secondary" id="closeExportModal">Cancelar</button>
         </div>
     </div>
     
@@ -893,6 +953,12 @@
         
         const statusButtons = document.querySelectorAll('.status-btn');
         
+        // Elementos del modal de exportación
+        const exportModal = document.getElementById('exportModal');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const exportWebBtn = document.getElementById('exportWebBtn');
+        const closeExportModal = document.getElementById('closeExportModal');
+        
         // Elementos del asistente Xpo
         const xpoToggle = document.getElementById('xpoToggle');
         const xpoChat = document.getElementById('xpoChat');
@@ -929,7 +995,7 @@
             backStep2Btn.addEventListener('click', goBackToStep1);
             backStep3Btn.addEventListener('click', goBackToStep2);
             registerBtn.addEventListener('click', registerRecord);
-            exportBtn.addEventListener('click', exportToPDF);
+            exportBtn.addEventListener('click', showExportModal);
             clearAllBtn.addEventListener('click', clearAllRecords);
             
             // Event listeners para botones de estado
@@ -938,6 +1004,11 @@
                     selectStatus(this.dataset.status);
                 });
             });
+            
+            // Event listeners para modal de exportación
+            exportPdfBtn.addEventListener('click', exportToPDF);
+            exportWebBtn.addEventListener('click', exportToWeb);
+            closeExportModal.addEventListener('click', hideExportModal);
             
             // Validación de matrícula en tiempo real
             plateInput.addEventListener('input', function(e) {
@@ -1013,6 +1084,15 @@
             } else {
                 mainHeader.classList.remove('header-scrolled');
             }
+        }
+        
+        // Modal de exportación
+        function showExportModal() {
+            exportModal.classList.add('active');
+        }
+        
+        function hideExportModal() {
+            exportModal.classList.remove('active');
         }
         
         // Navegación entre pasos
@@ -1093,7 +1173,11 @@
                 plate: currentPlate,
                 status: selectedStatus,
                 cargo: selectedStatus === 'loaded' ? document.getElementById('cargo').value.trim() : null,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                // Nuevos campos para la página web interactiva
+                currentStatus: selectedStatus, // Estado actual (puede cambiar)
+                assignedTo: null, // Para plataformas vacías
+                downloadProgress: 0 // Para plataformas cargadas (0-100)
             };
             
             records.unshift(record);
@@ -1130,7 +1214,11 @@
                 plate: currentPlate,
                 status: selectedStatus,
                 cargo: null,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                // Nuevos campos para la página web interactiva
+                currentStatus: selectedStatus,
+                assignedTo: null,
+                downloadProgress: 0
             };
             
             records.unshift(record);
@@ -1231,7 +1319,7 @@
                 item.className = 'history-item';
                 
                 const date = new Date(record.timestamp);
-                const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
                 
                 let statusText = '';
                 let statusClass = '';
@@ -1297,6 +1385,8 @@
         
         // Exportar a PDF
         function exportToPDF() {
+            hideExportModal();
+            
             if (records.length === 0) {
                 showToast('No hay registros para exportar', 'error');
                 return;
@@ -1344,7 +1434,7 @@
                     }
                     
                     const date = new Date(record.timestamp);
-                    const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                    const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
                     
                     let statusText = '';
                     switch(record.status) {
@@ -1368,6 +1458,567 @@
                 console.error('Error al exportar PDF:', e);
                 showToast('Error al exportar PDF', 'error');
             }
+        }
+        
+        // Exportar a página web
+        function exportToWeb() {
+            hideExportModal();
+            
+            if (records.length === 0) {
+                showToast('No hay registros para exportar', 'error');
+                return;
+            }
+            
+            try {
+                // Crear el contenido HTML para la página web
+                const webPageContent = generateWebPageContent();
+                
+                // Crear un blob y descargarlo
+                const blob = new Blob([webPageContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `registros_plataformas_${new Date().toISOString().split('T')[0]}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('Página web exportada correctamente', 'success');
+            } catch (e) {
+                console.error('Error al exportar página web:', e);
+                showToast('Error al exportar página web', 'error');
+            }
+        }
+        
+        // Generar contenido para la página web
+        function generateWebPageContent() {
+            return `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Gestión interactiva de plataformas de transporte">
+    <meta name="theme-color" content="#007AFF">
+    <title>Gestión de Plataformas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --apple-blue: #007AFF;
+            --apple-gray: #8E8E93;
+            --apple-light-gray: #F2F2F7;
+            --apple-dark-gray: #1C1C1E;
+            --apple-green: #34C759;
+            --apple-red: #FF3B30;
+            --apple-yellow: #FFCC00;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: var(--apple-light-gray);
+            color: var(--apple-dark-gray);
+            line-height: 1.5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0 15px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--apple-blue), #5AC8FA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--apple-gray);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .stat-loaded { background: #34C75920; }
+        .stat-empty { background: #007AFF20; }
+        .stat-broken { background: #FF3B3020; }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .stat-loaded .stat-number { color: var(--apple-green); }
+        .stat-empty .stat-number { color: var(--apple-blue); }
+        .stat-broken .stat-number { color: var(--apple-red); }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--apple-gray);
+        }
+
+        .search-container {
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E5E5EA;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .platforms-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .platform-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .platform-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .platform-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .plate-info {
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.loaded { background-color: var(--apple-green); color: white; }
+        .status-badge.empty { background-color: var(--apple-blue); color: white; }
+        .status-badge.broken { background-color: var(--apple-red); color: white; }
+        .status-badge.downloading { background-color: var(--apple-yellow); color: var(--apple-dark-gray); }
+        .status-badge.downloaded { background-color: var(--apple-gray); color: white; }
+
+        .platform-details {
+            margin-bottom: 15px;
+        }
+
+        .platform-details div {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--apple-gray);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary { background-color: var(--apple-blue); color: white; }
+        .btn-success { background-color: var(--apple-green); color: white; }
+        .btn-warning { background-color: var(--apple-yellow); color: var(--apple-dark-gray); }
+        .btn-secondary { background-color: #E5E5EA; color: var(--apple-dark-gray); }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #E5E5EA;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--apple-blue), #5AC8FA);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--apple-gray);
+        }
+
+        .assigned-to {
+            background: #F2F2F7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: var(--apple-gray);
+            font-size: 0.8rem;
+            margin-top: 20px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .downloading {
+            animation: pulse 1.5s infinite;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 600px;
+                padding: 20px;
+            }
+            
+            .actions {
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">CODE</div>
+            <h1>Gestión de Plataformas</h1>
+            <p class="subtitle">Panel interactivo para gestión de plataformas</p>
+        </header>
+        
+        <div class="stats-container" id="statsContainer">
+            <!-- Las estadísticas se cargarán aquí -->
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar por matrícula o carga...">
+        </div>
+        
+        <div class="platforms-list" id="platformsList">
+            <!-- Las plataformas se cargarán aquí -->
+        </div>
+    </div>
+    
+    <footer>
+        <p>Gestión de Plataformas &copy; 2023 - Exportado el ${new Date().toLocaleDateString()}</p>
+    </footer>
+
+    <script>
+        // Datos de las plataformas
+        const platformRecords = ${JSON.stringify(records)};
+        
+        // Elementos del DOM
+        const statsContainer = document.getElementById('statsContainer');
+        const platformsList = document.getElementById('platformsList');
+        const searchInput = document.getElementById('searchInput');
+        
+        // Inicializar la página
+        function init() {
+            updateStats();
+            loadPlatforms();
+            
+            // Búsqueda en tiempo real
+            searchInput.addEventListener('input', function(e) {
+                filterPlatforms(e.target.value);
+            });
+        }
+        
+        // Actualizar estadísticas
+        function updateStats() {
+            const stats = {
+                loaded: platformRecords.filter(r => r.currentStatus === 'loaded').length,
+                empty: platformRecords.filter(r => r.currentStatus === 'empty').length,
+                broken: platformRecords.filter(r => r.currentStatus === 'broken').length,
+                downloading: platformRecords.filter(r => r.currentStatus === 'downloading').length,
+                downloaded: platformRecords.filter(r => r.currentStatus === 'downloaded').length
+            };
+            
+            statsContainer.innerHTML = \`
+                <div class="stat-item stat-loaded">
+                    <div class="stat-number">\${stats.loaded}</div>
+                    <div class="stat-label">Cargadas</div>
+                </div>
+                <div class="stat-item stat-empty">
+                    <div class="stat-number">\${stats.empty}</div>
+                    <div class="stat-label">Vacías</div>
+                </div>
+                <div class="stat-item stat-broken">
+                    <div class="stat-number">\${stats.broken}</div>
+                    <div class="stat-label">Averiadas</div>
+                </div>
+                <div class="stat-item" style="background: #FFCC0020;">
+                    <div class="stat-number" style="color: var(--apple-yellow);">\${stats.downloading}</div>
+                    <div class="stat-label">Descargando</div>
+                </div>
+                <div class="stat-item" style="background: #8E8E9320;">
+                    <div class="stat-number" style="color: var(--apple-gray);">\${stats.downloaded}</div>
+                    <div class="stat-label">Descargadas</div>
+                </div>
+            \`;
+        }
+        
+        // Cargar plataformas
+        function loadPlatforms() {
+            platformsList.innerHTML = '';
+            
+            if (platformRecords.length === 0) {
+                platformsList.innerHTML = '<p style="text-align: center; color: var(--apple-gray); padding: 20px;">No hay plataformas registradas</p>';
+                return;
+            }
+            
+            platformRecords.forEach(platform => {
+                const card = document.createElement('div');
+                card.className = 'platform-card';
+                
+                const date = new Date(platform.timestamp);
+                const formattedDate = \`\${date.toLocaleDateString()} \${date.toLocaleTimeString()}\`;
+                
+                let statusText = '';
+                let statusClass = platform.currentStatus;
+                
+                switch(platform.currentStatus) {
+                    case 'loaded': statusText = 'CARGADA'; break;
+                    case 'empty': statusText = 'VACÍA'; break;
+                    case 'broken': statusText = 'AVERIADA'; break;
+                    case 'downloading': statusText = 'DESCARGANDO'; break;
+                    case 'downloaded': statusText = 'DESCARGADA'; break;
+                }
+                
+                // Acciones según el estado
+                let actionsHTML = '';
+                if (platform.currentStatus === 'loaded') {
+                    actionsHTML = \`
+                        <button class="btn btn-primary" onclick="startDownload('\${platform.plate}')">
+                            <i class="fas fa-download"></i> Iniciar Descarga
+                        </button>
+                    \`;
+                } else if (platform.currentStatus === 'downloading') {
+                    actionsHTML = \`
+                        <div style="width: 100%;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-\${platform.plate}" style="width: \${platform.downloadProgress}%"></div>
+                            </div>
+                            <div class="progress-text">\${platform.downloadProgress}% completado</div>
+                            <div class="actions">
+                                <button class="btn btn-success" onclick="completeDownload('\${platform.plate}')">
+                                    <i class="fas fa-check"></i> Completar
+                                </button>
+                                <button class="btn btn-secondary" onclick="cancelDownload('\${platform.plate}')">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    \`;
+                } else if (platform.currentStatus === 'empty') {
+                    actionsHTML = \`
+                        <button class="btn btn-primary" onclick="assignPlatform('\${platform.plate}')">
+                            <i class="fas fa-user"></i> Asignar
+                        </button>
+                    \`;
+                } else if (platform.currentStatus === 'downloaded') {
+                    actionsHTML = \`
+                        <button class="btn btn-secondary" onclick="resetPlatform('\${platform.plate}')">
+                            <i class="fas fa-undo"></i> Reiniciar
+                        </button>
+                    \`;
+                }
+                
+                card.innerHTML = \`
+                    <div class="platform-header">
+                        <div class="plate-info">\${platform.plate}</div>
+                        <span class="status-badge \${statusClass} \${platform.currentStatus === 'downloading' ? 'downloading' : ''}">\${statusText}</span>
+                    </div>
+                    <div class="platform-details">
+                        <div>Registrado: \${formattedDate}</div>
+                        \${platform.cargo ? \`<div>Carga: \${platform.cargo}</div>\` : ''}
+                        \${platform.assignedTo ? \`<div class="assigned-to">Asignado a: \${platform.assignedTo}</div>\` : ''}
+                    </div>
+                    <div class="actions">
+                        \${actionsHTML}
+                    </div>
+                \`;
+                
+                platformsList.appendChild(card);
+            });
+        }
+        
+        // Filtrar plataformas
+        function filterPlatforms(searchTerm) {
+            const cards = document.querySelectorAll('.platform-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm.toLowerCase()) ? 'block' : 'none';
+            });
+        }
+        
+        // Funciones de gestión de plataformas
+        
+        // Iniciar descarga de una plataforma cargada
+        function startDownload(plate) {
+            const platform = platformRecords.find(p => p.plate === plate);
+            if (platform) {
+                platform.currentStatus = 'downloading';
+                platform.downloadProgress = 0;
+                updateStats();
+                loadPlatforms();
+                
+                // Simular progreso de descarga
+                const progressInterval = setInterval(() => {
+                    platform.downloadProgress += 5;
+                    const progressBar = document.getElementById(\`progress-\${plate}\`);
+                    if (progressBar) {
+                        progressBar.style.width = \`\${platform.downloadProgress}%\`;
+                        document.querySelector(\`#progress-\${plate}\`).parentElement.nextElementSibling.textContent = \`\${platform.downloadProgress}% completado\`;
+                    }
+                    
+                    if (platform.downloadProgress >= 100) {
+                        clearInterval(progressInterval);
+                    }
+                }, 500);
+            }
+        }
+        
+        // Completar descarga
+        function completeDownload(plate) {
+            const platform = platformRecords.find(p => p.plate === plate);
+            if (platform) {
+                platform.currentStatus = 'downloaded';
+                platform.downloadProgress = 100;
+                updateStats();
+                loadPlatforms();
+            }
+        }
+        
+        // Cancelar descarga
+        function cancelDownload(plate) {
+            const platform = platformRecords.find(p => p.plate === plate);
+            if (platform) {
+                platform.currentStatus = 'loaded';
+                platform.downloadProgress = 0;
+                updateStats();
+                loadPlatforms();
+            }
+        }
+        
+        // Asignar plataforma vacía
+        function assignPlatform(plate) {
+            const person = prompt('¿A quién se le asigna la plataforma ' + plate + '?');
+            if (person) {
+                const platform = platformRecords.find(p => p.plate === plate);
+                if (platform) {
+                    platform.assignedTo = person;
+                    loadPlatforms();
+                }
+            }
+        }
+        
+        // Reiniciar plataforma descargada
+        function resetPlatform(plate) {
+            const platform = platformRecords.find(p => p.plate === plate);
+            if (platform) {
+                platform.currentStatus = 'empty';
+                platform.assignedTo = null;
+                updateStats();
+                loadPlatforms();
+            }
+        }
+        
+        // Inicializar la página cuando se carga
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>`;
         }
         
         // Mostrar notificación toast
@@ -1449,7 +2100,7 @@
                         let response = `Encontré ${results.length} registro(s) para la matrícula ${plate}:\n`;
                         results.forEach((r, i) => {
                             const date = new Date(r.timestamp).toLocaleDateString();
-                            response += `${i+1}. ${r.plate} - ${r.status.toUpperCase()} - ${date}\n`;
+                            response += `${i+1}. ${r.plate} - ${r.status} - ${date}\n`;
                         });
                         return response;
                     } else {
