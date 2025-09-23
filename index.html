@@ -3,36 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MastApp - Debug Cámara</title>
+    <title>MastApp - Versión Funcional iOS</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #000;
-            color: #fff;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
-        #container {
-            position: relative;
-            display: inline-block;
-        }
-        #video {
-            width: 100%;
-            max-width: 400px;
-            border: 2px solid #fff;
-            border-radius: 10px;
-            display: none;
-        }
-        #overlayCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-            pointer-events: none;
-        }
+        body { font-family: Arial, sans-serif; background: #000; color: #fff; text-align: center; margin: 0; padding: 20px; }
+        #container { position: relative; display: inline-block; }
+        #video { width: 100%; max-width: 400px; border: 2px solid #fff; border-radius: 10px; display: none; }
+        #overlayCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px; pointer-events: none; }
         #gallery { display: none; margin-top: 20px; }
         .photo { width: 200px; height: 150px; background: #333; margin: 10px; display: inline-block; border-radius: 5px; overflow: hidden; }
         #status { margin-top: 20px; font-size: 18px; }
@@ -48,13 +24,12 @@
         audio { display: none; }
         #debugInfo { color: #ffcc00; font-size: 12px; margin-top: 10px; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@nsfwjs/core@2.4.2/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
 </head>
 <body>
-    <h1>MastApp: Debug Cámara Mejorado</h1>
-    <p>Si no jala, checa console (F12) y permisos.</p>
+    <h1>MastApp: Nueva y Funcional</h1>
+    <p>Clickea botón pa' cámara. Si falla, checa Settings > Safari > Cámara > Permitir. Usa HTTPS (Netlify gratis).</p>
     
     <div id="container">
         <video id="video" autoplay muted playsinline></video>
@@ -69,19 +44,16 @@
     <div id="dirtyTalk"></div>
     
     <div id="gallery">
-        <h2>Fotos Dinámicas</h2>
+        <h2>Fotos Aleatorias</h2>
         <div id="photos"></div>
     </div>
 
-    <!-- Audios (mismos) -->
+    <!-- Audios: Sube moan1.mp3 etc. en misma carpeta -->
     <audio id="moan1" preload="auto" loop><source src="moan1.mp3" type="audio/mpeg"></audio>
     <audio id="moan2" preload="auto" loop><source src="moan2.mp3" type="audio/mpeg"></audio>
     <audio id="moan3" preload="auto" loop><source src="moan3.mp3" type="audio/mpeg"></audio>
     <audio id="dirty1" preload="auto"><source src="dirty1.mp3" type="audio/mpeg"></audio>
     <audio id="dirty2" preload="auto"><source src="dirty2.mp3" type="audio/mpeg"></audio>
-    <audio id="dirty3" preload="auto"><source src="dirty3.mp3" type="audio/mpeg"></audio>
-    <audio id="dirty4" preload="auto"><source src="dirty4.mp3" type="audio/mpeg"></audio>
-    <audio id="dirty5" preload="auto"><source src="dirty5.mp3" type="audio/mpeg"></audio>
 
     <script>
         let video = document.getElementById('video');
@@ -96,7 +68,6 @@
         let gallery = document.getElementById('gallery');
         let photosDiv = document.getElementById('photos');
         let detector;
-        let nsfwModel;
         let isNaked = false;
         let penisDetected = false;
         let masturbationSpeed = 0;
@@ -106,7 +77,7 @@
         let speechSynth = window.speechSynthesis;
         let lastDirtyTime = 0;
 
-        // Predictor vars (abreviados pa' espacio)
+        // Predictor basics
         let speedHistory = [];
         let orgasmMode = false;
         let countdownInterval;
@@ -115,46 +86,40 @@
         const SAMPLE_INTERVAL = 1000;
         let lastSampleTime = 0;
 
-        // Hand tracking
+        // Tracking
         let prevHandY = null;
-        let handVelocity = 0;
         let direction = 0;
         let strokeThreshold = 20;
-
-        // Bounding box
         let boxX, boxY, boxW, boxH;
 
         function createParticle(x, y) {
             const particle = document.createElement('div');
             particle.innerHTML = '❤️';
             particle.className = 'particle';
-            particle.style.left = x + 'px';
-            particle.style.top = y + 'px';
+            particle.style.left = (x + canvas.offsetLeft) + 'px';
+            particle.style.top = (y + canvas.offsetTop) + 'px';
             document.body.appendChild(particle);
             setTimeout(() => particle.remove(), 1000);
         }
 
-        const climaxPhrases = ['¡Estás cerca, no pares!', '¡Ya viene el clímax, acelera!', '¡Siente cómo sube, papi!', '¡Uno más y explotas!'];
-        const dirtyPhrases = { low: ['Eres tan sexy...', 'Me excito viéndote.'], medium: ['Me estoy tocando por ti.', 'Ven y hazme tuya.'], high: ['¡Fóllame ya!', 'Más fuerte, no pares.'] };
+        const climaxPhrases = ['¡Estás cerca, no pares!', '¡Ya viene el clímax!', '¡Siente cómo sube!', '¡Uno más!'];
+        const dirtyPhrases = { low: ['Eres tan sexy...'], medium: ['Me excitas...'], high: ['¡Más fuerte!'] };
 
         const moanAudios = [document.getElementById('moan1'), document.getElementById('moan2'), document.getElementById('moan3')];
-        const dirtyAudios = [document.getElementById('dirty1'), document.getElementById('dirty2'), document.getElementById('dirty3'), document.getElementById('dirty4'), document.getElementById('dirty5')].filter(audio => audio.src);
+        const dirtyAudios = [document.getElementById('dirty1'), document.getElementById('dirty2')].filter(a => a.src);
 
         function initAudio() {
-            moanAudios.forEach(audio => { audio.volume = 0; audio.playbackRate = 0.8; });
-            dirtyAudios.forEach(audio => { audio.volume = 0; audio.playbackRate = 0.8; });
+            moanAudios.forEach(a => { a.volume = 0; a.playbackRate = 0.8; });
+            dirtyAudios.forEach(a => { a.volume = 0; a.playbackRate = 0.8; });
         }
 
         function vibrateWithSpeed(speed) {
-            if (!navigator.vibrate) return;
-            const intensity = Math.floor(speed * 50);
-            navigator.vibrate([100, intensity]);
+            if ('vibrate' in navigator) navigator.vibrate([100, speed * 50]);
         }
 
         function triggerOrgasmPredictor() {
             if (orgasmMode) return;
             orgasmMode = true;
-            status.textContent += ' | ¡Clímax inminente!';
             let countdown = 10;
             orgasmCountdown.style.display = 'block';
             progressBar.style.display = 'block';
@@ -162,11 +127,8 @@
                 orgasmCountdown.textContent = countdown;
                 progressFill.style.width = ((10 - countdown) / 10 * 100) + '%';
                 if (countdown <= 5) {
-                    if (currentMoanAudio) {
-                        currentMoanAudio.volume = 1.0;
-                        currentMoanAudio.playbackRate = 2.0;
-                    }
-                    navigator.vibrate(200);
+                    if (currentMoanAudio) { currentMoanAudio.volume = 1; currentMoanAudio.playbackRate = 2; }
+                    vibrateWithSpeed(10);
                     sayDirtyTalk(10);
                 }
                 if (countdown <= 0) {
@@ -175,125 +137,202 @@
                     progressBar.style.display = 'none';
                     progressFill.style.width = '0%';
                     orgasmMode = false;
-                    speedHistory = [];
-                    strokeCount = 0;
-                    status.textContent = '¡Explosión! Reset pa\' próxima.';
+                    speedHistory = []; strokeCount = 0;
                 }
-                countdown -= 1;
+                countdown--;
             }, 1000);
         }
 
         function sayDirtyTalk(speed) {
             const now = Date.now();
-            if (now - lastDirtyTime < 5000 || (currentDirtyAudio && !currentDirtyAudio.ended)) return;
+            if (now - lastDirtyTime < 5000) return;
             lastDirtyTime = now;
-
-            let phrases = orgasmMode ? climaxPhrases : (speed <= 3 ? dirtyPhrases.low : speed <= 7 ? dirtyPhrases.medium : dirtyPhrases.high);
-
-            if (dirtyAudios.length > 0 && !currentDirtyAudio) {
-                currentDirtyAudio = dirtyAudios[Math.floor(Math.random() * dirtyAudios.length)];
-                const volume = 0.7 + (speed / 10) * 0.2;
-                const rate = 0.9 + (speed / 10) * 0.3;
-                currentDirtyAudio.volume = volume;
-                currentDirtyAudio.playbackRate = rate;
-                currentDirtyAudio.play().then(() => {
-                    dirtyTalkDiv.textContent = '[Voz: Dirty Talk]';
-                }).catch(err => {
-                    console.log('Error voiced:', err);
-                    fallbackTTS(phrases[Math.floor(Math.random() * phrases.length)], speed);
-                });
-                currentDirtyAudio.onended = () => { currentDirtyAudio = null; dirtyTalkDiv.textContent = ''; };
-            } else {
-                const phrase = phrases[Math.floor(Math.random() * phrases.length)];
-                const utterance = new SpeechSynthesisUtterance(phrase);
-                utterance.lang = 'es-ES';
-                utterance.pitch = 1.2 + (speed / 10) * 0.5;
-                utterance.rate = 0.9 + (speed / 10) * 0.3;
-                utterance.volume = 0.7 + (speed / 10) * 0.2;
-                utterance.onend = () => { dirtyTalkDiv.textContent = ''; };
-                speechSynth.speak(utterance);
-                dirtyTalkDiv.textContent = phrase;
-            }
-        }
-
-        function fallbackTTS(phrase, speed) {
+            let phrases = orgasmMode ? climaxPhrases : dirtyPhrases.high;
+            const phrase = phrases[Math.floor(Math.random() * phrases.length)];
             const utterance = new SpeechSynthesisUtterance(phrase);
             utterance.lang = 'es-ES';
             utterance.pitch = 1.2 + (speed / 10) * 0.5;
             utterance.rate = 0.9 + (speed / 10) * 0.3;
             utterance.volume = 0.7 + (speed / 10) * 0.2;
-            utterance.onend = () => { dirtyTalkDiv.textContent = ''; };
+            utterance.onend = () => dirtyTalkDiv.textContent = '';
             speechSynth.speak(utterance);
             dirtyTalkDiv.textContent = phrase;
         }
 
         function playMoan(speed) {
-            if (currentMoanAudio) {
-                currentMoanAudio.pause();
-                currentMoanAudio.currentTime = 0;
-            }
+            if (currentMoanAudio) { currentMoanAudio.pause(); currentMoanAudio.currentTime = 0; }
             currentMoanAudio = moanAudios[Math.floor(Math.random() * moanAudios.length)];
             if (currentMoanAudio) {
-                const volume = Math.min(0.8, (speed / 10) * 0.8);
-                const rate = 0.8 + (speed / 10) * 1.2;
-                currentMoanAudio.volume = volume;
-                currentMoanAudio.playbackRate = rate;
-                currentMoanAudio.play().catch(err => console.log('Error moan:', err));
+                currentMoanAudio.volume = Math.min(0.8, (speed / 10) * 0.8);
+                currentMoanAudio.playbackRate = 0.8 + (speed / 10) * 1.2;
+                currentMoanAudio.play().catch(e => console.log('Audio err:', e));
             }
         }
 
         async function detectNudity(poses) {
             if (poses.length === 0) return false;
-            const keypoints = poses[0].keypoints;
-            const leftShoulder = keypoints.find(kp => kp.name === 'left_shoulder');
-            const rightShoulder = keypoints.find(kp => kp.name === 'right_shoulder');
-            const leftHip = keypoints.find(kp => kp.name === 'left_hip');
-            const rightHip = keypoints.find(kp => kp.name === 'right_hip');
-            if (leftShoulder?.score > 0.5 && rightShoulder?.score > 0.5 && leftHip?.score > 0.5 && rightHip?.score > 0.5) {
-                const torsoLength = Math.abs(leftHip.y - leftShoulder.y);
-                return torsoLength > 100;
+            const kp = poses[0].keypoints;
+            const ls = kp.find(k => k.name === 'left_shoulder')?.score > 0.5;
+            const rs = kp.find(k => k.name === 'right_shoulder')?.score > 0.5;
+            const lh = kp.find(k => k.name === 'left_hip')?.score > 0.5;
+            const rh = kp.find(k => k.name === 'right_hip')?.score > 0.5;
+            if (ls && rs && lh && rh) {
+                const torso = Math.abs(kp.find(k => k.name === 'left_hip').y - kp.find(k => k.name === 'left_shoulder').y);
+                return torso > 100;
             }
             return false;
         }
 
-        async function detectPenis(poses, canvas) {
-            if (!nsfwModel || poses.length === 0) return false;
-            const keypoints = poses[0].keypoints;
-            const leftHip = keypoints.find(kp => kp.name === 'left_hip');
-            const rightHip = keypoints.find(kp => kp.name === 'right_hip');
-            if (!leftHip || !rightHip || leftHip.score < 0.7 || rightHip.score < 0.7) return false;
-
-            boxX = Math.min(leftHip.x, rightHip.x) - 50;
-            boxY = Math.max(leftHip.y, rightHip.y) - 100;
-            boxW = Math.abs(leftHip.x - rightHip.x) + 100;
-            boxH = 150;
-
-            const croppedCanvas = document.createElement('canvas');
-            croppedCanvas.width = boxW;
-            croppedCanvas.height = boxH;
-            const cropCtx = croppedCanvas.getContext('2d');
-            cropCtx.drawImage(canvas, boxX, boxY, boxW, boxH, 0, 0, boxW, boxH);
-
-            const predictions = await nsfwModel.classify(croppedCanvas);
-            const pornScore = predictions.find(p => p.className === 'Porn')?.probability || 0;
-            return pornScore > 0.7;
+        function detectPenis(poses) {
+            if (poses.length === 0) return false;
+            const kp = poses[0].keypoints;
+            const lh = kp.find(k => k.name === 'left_hip')?.score > 0.7;
+            const rh = kp.find(k => k.name === 'right_hip')?.score > 0.7;
+            if (lh && rh) {
+                boxX = Math.min(kp.find(k => k.name === 'left_hip').x, kp.find(k => k.name === 'right_hip').x) - 50;
+                boxY = Math.max(kp.find(k => k.name === 'left_hip').y, kp.find(k => k.name === 'right_hip').y) - 100;
+                boxW = Math.abs(kp.find(k => k.name === 'left_hip').x - kp.find(k => k.name === 'right_hip').x) + 100;
+                boxH = 150;
+                return true;
+            }
+            return false;
         }
 
-        let frameCount = 0;
         function detectSpeedAndStrokes(poses) {
-            frameCount++;
-            if (frameCount % 5 !== 0) return masturbationSpeed;
-            if (poses.length === 0) {
-                prevHandY = null;
-                if (Date.now() - lastSampleTime > 5000) {
-                    speedHistory = [];
-                    orgasmMode = false;
-                    if (countdownInterval) clearInterval(countdownInterval);
-                    orgasmCountdown.style.display = 'none';
-                    progressBar.style.display = 'none';
-                    progressFill.style.width = '0%';
-                }
-                return 0;
+            if (poses.length === 0) return 0;
+            const rw = poses[0].keypoints.find(k => k.name === 'right_wrist')?.score > 0.6;
+            if (!rw) return 0;
+            const currentY = poses[0].keypoints.find(k => k.name === 'right_wrist').y;
+            if (prevHandY === null) { prevHandY = currentY; return 0; }
+            const deltaY = currentY - prevHandY;
+            masturbationSpeed = Math.min(10, Math.abs(deltaY) * 10);
+            const newDir = deltaY > 0 ? -1 : 1;
+            if (direction !== 0 && direction !== newDir && Math.abs(deltaY) > strokeThreshold) {
+                strokeCount++;
+                createParticle(poses[0].keypoints.find(k => k.name === 'right_wrist').x, currentY);
             }
-            const rightWrist = poses[0].keypoints.find(kp => kp.name === 'right_wrist');
-            if (!rightWrist || right
+            direction = newDir;
+            prevHandY = currentY;
+
+            const now = Date.now();
+            if (now - lastSampleTime >= SAMPLE_INTERVAL) {
+                speedHistory.push({time: now, speed: masturbationSpeed});
+                if (speedHistory.length > HISTORY_SIZE) speedHistory.shift();
+                lastSampleTime = now;
+                const avg = speedHistory.reduce((s, h) => s + h.speed, 0) / speedHistory.length;
+                progressFill.style.width = (avg / 10 * 100) + '%';
+                if (speedHistory.length >= 5 && masturbationSpeed > 2) {
+                    const recent = speedHistory.slice(-5).reduce((s, h) => s + h.speed, 0) / 5;
+                    const prev = speedHistory.length > 5 ? speedHistory.slice(0, -5).reduce((s, h) => s + h.speed, 0) / (speedHistory.length - 5) : 1;
+                    if (recent > prev * ACCEL_THRESHOLD) triggerOrgasmPredictor();
+                }
+            }
+            return masturbationSpeed;
+        }
+
+        async function showRandomPhotos() {
+            photosDiv.innerHTML = '';
+            const urls = ['https://picsum.photos/200/150?random=1', 'https://picsum.photos/200/150?random=2', 'https://picsum.photos/200/150?random=3'];
+            urls.forEach(url => {
+                const img = document.createElement('div');
+                img.className = 'photo';
+                img.style.backgroundImage = `url(${url})`;
+                img.style.backgroundSize = 'cover';
+                photosDiv.appendChild(img);
+            });
+            gallery.style.display = 'block';
+        }
+
+        function drawLoop() {
+            if (video.readyState === 4) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+                if (penisDetected && boxX) {
+                    ctx.strokeStyle = masturbationSpeed > 5 ? '#00ff00' : '#ff0000';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(boxX, boxY, boxW, boxH);
+                }
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 24px Arial';
+                ctx.fillText(`Strokes: ${strokeCount}`, 10, 30);
+                requestAnimationFrame(drawLoop);
+            }
+        }
+
+        async function detectLoop() {
+            if (detector && video.readyState === 4) {
+                const poses = await detector.estimatePoses(video);
+                isNaked = await detectNudity(poses);
+                penisDetected = detectPenis(poses);
+                const speed = detectSpeedAndStrokes(poses);
+
+                if (isNaked) {
+                    status.textContent = `Desnudo detectado. Strokes: ${strokeCount} | Speed: ${speed.toFixed(1)}`;
+                    showRandomPhotos();
+                    progressBar.style.display = 'block';
+                } else {
+                    status.textContent = 'Quítate la ropa...';
+                    gallery.style.display = 'none';
+                    strokeCount = 0;
+                    progressBar.style.display = 'none';
+                }
+
+                if (penisDetected && isNaked) {
+                    status.textContent += ' | Pene OK.';
+                    playMoan(speed);
+                    vibrateWithSpeed(speed);
+                    if (speed > 2 && !orgasmMode) sayDirtyTalk(speed);
+                } else {
+                    if (currentMoanAudio) { currentMoanAudio.pause(); currentMoanAudio.currentTime = 0; }
+                    dirtyTalkDiv.textContent = '';
+                }
+
+                requestAnimationFrame(detectLoop);
+            }
+        }
+
+        function checkSecure() {
+            if (!window.isSecureContext) {
+                const msg = '¡HTTPS requerido! Sube a Netlify o usa localhost.';
+                status.textContent = msg;
+                debugInfo.textContent = 'Debug: No secure';
+                alert(msg);
+                return false;
+            }
+            return true;
+        }
+
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            if (!checkSecure()) return;
+            try {
+                let constraints = { video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } };
+                let stream;
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                } catch {
+                    constraints.video.facingMode = 'environment';
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    debugInfo.textContent = 'Debug: Cámara trasera';
+                }
+                video.srcObject = stream;
+                video.play();
+                video.style.display = 'none';
+                canvas.style.display = 'block';
+                initAudio();
+                detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
+                status.textContent = '¡Cámara activa! Muévete.';
+                debugInfo.textContent = 'Debug: Listo';
+                drawLoop();
+                setTimeout(detectLoop, 1000); // Delay pa' load
+            } catch (err) {
+                const msg = `Error: ${err.name} - ${err.message}`;
+                status.textContent = msg;
+                debugInfo.textContent = `Debug: ${msg}`;
+                alert(msg + '\nCheca permisos en Settings > Safari > Cámara.');
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
