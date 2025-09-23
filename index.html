@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MastApp - Fix Cámara iOS</title>
+    <title>MastApp - Fix Black Screen iOS 2025</title>
     <style>
         body { font-family: Arial, sans-serif; background: #000; color: #fff; text-align: center; margin: 0; padding: 20px; }
         #container { position: relative; display: inline-block; }
@@ -28,8 +28,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
 </head>
 <body>
-    <h1>MastApp: Fix Visibilidad Cámara</h1>
-    <p>Ahora video visible primero pa' test. Si no ves nada, checa permisos.</p>
+    <h1>MastApp: Fix Black Screen Definitivo</h1>
+    <p>Video visible hasta load full. Si black, clear Safari data + apaga Experimental Features (Settings > Safari > Advanced).</p>
     
     <div id="container">
         <video id="video" muted playsinline></video>
@@ -328,32 +328,43 @@
                     debugInfo.textContent = 'Debug: Usando trasera';
                 }
                 video.srcObject = stream;
-                video.muted = true; // Explícito pa' iOS
+                video.muted = true;
                 video.play();
                 debugInfo.textContent = `Debug: Stream tracks: ${stream.getVideoTracks().length}`;
                 video.addEventListener('loadedmetadata', () => {
                     debugInfo.textContent += ' | Metadata OK';
-                    canvas.style.display = 'block';
-                    video.style.display = 'none'; // Hide video una vez canvas ready
-                    drawLoop();
                 });
-                video.addEventListener('canplay', () => {
-                    debugInfo.textContent += ' | Can play';
+                video.addEventListener('loadeddata', () => {
+                    debugInfo.textContent += ' | Loaded data OK (frames listos)';
+                    video.currentTime = 0; // Force refresh pa' iOS black fix
+                    canvas.style.display = 'block';
+                    video.style.display = 'none';
+                    drawLoop();
                     setTimeout(async () => {
                         initAudio();
                         detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
                         status.textContent = '¡Cámara activa! Muévete.';
                         detectLoop();
-                    }, 500); // Delay pa' iOS load
+                    }, 500);
+                });
+                video.addEventListener('canplay', () => {
+                    debugInfo.textContent += ' | Can play';
                 });
                 video.addEventListener('error', (e) => {
                     debugInfo.textContent = `Debug: Video error - ${e.message}`;
                 });
+                // Force frame request si loadeddata no fires quick
+                setTimeout(() => {
+                    if (video.readyState < 3) {
+                        debugInfo.textContent += ' | Force retry frame';
+                        video.currentTime = 0;
+                    }
+                }, 2000);
             } catch (err) {
                 const msg = `Error: ${err.name} - ${err.message}`;
                 status.textContent = msg;
                 debugInfo.textContent = `Debug: ${msg}`;
-                alert(msg + '\nPermisos en Settings > Safari > Cámara.');
+                alert(msg + '\nPermisos en Settings > Safari > Cámara. Clear data si black.');
                 console.error(err);
             }
         });
