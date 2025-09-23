@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escaner de Matrículas</title>
+    <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1a2a6c;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        h2 {
+            color: #1a2a6c;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .camera-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            border: 2px solid #fdbb2d;
+        }
+        
+        .scan-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 30%;
+            border: 3px dashed #fdbb2d;
+            background-color: rgba(253, 187, 45, 0.1);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #1a2a6c, #2a3a9c);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(to right, #2a3a9c, #3a4abc);
+            transform: scale(1.05);
+        }
+        
+        .btn-success {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(to right, #00c9a7, #a6d94d);
+            transform: scale(1.05);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(to right, #b21f1f, #fd5e5e);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(to right, #c22f2f, #fd6e6e);
+            transform: scale(1.05);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(to right, #fdbb2d, #f9a825);
+            color: #333;
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(to right, #fdcb4d, #f9b835);
+            transform: scale(1.05);
+        }
+        
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .detected-plate {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 5px solid #1a2a6c;
+        }
+        
+        .detected-plate p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .detected-plate strong {
+            color: #1a2a6c;
+        }
+        
+        .records-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .records-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        
+        .record-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .record-item:last-child {
+            border-bottom: none;
+        }
+        
+        .record-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .plate-number {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #1a2a6c;
+        }
+        
+        .record-time {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #b21f1f;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        
+        .status-processing {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .no-records {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .camera-container {
+                height: 300px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🚗 Escáner de Matrículas 🚙</h1>
+            
+            <div class="camera-section">
+                <h2>Cámara</h2>
+                
+                <div class="camera-container">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
+                    <div class="camera-overlay">
+                        <div class="scan-area"></div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button id="startCamera" class="btn-primary">
+                        <span>📷</span> Iniciar Cámara
+                    </button>
+                    <button id="capture" class="btn-success" disabled>
+                        <span>📸</span> Capturar Matrícula
+                    </button>
+                    <button id="stopCamera" class="btn-danger" disabled>
+                        <span>⏹️</span> Detener Cámara
+                    </button>
+                </div>
+                
+                <div id="detectionResult" class="detected-plate" style="display: none;">
+                    <p>Matrícula detectada: <strong id="plateText">-</strong></p>
+                    <p>Fecha y hora: <strong id="detectionTime">-</strong></p>
+                    <div class="controls">
+                        <button id="saveRecord" class="btn-success">
+                            <span>💾</span> Guardar Registro
+                        </button>
+                        <button id="discardRecord" class="btn-danger">
+                            <span>❌</span> Descartar
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="status" class="status" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="records-section">
+                <h2>Registros Guardados</h2>
+                
+                <div class="controls">
+                    <button id="exportPdf" class="btn-warning">
+                        <span>📄</span> Exportar a PDF
+                    </button>
+                    <button id="clearAll" class="btn-danger">
+                        <span>🗑️</span> Limpiar Todo
+                    </button>
+                </div>
+                
+                <div id="recordsList" class="records-list">
+                    <div class="no-records">No hay registros guardados</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let videoStream = null;
+        let records = JSON.parse(localStorage.getItem('licensePlates')) || [];
+        
+        // Elementos DOM
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startCameraBtn = document.getElementById('startCamera');
+        const captureBtn = document.getElementById('capture');
+        const stopCameraBtn = document.getElementById('stopCamera');
+        const detectionResult = document.getElementById('detectionResult');
+        const plateText = document.getElementById('plateText');
+        const detectionTime = document.getElementById('detectionTime');
+        const saveRecordBtn = document.getElementById('saveRecord');
+        const discardRecordBtn = document.getElementById('discardRecord');
+        const statusDiv = document.getElementById('status');
+        const recordsList = document.getElementById('recordsList');
+        const exportPdfBtn = document.getElementById('exportPdf');
+        const clearAllBtn = document.getElementById('clearAll');
+        
+        // Inicializar la aplicación
+        function initApp() {
+            updateRecordsList();
+            
+            // Event listeners
+            startCameraBtn.addEventListener('click', startCamera);
+            captureBtn.addEventListener('click', captureImage);
+            stopCameraBtn.addEventListener('click', stopCamera);
+            saveRecordBtn.addEventListener('click', saveRecord);
+            discardRecordBtn.addEventListener('click', discardRecord);
+            exportPdfBtn.addEventListener('click', exportToPdf);
+            clearAllBtn.addEventListener('click', clearAllRecords);
+        }
+        
+        // Iniciar la cámara
+        async function startCamera() {
+            try {
+                setStatus('Iniciando cámara...', 'processing');
+                
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                video.srcObject = videoStream;
+                
+                // Habilitar/deshabilitar botones
+                startCameraBtn.disabled = true;
+                captureBtn.disabled = false;
+                stopCameraBtn.disabled = false;
+                
+                setStatus('Cámara activada. Apunte a una matrícula.', 'success');
+            } catch (error) {
+                console.error('Error al acceder a la cámara:', error);
+                setStatus('Error al acceder a la cámara: ' + error.message, 'error');
+            }
+        }
+        
+        // Detener la cámara
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            
+            // Habilitar/deshabilitar botones
+            startCameraBtn.disabled = false;
+            captureBtn.disabled = true;
+            stopCameraBtn.disabled = true;
+            
+            // Ocultar resultado de detección
+            detectionResult.style.display = 'none';
+            
+            setStatus('Cámara detenida.', '');
+        }
+        
+        // Capturar imagen y procesar matrícula
+        function captureImage() {
+            if (!videoStream) return;
+            
+            setStatus('Procesando imagen...', 'processing');
+            
+            // Configurar canvas con las dimensiones del video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Dibujar el frame actual del video en el canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Obtener la imagen del canvas
+            const imageData = canvas.toDataURL('image/jpeg');
+            
+            // Procesar la imagen con Tesseract.js
+            processImageWithOCR(imageData);
+        }
+        
+        // Procesar imagen con OCR (Tesseract.js)
+        async function processImageWithOCR(imageData) {
+            try {
+                // Mostrar estado de procesamiento
+                setStatus('Reconociendo texto...', 'processing');
+                
+                // Usar Tesseract.js para OCR
+                const { data: { text } } = await Tesseract.recognize(
+                    imageData,
+                    'eng', // Idioma inglés para mejor reconocimiento de caracteres alfanuméricos
+                    { 
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                setStatus(`Procesando: ${Math.round(m.progress * 100)}%`, 'processing');
+                            }
+                        }
+                    }
+                );
+                
+                // Procesar el texto extraído para encontrar la matrícula
+                const plate = extractLicensePlate(text);
+                
+                if (plate) {
+                    // Mostrar resultado
+                    plateText.textContent = plate;
+                    detectionTime.textContent = new Date().toLocaleString();
+                    detectionResult.style.display = 'block';
+                    
+                    setStatus('Matrícula detectada correctamente.', 'success');
+                } else {
+                    setStatus('No se pudo detectar una matrícula válida. Intente de nuevo.', 'error');
+                }
+            } catch (error) {
+                console.error('Error en el procesamiento OCR:', error);
+                setStatus('Error al procesar la imagen: ' + error.message, 'error');
+            }
+        }
+        
+        // Extraer matrícula del texto reconocido
+        function extractLicensePlate(text) {
+            // Limpiar el texto y buscar patrones de matrícula
+            const cleanedText = text.replace(/\s+/g, '').toUpperCase();
+            
+            // Patrones comunes de matrículas (pueden ajustarse según el país)
+            const platePatterns = [
+                /[A-Z]{3}-?\d{3}/,        // AAA-123 o AAA123
+                /[A-Z]{2}-?\d{4}/,        // AA-1234 o AA1234
+                /[A-Z]{1}-?\d{5}/,        // A-12345 o A12345
+                /\d{4}-?[A-Z]{3}/,        // 1234-AAA o 1234AAA
+                /[A-Z]{1}\d{3}-?[A-Z]{2}/ // A123-AA o A123AA
+            ];
+            
+            for (const pattern of platePatterns) {
+                const match = cleanedText.match(pattern);
+                if (match) {
+                    return match[0];
+                }
+            }
+            
+            // Si no se encuentra un patrón, buscar cualquier combinación de letras y números
+            const alphanumeric = cleanedText.match(/[A-Z0-9]{4,10}/g);
+            if (alphanumeric) {
+                // Priorizar combinaciones que parezcan matrículas
+                for (const candidate of alphanumeric) {
+                    if (candidate.length >= 6 && candidate.length <= 8) {
+                        const letters = candidate.match(/[A-Z]/g) || [];
+                        const numbers = candidate.match(/[0-9]/g) || [];
+                        
+                        // Debe tener al menos 2 letras y 2 números
+                        if (letters.length >= 2 && numbers.length >= 2) {
+                            return candidate;
+                        }
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        // Guardar registro
+        function saveRecord() {
+            const plate = plateText.textContent;
+            const timestamp = new Date().toISOString();
+            
+            // Agregar a la lista de registros
+            records.unshift({
+                plate: plate,
+                timestamp: timestamp
+            });
+            
+            // Guardar en localStorage
+            localStorage.setItem('licensePlates', JSON.stringify(records));
+            
+            // Actualizar la lista de registros
+            updateRecordsList();
+            
+            // Ocultar resultado de detección
+            detectionResult.style.display = 'none';
+            
+            setStatus('Registro guardado correctamente.', 'success');
+        }
+        
+        // Descartar registro
+        function discardRecord() {
+            detectionResult.style.display = 'none';
+            setStatus('Registro descartado.', '');
+        }
+        
+        // Actualizar lista de registros
+        function updateRecordsList() {
+            if (records.length === 0) {
+                recordsList.innerHTML = '<div class="no-records">No hay registros guardados</div>';
+                return;
+            }
+            
+            recordsList.innerHTML = '';
+            
+            records.forEach((record, index) => {
+                const recordElement = document.createElement('div');
+                recordElement.className = 'record-item';
+                
+                recordElement.innerHTML = `
+                    <div class="record-info">
+                        <span class="plate-number">${record.plate}</span>
+                        <span class="record-time">${new Date(record.timestamp).toLocaleString()}</span>
+                    </div>
+                    <button class="delete-btn" data-index="${index}">🗑️</button>
+                `;
+                
+                recordsList.appendChild(recordElement);
+            });
+            
+            // Agregar event listeners a los botones de eliminar
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    deleteRecord(index);
+                });
+            });
+        }
+        
+        // Eliminar registro individual
+        function deleteRecord(index) {
+            records.splice(index, 1);
+            localStorage.setItem('licensePlates', JSON.stringify(records));
+            updateRecordsList();
+            setStatus('Registro eliminado.', 'success');
+        }
+        
+        // Limpiar todos los registros
+        function clearAllRecords() {
+            if (records.length === 0) return;
+            
+            if (confirm('¿Está seguro de que desea eliminar todos los registros?')) {
+                records = [];
+                localStorage.removeItem('licensePlates');
+                updateRecordsList();
+                setStatus('Todos los registros han sido eliminados.', 'success');
+            }
+        }
+        
+        // Exportar a PDF
+        function exportToPdf() {
+            if (records.length === 0) {
+                setStatus('No hay registros para exportar.', 'error');
+                return;
+            }
+            
+            setStatus('Generando PDF...', 'processing');
+            
+            // Usar jsPDF para generar el PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(20);
+            doc.setTextColor(40, 40, 140);
+            doc.text('Registro de Matrículas Escaneadas', 15, 20);
+            
+            // Fecha de generación
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generado el: ${new Date().toLocaleString()}`, 15, 30);
+            
+            // Tabla de registros
+            const tableData = records.map(record => [
+                record.plate,
+                new Date(record.timestamp).toLocaleDateString(),
+                new Date(record.timestamp).toLocaleTimeString()
+            ]);
+            
+            doc.autoTable({
+                startY: 40,
+                head: [['Matrícula', 'Fecha', 'Hora']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [26, 42, 108],
+                    textColor: 255
+                },
+                styles: {
+                    fontSize: 10
+                }
+            });
+            
+            // Guardar el PDF
+            doc.save('registro_matriculas.pdf');
+            
+            setStatus('PDF exportado correctamente.', 'success');
+        }
+        
+        // Establecer estado/mensaje
+        function setStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = 'status';
+            
+            if (type) {
+                statusDiv.classList.add(`status-${type}`);
+            }
+            
+            statusDiv.style.display = message ? 'block' : 'none';
+        }
+        
+        // Inicializar la aplicación cuando se carga la página
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
