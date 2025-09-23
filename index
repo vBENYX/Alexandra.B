@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Registro de Plataformas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --apple-blue: #007AFF;
+            --apple-gray: #8E8E93;
+            --apple-light-gray: #F2F2F7;
+            --apple-dark-gray: #1C1C1E;
+            --apple-green: #34C759;
+            --apple-red: #FF3B30;
+            --apple-yellow: #FFCC00;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--apple-light-gray);
+            color: var(--apple-dark-gray);
+            line-height: 1.5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0 15px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--apple-blue), #5AC8FA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--apple-gray);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .counter {
+            background: white;
+            border-radius: var(--radius);
+            padding: 12px 15px;
+            margin: 15px 0;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .counter-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--apple-blue);
+        }
+
+        .input-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.7s ease-out 0.1s both;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--apple-dark-gray);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E5E5EA;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: var(--transition);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .status-buttons {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .status-btn {
+            padding: 15px 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 60px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .status-btn i {
+            font-size: 1.3rem;
+            margin-right: 10px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .loaded {
+            background-color: rgba(52, 199, 89, 0.1);
+            color: var(--apple-green);
+        }
+
+        .loaded:hover, .loaded.active {
+            background-color: var(--apple-green);
+            color: white;
+        }
+
+        .empty {
+            background-color: rgba(0, 122, 255, 0.1);
+            color: var(--apple-blue);
+        }
+
+        .empty:hover, .empty.active {
+            background-color: var(--apple-blue);
+            color: white;
+        }
+
+        .broken {
+            background-color: rgba(255, 59, 48, 0.1);
+            color: var(--apple-red);
+        }
+
+        .broken:hover, .broken.active {
+            background-color: var(--apple-red);
+            color: white;
+        }
+
+        .cargo-section {
+            display: none;
+            margin-top: 15px;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .btn-primary {
+            background-color: var(--apple-blue);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background-color: #0056CC;
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: #E5E5EA;
+            color: var(--apple-dark-gray);
+        }
+
+        .btn-secondary:active {
+            background-color: #D1D1D6;
+            transform: scale(0.98);
+        }
+
+        .history-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 15px;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.7s ease-out 0.2s both;
+        }
+
+        .history-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .history-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #E5E5EA;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .plate-info {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-loaded {
+            background-color: rgba(52, 199, 89, 0.1);
+            color: var(--apple-green);
+        }
+
+        .status-empty {
+            background-color: rgba(0, 122, 255, 0.1);
+            color: var(--apple-blue);
+        }
+
+        .status-broken {
+            background-color: rgba(255, 59, 48, 0.1);
+            color: var(--apple-red);
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: var(--apple-gray);
+            font-size: 0.8rem;
+            margin-top: 20px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--apple-dark-gray);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            opacity: 0;
+            transition: var(--transition);
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Media queries para tablets y pantallas más grandes */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 600px;
+                padding: 20px;
+            }
+            
+            .status-buttons {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            
+            .status-btn {
+                flex-direction: column;
+                min-height: 80px;
+            }
+            
+            .status-btn i {
+                margin-right: 0;
+                margin-bottom: 8px;
+            }
+            
+            .actions {
+                flex-direction: row;
+            }
+            
+            .history-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Registro de Plataformas</h1>
+            <p class="subtitle">Registra el estado de las matrículas de forma rápida y sencilla</p>
+        </header>
+        
+        <div class="counter">
+            <div>
+                <div class="counter-number" id="counter">0</div>
+                <div>Matrículas registradas</div>
+            </div>
+            <i class="fas fa-truck-moving fa-2x" style="color: var(--apple-blue);"></i>
+        </div>
+        
+        <div class="input-section">
+            <div class="form-group">
+                <label for="plate">Número de Matrícula</label>
+                <input type="text" id="plate" placeholder="Ej: ABC123" maxlength="10" autocapitalize="characters">
+            </div>
+            
+            <div class="status-buttons" id="statusButtons">
+                <button class="status-btn loaded" data-status="loaded">
+                    <i class="fas fa-box"></i>
+                    CARGADA
+                </button>
+                <button class="status-btn empty" data-status="empty">
+                    <i class="fas fa-truck-loading"></i>
+                    VACÍA
+                </button>
+                <button class="status-btn broken" data-status="broken">
+                    <i class="fas fa-tools"></i>
+                    AVERIADA
+                </button>
+            </div>
+            
+            <div class="cargo-section" id="cargoSection">
+                <div class="form-group">
+                    <label for="cargo">¿Con qué está cargada?</label>
+                    <input type="text" id="cargo" placeholder="Ej: Material de construcción">
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button class="btn btn-primary" id="saveBtn">
+                    <i class="fas fa-save"></i>
+                    GUARDAR
+                </button>
+                <button class="btn btn-secondary" id="clearBtn">
+                    <i class="fas fa-eraser"></i>
+                    LIMPIAR
+                </button>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <div class="history-header">
+                <h2>Historial de Registros</h2>
+                <button class="btn btn-primary" id="exportBtn">
+                    <i class="fas fa-file-pdf"></i>
+                    EXPORTAR PDF
+                </button>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- Los registros se cargarán aquí dinámicamente -->
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Registro de Plataformas &copy; 2023 - Diseñado para iPhone</p>
+    </footer>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Elementos del DOM
+        const plateInput = document.getElementById('plate');
+        const statusButtons = document.getElementById('statusButtons');
+        const cargoSection = document.getElementById('cargoSection');
+        const cargoInput = document.getElementById('cargo');
+        const saveBtn = document.getElementById('saveBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const counter = document.getElementById('counter');
+        const historyList = document.getElementById('historyList');
+        const toast = document.getElementById('toast');
+        
+        // Variables de estado
+        let selectedStatus = null;
+        let records = [];
+        
+        // Inicializar la aplicación
+        function init() {
+            // Cargar registros desde localStorage
+            try {
+                const storedRecords = localStorage.getItem('platformRecords');
+                if (storedRecords) {
+                    records = JSON.parse(storedRecords);
+                } else {
+                    records = [];
+                }
+            } catch (e) {
+                console.error('Error al cargar datos:', e);
+                records = [];
+            }
+            
+            updateCounter();
+            loadHistory();
+            
+            // Event listeners optimizados para iOS
+            plateInput.addEventListener('input', toggleStatusButtons);
+            
+            // Usar event delegation para los botones de estado
+            statusButtons.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('status-btn')) {
+                    handleStatusSelection(e.target);
+                }
+            });
+            
+            saveBtn.addEventListener('click', saveRecord);
+            clearBtn.addEventListener('click', clearForm);
+            exportBtn.addEventListener('click', exportToPDF);
+            
+            // Prevenir zoom en iOS al hacer doble tap en inputs
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            });
+            
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        }
+        
+        // Mostrar u ocultar botones de estado según si hay texto en la matrícula
+        function toggleStatusButtons() {
+            if (plateInput.value.trim().length > 0) {
+                statusButtons.style.display = 'grid';
+            } else {
+                statusButtons.style.display = 'none';
+                cargoSection.style.display = 'none';
+                selectedStatus = null;
+                resetStatusButtons();
+            }
+        }
+        
+        // Manejar la selección de estado
+        function handleStatusSelection(button) {
+            const status = button.dataset.status;
+            selectedStatus = status;
+            
+            // Resetear todos los botones
+            resetStatusButtons();
+            
+            // Activar el botón seleccionado
+            button.classList.add('active');
+            
+            // Mostrar sección de carga si es necesario
+            if (status === 'loaded') {
+                cargoSection.style.display = 'block';
+                // Enfocar el campo de carga después de un breve delay
+                setTimeout(() => {
+                    cargoInput.focus();
+                }, 300);
+            } else {
+                cargoSection.style.display = 'none';
+            }
+        }
+        
+        // Resetear los botones de estado
+        function resetStatusButtons() {
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        
+        // Guardar registro
+        function saveRecord() {
+            const plate = plateInput.value.trim().toUpperCase();
+            
+            if (!plate) {
+                showToast('Por favor, introduce una matrícula', 'error');
+                plateInput.focus();
+                return;
+            }
+            
+            if (!selectedStatus) {
+                showToast('Por favor, selecciona un estado', 'error');
+                return;
+            }
+            
+            if (selectedStatus === 'loaded' && !cargoInput.value.trim()) {
+                showToast('Por favor, indica con qué está cargada', 'error');
+                cargoInput.focus();
+                return;
+            }
+            
+            const record = {
+                plate: plate,
+                status: selectedStatus,
+                cargo: selectedStatus === 'loaded' ? cargoInput.value.trim() : null,
+                timestamp: new Date().toISOString()
+            };
+            
+            records.unshift(record);
+            
+            // Guardar en localStorage
+            try {
+                localStorage.setItem('platformRecords', JSON.stringify(records));
+            } catch (e) {
+                console.error('Error al guardar:', e);
+                showToast('Error al guardar el registro', 'error');
+                return;
+            }
+            
+            updateCounter();
+            loadHistory();
+            clearForm();
+            showToast('Registro guardado correctamente', 'success');
+        }
+        
+        // Limpiar formulario
+        function clearForm() {
+            plateInput.value = '';
+            cargoInput.value = '';
+            selectedStatus = null;
+            statusButtons.style.display = 'none';
+            cargoSection.style.display = 'none';
+            resetStatusButtons();
+            
+            // Enfocar el campo de matrícula después de un breve delay
+            setTimeout(() => {
+                plateInput.focus();
+            }, 300);
+        }
+        
+        // Actualizar contador
+        function updateCounter() {
+            counter.textContent = records.length;
+            counter.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                counter.style.transform = 'scale(1)';
+            }, 300);
+        }
+        
+        // Cargar historial
+        function loadHistory() {
+            historyList.innerHTML = '';
+            
+            if (records.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: var(--apple-gray); padding: 20px;">No hay registros aún</p>';
+                return;
+            }
+            
+            records.forEach(record => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                
+                const date = new Date(record.timestamp);
+                const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                
+                let statusText = '';
+                let statusClass = '';
+                
+                switch(record.status) {
+                    case 'loaded':
+                        statusText = 'CARGADA';
+                        statusClass = 'status-loaded';
+                        break;
+                    case 'empty':
+                        statusText = 'VACÍA';
+                        statusClass = 'status-empty';
+                        break;
+                    case 'broken':
+                        statusText = 'AVERIADA';
+                        statusClass = 'status-broken';
+                        break;
+                }
+                
+                item.innerHTML = `
+                    <div>
+                        <div class="plate-info">${record.plate}</div>
+                        <div style="font-size: 0.9rem; color: var(--apple-gray);">${formattedDate}</div>
+                        ${record.cargo ? `<div style="font-size: 0.9rem; margin-top: 5px;">Carga: ${record.cargo}</div>` : ''}
+                    </div>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                `;
+                
+                historyList.appendChild(item);
+            });
+        }
+        
+        // Exportar a PDF
+        function exportToPDF() {
+            if (records.length === 0) {
+                showToast('No hay registros para exportar', 'error');
+                return;
+            }
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Título
+                doc.setFontSize(20);
+                doc.setTextColor(0, 122, 255);
+                doc.text('Registro de Plataformas', 105, 20, { align: 'center' });
+                
+                // Fecha de exportación
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Exportado el: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+                
+                // Encabezados de tabla
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('Matrícula', 20, 50);
+                doc.text('Estado', 70, 50);
+                doc.text('Carga', 110, 50);
+                doc.text('Fecha', 160, 50);
+                
+                // Línea separadora
+                doc.line(20, 55, 190, 55);
+                
+                // Contenido de la tabla
+                let yPosition = 65;
+                records.forEach(record => {
+                    if (yPosition > 270) {
+                        doc.addPage();
+                        yPosition = 20;
+                        
+                        // Encabezados en nueva página
+                        doc.text('Matrícula', 20, yPosition);
+                        doc.text('Estado', 70, yPosition);
+                        doc.text('Carga', 110, yPosition);
+                        doc.text('Fecha', 160, yPosition);
+                        doc.line(20, yPosition + 5, 190, yPosition + 5);
+                        yPosition += 15;
+                    }
+                    
+                    const date = new Date(record.timestamp);
+                    const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                    
+                    let statusText = '';
+                    switch(record.status) {
+                        case 'loaded': statusText = 'CARGADA'; break;
+                        case 'empty': statusText = 'VACÍA'; break;
+                        case 'broken': statusText = 'AVERIADA'; break;
+                    }
+                    
+                    doc.text(record.plate, 20, yPosition);
+                    doc.text(statusText, 70, yPosition);
+                    doc.text(record.cargo || '-', 110, yPosition);
+                    doc.text(formattedDate, 160, yPosition);
+                    
+                    yPosition += 10;
+                });
+                
+                // Guardar PDF
+                doc.save(`registro_plataformas_${new Date().toISOString().split('T')[0]}.pdf`);
+                showToast('PDF exportado correctamente', 'success');
+            } catch (e) {
+                console.error('Error al exportar PDF:', e);
+                showToast('Error al exportar PDF', 'error');
+            }
+        }
+        
+        // Mostrar notificación toast
+        function showToast(message, type) {
+            toast.textContent = message;
+            
+            if (type === 'success') {
+                toast.style.backgroundColor = 'var(--apple-green)';
+            } else if (type === 'error') {
+                toast.style.backgroundColor = 'var(--apple-red)';
+            } else {
+                toast.style.backgroundColor = 'var(--apple-dark-gray)';
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Inicializar la aplicación cuando se carga la página
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
