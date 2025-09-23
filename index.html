@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Sistema profesional para registro y gestión de plataformas de transporte">
+    <meta name="theme-color" content="#007AFF">
     <title>Registro de Plataformas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -17,6 +19,8 @@
             --apple-green: #34C759;
             --apple-red: #FF3B30;
             --apple-yellow: #FFCC00;
+            --xpo-red: #FF2D55;
+            --xpo-dark-red: #D7003A;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             --radius: 12px;
             --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -281,6 +285,16 @@
             transform: scale(0.98);
         }
 
+        .btn-xpo {
+            background-color: var(--xpo-red);
+            color: white;
+        }
+
+        .btn-xpo:active {
+            background-color: var(--xpo-dark-red);
+            transform: scale(0.98);
+        }
+
         .status-buttons {
             display: grid;
             grid-template-columns: 1fr;
@@ -355,6 +369,10 @@
             margin-bottom: 15px;
         }
 
+        .search-container {
+            margin-bottom: 15px;
+        }
+
         .history-list {
             max-height: 300px;
             overflow-y: auto;
@@ -384,8 +402,60 @@
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
-            background-color: #F2F2F7;
-            color: var(--apple-dark-gray);
+        }
+
+        .status-badge.loaded {
+            background-color: var(--apple-green);
+            color: white;
+        }
+
+        .status-badge.empty {
+            background-color: var(--apple-blue);
+            color: white;
+        }
+
+        .status-badge.broken {
+            background-color: var(--apple-red);
+            color: white;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .stat-loaded {
+            background: #34C75920;
+        }
+
+        .stat-empty {
+            background: #007AFF20;
+        }
+
+        .stat-broken {
+            background: #FF3B3020;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .stat-loaded .stat-number { color: var(--apple-green); }
+        .stat-empty .stat-number { color: var(--apple-blue); }
+        .stat-broken .stat-number { color: var(--apple-red); }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--apple-gray);
         }
 
         footer {
@@ -416,6 +486,182 @@
         .toast.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
+        }
+
+        /* Asistente IA Xpo */
+        .xpo-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .xpo-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--xpo-red);
+            color: white;
+            border: none;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .xpo-toggle:hover, .xpo-toggle.active {
+            transform: scale(1.1);
+            background: var(--xpo-dark-red);
+        }
+
+        .xpo-chat {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 320px;
+            height: 400px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .xpo-chat.active {
+            display: flex;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .xpo-header {
+            background: var(--xpo-red);
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .xpo-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            color: var(--xpo-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .xpo-title {
+            font-weight: 600;
+        }
+
+        .xpo-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .xpo-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .message-user {
+            align-self: flex-end;
+            background: var(--apple-blue);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-xpo {
+            align-self: flex-start;
+            background: var(--apple-light-gray);
+            color: var(--apple-dark-gray);
+            border-bottom-left-radius: 5px;
+        }
+
+        .xpo-input-container {
+            padding: 15px;
+            border-top: 1px solid #E5E5EA;
+            display: flex;
+            gap: 10px;
+        }
+
+        .xpo-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #E5E5EA;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .xpo-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--xpo-red);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        .btn.loading .loading-spinner {
+            display: inline-block;
+        }
+
+        .btn.loading .btn-text {
+            display: none;
+        }
+
+        .skeleton-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #E5E5EA;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
         @keyframes fadeIn {
@@ -476,6 +722,11 @@
                 justify-content: space-between;
                 align-items: center;
             }
+            
+            .xpo-chat {
+                width: 350px;
+                height: 450px;
+            }
         }
 
         /* Prevenir zoom en iOS */
@@ -507,11 +758,11 @@
             <div class="step active" id="step1">
                 <div class="form-group">
                     <label for="plate">Número de Matrícula</label>
-                    <input type="text" id="plate" placeholder="Ej: ABC123" maxlength="10" autocapitalize="characters">
+                    <input type="text" id="plate" placeholder="Ej: ABC-123" maxlength="10" autocapitalize="characters">
                 </div>
                 <div class="btn-container">
                     <button class="btn btn-primary" id="continueBtn">
-                        Continuar
+                        <span class="btn-text">Continuar</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -523,16 +774,16 @@
                     <label>Selecciona el estado de la plataforma</label>
                 </div>
                 <div class="status-buttons">
-                    <button class="status-btn" data-status="loaded">
-                        <i class="fas fa-box"></i>
+                    <button class="status-btn" data-status="loaded" aria-label="Plataforma cargada">
+                        <i class="fas fa-box" aria-hidden="true"></i>
                         CARGADA
                     </button>
-                    <button class="status-btn" data-status="empty">
-                        <i class="fas fa-truck-loading"></i>
+                    <button class="status-btn" data-status="empty" aria-label="Plataforma vacía">
+                        <i class="fas fa-truck-loading" aria-hidden="true"></i>
                         VACÍA
                     </button>
-                    <button class="status-btn" data-status="broken">
-                        <i class="fas fa-tools"></i>
+                    <button class="status-btn" data-status="broken" aria-label="Plataforma averiada">
+                        <i class="fas fa-tools" aria-hidden="true"></i>
                         AVERIADA
                     </button>
                 </div>
@@ -553,7 +804,7 @@
                 <div class="btn-container">
                     <button class="btn btn-primary" id="registerBtn">
                         <i class="fas fa-check"></i>
-                        Registrar
+                        <span class="btn-text">Registrar</span>
                     </button>
                     <button class="btn btn-secondary" id="backStep3Btn">
                         <i class="fas fa-arrow-left"></i>
@@ -577,10 +828,42 @@
                     </button>
                 </div>
             </div>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="🔍 Buscar por matrícula o carga...">
+            </div>
+            
             <div class="history-list" id="historyList">
                 <!-- Los registros se cargarán aquí dinámicamente -->
             </div>
         </div>
+    </div>
+    
+    <!-- Asistente IA Xpo -->
+    <div class="xpo-assistant">
+        <div class="xpo-chat" id="xpoChat">
+            <div class="xpo-header">
+                <div class="xpo-avatar">X</div>
+                <div class="xpo-title">Asistente Xpo</div>
+                <button class="xpo-close" id="xpoClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="xpo-messages" id="xpoMessages">
+                <div class="message message-xpo">
+                    ¡Hola! Soy Xpo, tu asistente de plataformas. ¿En qué puedo ayudarte? Puedo buscar matrículas, mostrar estadísticas o eliminar registros.
+                </div>
+            </div>
+            <div class="xpo-input-container">
+                <input type="text" class="xpo-input" id="xpoInput" placeholder="Escribe tu mensaje...">
+                <button class="xpo-send" id="xpoSend">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        <button class="xpo-toggle" id="xpoToggle">
+            <i class="fas fa-robot"></i>
+        </button>
     </div>
     
     <footer>
@@ -602,12 +885,21 @@
         const historyList = document.getElementById('historyList');
         const toast = document.getElementById('toast');
         const mainHeader = document.getElementById('mainHeader');
+        const searchInput = document.getElementById('searchInput');
         
         const step1 = document.getElementById('step1');
         const step2 = document.getElementById('step2');
         const step3 = document.getElementById('step3');
         
         const statusButtons = document.querySelectorAll('.status-btn');
+        
+        // Elementos del asistente Xpo
+        const xpoToggle = document.getElementById('xpoToggle');
+        const xpoChat = document.getElementById('xpoChat');
+        const xpoClose = document.getElementById('xpoClose');
+        const xpoMessages = document.getElementById('xpoMessages');
+        const xpoInput = document.getElementById('xpoInput');
+        const xpoSend = document.getElementById('xpoSend');
         
         // Variables de estado
         let selectedStatus = null;
@@ -645,6 +937,40 @@
                 btn.addEventListener('click', function() {
                     selectStatus(this.dataset.status);
                 });
+            });
+            
+            // Validación de matrícula en tiempo real
+            plateInput.addEventListener('input', function(e) {
+                let plate = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                
+                // Formato automático (ej: ABC123 -> ABC-123)
+                if (plate.length > 3) {
+                    plate = plate.slice(0, 3) + '-' + plate.slice(3, 7);
+                }
+                
+                e.target.value = plate;
+            });
+            
+            // Enter para navegar entre campos
+            plateInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') goToStep2();
+            });
+            
+            document.getElementById('cargo').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') registerRecord();
+            });
+            
+            // Búsqueda en tiempo real
+            searchInput.addEventListener('input', debounce(function(e) {
+                filterHistory(e.target.value);
+            }, 300));
+            
+            // Asistente Xpo
+            xpoToggle.addEventListener('click', toggleXpoChat);
+            xpoClose.addEventListener('click', toggleXpoChat);
+            xpoSend.addEventListener('click', sendXpoMessage);
+            xpoInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendXpoMessage();
             });
             
             // Prevenir zoom en iOS
@@ -691,10 +1017,16 @@
         
         // Navegación entre pasos
         function goToStep2() {
-            const plate = plateInput.value.trim().toUpperCase();
+            const plate = plateInput.value.trim().toUpperCase().replace(/-/g, '');
             
             if (!plate) {
                 showToast('Por favor, introduce una matrícula', 'error');
+                plateInput.focus();
+                return;
+            }
+            
+            if (plate.length < 4) {
+                showToast('La matrícula debe tener al menos 4 caracteres', 'error');
                 plateInput.focus();
                 return;
             }
@@ -731,15 +1063,29 @@
         }
         
         // Registrar registro (para cargada)
-        function registerRecord() {
+        async function registerRecord() {
+            const btn = registerBtn;
+            const originalText = btn.innerHTML;
+            
+            // Mostrar loading
+            btn.innerHTML = '<div class="loading-spinner"></div><span class="btn-text">Procesando...</span>';
+            btn.classList.add('loading');
+            
+            // Simular procesamiento
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             if (!currentPlate || !selectedStatus) {
                 showToast('Error en los datos', 'error');
+                btn.innerHTML = originalText;
+                btn.classList.remove('loading');
                 return;
             }
             
             if (selectedStatus === 'loaded' && !document.getElementById('cargo').value.trim()) {
                 showToast('Por favor, indica con qué está cargada', 'error');
                 document.getElementById('cargo').focus();
+                btn.innerHTML = originalText;
+                btn.classList.remove('loading');
                 return;
             }
             
@@ -758,6 +1104,8 @@
             } catch (e) {
                 console.error('Error al guardar:', e);
                 showToast('Error al guardar el registro', 'error');
+                btn.innerHTML = originalText;
+                btn.classList.remove('loading');
                 return;
             }
             
@@ -765,10 +1113,14 @@
             loadHistory();
             resetForm();
             showToast('Plataforma registrada correctamente', 'success');
+            
+            // Restaurar botón
+            btn.innerHTML = originalText;
+            btn.classList.remove('loading');
         }
         
         // Registrar directamente (para vacía o averiada)
-        function registerRecordDirectly() {
+        async function registerRecordDirectly() {
             if (!currentPlate || !selectedStatus) {
                 showToast('Error en los datos', 'error');
                 return;
@@ -848,6 +1200,32 @@
                 return;
             }
             
+            // Agregar estadísticas
+            const stats = {
+                loaded: records.filter(r => r.status === 'loaded').length,
+                empty: records.filter(r => r.status === 'empty').length,
+                broken: records.filter(r => r.status === 'broken').length
+            };
+            
+            const statsHTML = `
+                <div class="stats-container">
+                    <div class="stat-item stat-loaded">
+                        <div class="stat-number">${stats.loaded}</div>
+                        <div class="stat-label">Cargadas</div>
+                    </div>
+                    <div class="stat-item stat-empty">
+                        <div class="stat-number">${stats.empty}</div>
+                        <div class="stat-label">Vacías</div>
+                    </div>
+                    <div class="stat-item stat-broken">
+                        <div class="stat-number">${stats.broken}</div>
+                        <div class="stat-label">Averiadas</div>
+                    </div>
+                </div>
+            `;
+            
+            historyList.insertAdjacentHTML('afterbegin', statsHTML);
+            
             records.forEach(record => {
                 const item = document.createElement('div');
                 item.className = 'history-item';
@@ -856,16 +1234,20 @@
                 const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
                 
                 let statusText = '';
+                let statusClass = '';
                 
                 switch(record.status) {
                     case 'loaded':
                         statusText = 'CARGADA';
+                        statusClass = 'loaded';
                         break;
                     case 'empty':
                         statusText = 'VACÍA';
+                        statusClass = 'empty';
                         break;
                     case 'broken':
                         statusText = 'AVERIADA';
+                        statusClass = 'broken';
                         break;
                 }
                 
@@ -875,10 +1257,41 @@
                         <div style="font-size: 0.9rem; color: var(--apple-gray);">${formattedDate}</div>
                         ${record.cargo ? `<div style="font-size: 0.9rem; margin-top: 5px;">Carga: ${record.cargo}</div>` : ''}
                     </div>
-                    <span class="status-badge">${statusText}</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
                 `;
                 
+                // Agregar funcionalidad de eliminación individual
+                item.addEventListener('dblclick', function() {
+                    if (confirm(`¿Eliminar el registro de la matrícula ${record.plate}?`)) {
+                        deleteRecord(record.plate, record.timestamp);
+                    }
+                });
+                
                 historyList.appendChild(item);
+            });
+        }
+        
+        // Eliminar registro individual
+        function deleteRecord(plate, timestamp) {
+            records = records.filter(record => !(record.plate === plate && record.timestamp === timestamp));
+            localStorage.setItem('platformRecords', JSON.stringify(records));
+            updateCounter();
+            loadHistory();
+            showToast(`Registro de ${plate} eliminado`, 'success');
+        }
+        
+        // Filtrar historial
+        function filterHistory(searchTerm) {
+            const items = document.querySelectorAll('.history-item');
+            const stats = document.querySelector('.stats-container');
+            
+            if (stats) {
+                stats.style.display = searchTerm ? 'none' : 'grid';
+            }
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm.toLowerCase()) ? 'flex' : 'none';
             });
         }
         
@@ -976,6 +1389,127 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
+        }
+        
+        // Asistente IA Xpo
+        function toggleXpoChat() {
+            xpoChat.classList.toggle('active');
+            xpoToggle.classList.toggle('active');
+            
+            if (xpoChat.classList.contains('active')) {
+                xpoInput.focus();
+            }
+        }
+        
+        function sendXpoMessage() {
+            const message = xpoInput.value.trim();
+            if (!message) return;
+            
+            // Agregar mensaje del usuario
+            addMessage(message, 'user');
+            xpoInput.value = '';
+            
+            // Simular procesamiento
+            setTimeout(() => {
+                const response = processXpoMessage(message);
+                addMessage(response, 'xpo');
+            }, 500);
+        }
+        
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${sender}`;
+            messageDiv.textContent = text;
+            
+            xpoMessages.appendChild(messageDiv);
+            xpoMessages.scrollTop = xpoMessages.scrollHeight;
+        }
+        
+        function processXpoMessage(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Saludos
+            if (lowerMessage.includes('hola') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+                return '¡Hola! ¿En qué puedo ayudarte con el registro de plataformas?';
+            }
+            
+            // Ayuda
+            if (lowerMessage.includes('ayuda') || lowerMessage.includes('help') || lowerMessage.includes('qué puedes hacer')) {
+                return 'Puedo ayudarte a:\n- Buscar matrículas específicas\n- Mostrar estadísticas de registros\n- Eliminar registros\n- Informarte sobre el estado de las plataformas\nSolo dime qué necesitas.';
+            }
+            
+            // Buscar matrícula
+            if (lowerMessage.includes('buscar') || lowerMessage.includes('encontrar') || lowerMessage.includes('matrícula')) {
+                const plateMatch = message.match(/([A-Z0-9]{3,7})/i);
+                if (plateMatch) {
+                    const plate = plateMatch[0].toUpperCase();
+                    const results = records.filter(r => r.plate.includes(plate));
+                    
+                    if (results.length > 0) {
+                        let response = `Encontré ${results.length} registro(s) para la matrícula ${plate}:\n`;
+                        results.forEach((r, i) => {
+                            const date = new Date(r.timestamp).toLocaleDateString();
+                            response += `${i+1}. ${r.plate} - ${r.status.toUpperCase()} - ${date}\n`;
+                        });
+                        return response;
+                    } else {
+                        return `No encontré registros para la matrícula ${plate}.`;
+                    }
+                } else {
+                    return 'Por favor, especifica la matrícula que quieres buscar. Ejemplo: "buscar ABC123"';
+                }
+            }
+            
+            // Estadísticas
+            if (lowerMessage.includes('estadística') || lowerMessage.includes('estadisticas') || lowerMessage.includes('cuántos') || lowerMessage.includes('resumen')) {
+                const stats = {
+                    loaded: records.filter(r => r.status === 'loaded').length,
+                    empty: records.filter(r => r.status === 'empty').length,
+                    broken: records.filter(r => r.status === 'broken').length,
+                    total: records.length
+                };
+                
+                return `Resumen de registros:\n- Total: ${stats.total}\n- Cargadas: ${stats.loaded}\n- Vacías: ${stats.empty}\n- Averiadas: ${stats.broken}`;
+            }
+            
+            // Eliminar registro
+            if (lowerMessage.includes('eliminar') || lowerMessage.includes('borrar') || lowerMessage.includes('quitar')) {
+                const plateMatch = message.match(/([A-Z0-9]{3,7})/i);
+                if (plateMatch) {
+                    const plate = plateMatch[0].toUpperCase();
+                    const results = records.filter(r => r.plate === plate);
+                    
+                    if (results.length > 0) {
+                        // En un entorno real, aquí se eliminaría el registro
+                        return `Encontré ${results.length} registro(s) para ${plate}. Para eliminar, haz doble clic en el registro del historial o confirma la eliminación.`;
+                    } else {
+                        return `No encontré registros para la matrícula ${plate}.`;
+                    }
+                } else {
+                    return 'Por favor, especifica la matrícula que quieres eliminar. Ejemplo: "eliminar ABC123"';
+                }
+            }
+            
+            // Estado de la aplicación
+            if (lowerMessage.includes('cuántos registros') || lowerMessage.includes('estado') || lowerMessage.includes('cómo vamos')) {
+                return `Actualmente tienes ${records.length} registros en el sistema.`;
+            }
+            
+            // Respuesta por defecto
+            return 'No estoy seguro de cómo ayudarte con eso. Puedo buscar matrículas, mostrar estadísticas o ayudarte a eliminar registros. ¿En qué más puedo asistirte?';
+        }
+        
+        // Debounce para búsqueda
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
         
         // Inicializar la aplicación cuando se carga la página
