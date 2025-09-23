@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MastApp - Versión Funcional iOS</title>
+    <title>MastApp - Fix Cámara iOS</title>
     <style>
         body { font-family: Arial, sans-serif; background: #000; color: #fff; text-align: center; margin: 0; padding: 20px; }
         #container { position: relative; display: inline-block; }
-        #video { width: 100%; max-width: 400px; border: 2px solid #fff; border-radius: 10px; display: none; }
-        #overlayCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px; pointer-events: none; }
+        #video { width: 100%; max-width: 400px; border: 2px solid #fff; border-radius: 10px; }
+        #overlayCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px; pointer-events: none; display: none; }
         #gallery { display: none; margin-top: 20px; }
         .photo { width: 200px; height: 150px; background: #333; margin: 10px; display: inline-block; border-radius: 5px; overflow: hidden; }
         #status { margin-top: 20px; font-size: 18px; }
@@ -28,11 +28,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
 </head>
 <body>
-    <h1>MastApp: Nueva y Funcional</h1>
-    <p>Clickea botón pa' cámara. Si falla, checa Settings > Safari > Cámara > Permitir. Usa HTTPS (Netlify gratis).</p>
+    <h1>MastApp: Fix Visibilidad Cámara</h1>
+    <p>Ahora video visible primero pa' test. Si no ves nada, checa permisos.</p>
     
     <div id="container">
-        <video id="video" autoplay muted playsinline></video>
+        <video id="video" muted playsinline></video>
         <canvas id="overlayCanvas"></canvas>
     </div>
     <br>
@@ -48,7 +48,7 @@
         <div id="photos"></div>
     </div>
 
-    <!-- Audios: Sube moan1.mp3 etc. en misma carpeta -->
+    <!-- Audios -->
     <audio id="moan1" preload="auto" loop><source src="moan1.mp3" type="audio/mpeg"></audio>
     <audio id="moan2" preload="auto" loop><source src="moan2.mp3" type="audio/mpeg"></audio>
     <audio id="moan3" preload="auto" loop><source src="moan3.mp3" type="audio/mpeg"></audio>
@@ -77,7 +77,7 @@
         let speechSynth = window.speechSynthesis;
         let lastDirtyTime = 0;
 
-        // Predictor basics
+        // Predictor
         let speedHistory = [];
         let orgasmMode = false;
         let countdownInterval;
@@ -243,58 +243,70 @@
             gallery.style.display = 'block';
         }
 
+        let drawLoopRunning = false;
         function drawLoop() {
-            if (video.readyState === 4) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0);
-                if (penisDetected && boxX) {
-                    ctx.strokeStyle = masturbationSpeed > 5 ? '#00ff00' : '#ff0000';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(boxX, boxY, boxW, boxH);
+            if (video.readyState === 4 && !drawLoopRunning) {
+                drawLoopRunning = true;
+                function loop() {
+                    if (video.readyState === 4) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        ctx.drawImage(video, 0, 0);
+                        if (penisDetected && boxX) {
+                            ctx.strokeStyle = masturbationSpeed > 5 ? '#00ff00' : '#ff0000';
+                            ctx.lineWidth = 3;
+                            ctx.strokeRect(boxX, boxY, boxW, boxH);
+                        }
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 24px Arial';
+                        ctx.fillText(`Strokes: ${strokeCount}`, 10, 30);
+                    }
+                    requestAnimationFrame(loop);
                 }
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 24px Arial';
-                ctx.fillText(`Strokes: ${strokeCount}`, 10, 30);
-                requestAnimationFrame(drawLoop);
+                loop();
             }
         }
 
+        let detectLoopRunning = false;
         async function detectLoop() {
-            if (detector && video.readyState === 4) {
-                const poses = await detector.estimatePoses(video);
-                isNaked = await detectNudity(poses);
-                penisDetected = detectPenis(poses);
-                const speed = detectSpeedAndStrokes(poses);
+            if (detector && video.readyState === 4 && !detectLoopRunning) {
+                detectLoopRunning = true;
+                async function loop() {
+                    const poses = await detector.estimatePoses(video);
+                    isNaked = await detectNudity(poses);
+                    penisDetected = detectPenis(poses);
+                    const speed = detectSpeedAndStrokes(poses);
 
-                if (isNaked) {
-                    status.textContent = `Desnudo detectado. Strokes: ${strokeCount} | Speed: ${speed.toFixed(1)}`;
-                    showRandomPhotos();
-                    progressBar.style.display = 'block';
-                } else {
-                    status.textContent = 'Quítate la ropa...';
-                    gallery.style.display = 'none';
-                    strokeCount = 0;
-                    progressBar.style.display = 'none';
+                    if (isNaked) {
+                        status.textContent = `Desnudo detectado. Strokes: ${strokeCount} | Speed: ${speed.toFixed(1)}`;
+                        showRandomPhotos();
+                        progressBar.style.display = 'block';
+                    } else {
+                        status.textContent = 'Quítate la ropa...';
+                        gallery.style.display = 'none';
+                        strokeCount = 0;
+                        progressBar.style.display = 'none';
+                    }
+
+                    if (penisDetected && isNaked) {
+                        status.textContent += ' | Pene OK.';
+                        playMoan(speed);
+                        vibrateWithSpeed(speed);
+                        if (speed > 2 && !orgasmMode) sayDirtyTalk(speed);
+                    } else {
+                        if (currentMoanAudio) { currentMoanAudio.pause(); currentMoanAudio.currentTime = 0; }
+                        dirtyTalkDiv.textContent = '';
+                    }
+
+                    requestAnimationFrame(loop);
                 }
-
-                if (penisDetected && isNaked) {
-                    status.textContent += ' | Pene OK.';
-                    playMoan(speed);
-                    vibrateWithSpeed(speed);
-                    if (speed > 2 && !orgasmMode) sayDirtyTalk(speed);
-                } else {
-                    if (currentMoanAudio) { currentMoanAudio.pause(); currentMoanAudio.currentTime = 0; }
-                    dirtyTalkDiv.textContent = '';
-                }
-
-                requestAnimationFrame(detectLoop);
+                loop();
             }
         }
 
         function checkSecure() {
             if (!window.isSecureContext) {
-                const msg = '¡HTTPS requerido! Sube a Netlify o usa localhost.';
+                const msg = '¡HTTPS requerido! Sube a Netlify.';
                 status.textContent = msg;
                 debugInfo.textContent = 'Debug: No secure';
                 alert(msg);
@@ -313,23 +325,35 @@
                 } catch {
                     constraints.video.facingMode = 'environment';
                     stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    debugInfo.textContent = 'Debug: Cámara trasera';
+                    debugInfo.textContent = 'Debug: Usando trasera';
                 }
                 video.srcObject = stream;
+                video.muted = true; // Explícito pa' iOS
                 video.play();
-                video.style.display = 'none';
-                canvas.style.display = 'block';
-                initAudio();
-                detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
-                status.textContent = '¡Cámara activa! Muévete.';
-                debugInfo.textContent = 'Debug: Listo';
-                drawLoop();
-                setTimeout(detectLoop, 1000); // Delay pa' load
+                debugInfo.textContent = `Debug: Stream tracks: ${stream.getVideoTracks().length}`;
+                video.addEventListener('loadedmetadata', () => {
+                    debugInfo.textContent += ' | Metadata OK';
+                    canvas.style.display = 'block';
+                    video.style.display = 'none'; // Hide video una vez canvas ready
+                    drawLoop();
+                });
+                video.addEventListener('canplay', () => {
+                    debugInfo.textContent += ' | Can play';
+                    setTimeout(async () => {
+                        initAudio();
+                        detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
+                        status.textContent = '¡Cámara activa! Muévete.';
+                        detectLoop();
+                    }, 500); // Delay pa' iOS load
+                });
+                video.addEventListener('error', (e) => {
+                    debugInfo.textContent = `Debug: Video error - ${e.message}`;
+                });
             } catch (err) {
                 const msg = `Error: ${err.name} - ${err.message}`;
                 status.textContent = msg;
                 debugInfo.textContent = `Debug: ${msg}`;
-                alert(msg + '\nCheca permisos en Settings > Safari > Cámara.');
+                alert(msg + '\nPermisos en Settings > Safari > Cámara.');
                 console.error(err);
             }
         });
