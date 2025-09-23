@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MastApp - Predictor de Orgasmo</title>
+    <title>MastApp - Visuales AR ante Cámara</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,11 +13,25 @@
             margin: 0;
             padding: 20px;
         }
+        #container {
+            position: relative;
+            display: inline-block;
+        }
         #video {
             width: 100%;
             max-width: 400px;
             border: 2px solid #fff;
             border-radius: 10px;
+            display: none; /* Oculto, canvas lo dibuja */
+        }
+        #overlayCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            pointer-events: none;
         }
         #gallery {
             display: none;
@@ -54,6 +68,31 @@
             color: #ffcc00;
             font-style: italic;
         }
+        #progressBar {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            margin: 10px auto;
+            overflow: hidden;
+            display: none;
+        }
+        #progressFill {
+            height: 100%;
+            background: linear-gradient(to right, #ff0000, #ffcc00);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .particle {
+            position: absolute;
+            font-size: 20px;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(0.5); }
+        }
         button {
             background: #ff0000;
             color: #fff;
@@ -76,14 +115,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@nsfwjs/core@2.4.2/dist/index.min.js"></script>
 </head>
 <body>
-    <h1>MastApp: Predictor de Orgasmo Activado</h1>
-    <p>Local y privado. Acelera sostenido pa' trigger el clímax.</p>
+    <h1>MastApp: Visuales AR - Overlays en Cámara</h1>
+    <p>Local y privado. Mira los boxes y efectos en tu feed.</p>
     
-    <video id="video" autoplay muted playsinline></video>
+    <div id="container">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlayCanvas"></canvas>
+    </div>
     <br>
     <button id="startBtn">Iniciar Cámara</button>
     <div id="status">Estado: Esperando...</div>
     <div id="orgasmCountdown"></div>
+    <div id="progressBar"><div id="progressFill"></div></div>
     <div id="dirtyTalk"></div>
     
     <div id="gallery">
@@ -91,12 +134,10 @@
         <div id="photos"></div>
     </div>
 
-    <!-- Audios gemidos -->
+    <!-- Audios (mismos que antes) -->
     <audio id="moan1" preload="auto" loop><source src="moan1.mp3" type="audio/mpeg"></audio>
     <audio id="moan2" preload="auto" loop><source src="moan2.mp3" type="audio/mpeg"></audio>
     <audio id="moan3" preload="auto" loop><source src="moan3.mp3" type="audio/mpeg"></audio>
-
-    <!-- Audios voiced dirty talk -->
     <audio id="dirty1" preload="auto"><source src="dirty1.mp3" type="audio/mpeg"></audio>
     <audio id="dirty2" preload="auto"><source src="dirty2.mp3" type="audio/mpeg"></audio>
     <audio id="dirty3" preload="auto"><source src="dirty3.mp3" type="audio/mpeg"></audio>
@@ -105,8 +146,12 @@
 
     <script>
         let video = document.getElementById('video');
+        let canvas = document.getElementById('overlayCanvas');
+        let ctx = canvas.getContext('2d');
         let status = document.getElementById('status');
         let orgasmCountdown = document.getElementById('orgasmCountdown');
+        let progressBar = document.getElementById('progressBar');
+        let progressFill = document.getElementById('progressFill');
         let dirtyTalkDiv = document.getElementById('dirtyTalk');
         let gallery = document.getElementById('gallery');
         let photosDiv = document.getElementById('photos');
@@ -121,13 +166,13 @@
         let speechSynth = window.speechSynthesis;
         let lastDirtyTime = 0;
 
-        // Nuevo: Predictor de orgasmo
-        let speedHistory = []; // {time: Date.now(), speed: num}
+        // Predictor vars (mismos)
+        let speedHistory = [];
         let orgasmMode = false;
         let countdownInterval;
-        const ACCEL_THRESHOLD = 1.2; // 20% accel
-        const HISTORY_SIZE = 10; // Últimos 10 samples
-        const SAMPLE_INTERVAL = 1000; // ms por sample
+        const ACCEL_THRESHOLD = 1.2;
+        const HISTORY_SIZE = 10;
+        const SAMPLE_INTERVAL = 1000;
         let lastSampleTime = 0;
 
         // Hand tracking
@@ -136,33 +181,26 @@
         let direction = 0;
         let strokeThreshold = 20;
 
-        // Frases para orgasmo (hardcore)
-        const climaxPhrases = [
-            '¡Estás cerca, no pares!',
-            '¡Ya viene el clímax, acelera!',
-            '¡Siente cómo sube, papi!',
-            '¡Uno más y explotas!'
-        ];
+        // Bounding box coords (pa' visual)
+        let boxX, boxY, boxW, boxH;
 
-        const dirtyPhrases = {
-            low: ['Eres tan sexy...', 'Me excito viéndote.'],
-            medium: ['Me estoy tocando por ti.', 'Ven y hazme tuya.'],
-            high: ['¡Fóllame ya!', 'Más fuerte, no pares.']
-        };
+        // Partículas
+        function createParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.innerHTML = '❤️';
+            particle.className = 'particle';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 1000);
+        }
 
-        const moanAudios = [
-            document.getElementById('moan1'),
-            document.getElementById('moan2'),
-            document.getElementById('moan3'),
-        ];
+        // Frases (mismos)
+        const climaxPhrases = ['¡Estás cerca, no pares!', '¡Ya viene el clímax, acelera!', '¡Siente cómo sube, papi!', '¡Uno más y explotas!'];
+        const dirtyPhrases = { low: ['Eres tan sexy...', 'Me excito viéndote.'], medium: ['Me estoy tocando por ti.', 'Ven y hazme tuya.'], high: ['¡Fóllame ya!', 'Más fuerte, no pares.'] };
 
-        const dirtyAudios = [
-            document.getElementById('dirty1'),
-            document.getElementById('dirty2'),
-            document.getElementById('dirty3'),
-            document.getElementById('dirty4'),
-            document.getElementById('dirty5'),
-        ].filter(audio => audio.src);
+        const moanAudios = [document.getElementById('moan1'), document.getElementById('moan2'), document.getElementById('moan3')];
+        const dirtyAudios = [document.getElementById('dirty1'), document.getElementById('dirty2'), document.getElementById('dirty3'), document.getElementById('dirty4'), document.getElementById('dirty5')].filter(audio => audio.src);
 
         function initAudio() {
             moanAudios.forEach(audio => { audio.volume = 0; audio.playbackRate = 0.8; });
@@ -175,29 +213,30 @@
             navigator.vibrate([100, intensity]);
         }
 
-        // Trigger predictor: countdown con escalada
         function triggerOrgasmPredictor() {
             if (orgasmMode) return;
             orgasmMode = true;
             status.textContent += ' | ¡Clímax inminente!';
             let countdown = 10;
             orgasmCountdown.style.display = 'block';
+            progressBar.style.display = 'block';
             countdownInterval = setInterval(() => {
                 orgasmCountdown.textContent = countdown;
+                progressFill.style.width = ((10 - countdown) / 10 * 100) + '%';
                 if (countdown <= 5) {
-                    // Escalada: max audio/vibe
                     if (currentMoanAudio) {
                         currentMoanAudio.volume = 1.0;
                         currentMoanAudio.playbackRate = 2.0;
                     }
-                    navigator.vibrate(200); // Full vibe
-                    sayDirtyTalk(10); // Max speed pa' hardcore phrase
+                    navigator.vibrate(200);
+                    sayDirtyTalk(10);
                 }
                 if (countdown <= 0) {
                     clearInterval(countdownInterval);
                     orgasmCountdown.style.display = 'none';
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
                     orgasmMode = false;
-                    // Post-clímax: reset
                     speedHistory = [];
                     strokeCount = 0;
                     status.textContent = '¡Explosión! Reset pa\' próxima.';
@@ -207,6 +246,7 @@
         }
 
         function sayDirtyTalk(speed) {
+            // Mismo que antes...
             const now = Date.now();
             if (now - lastDirtyTime < 5000 || (currentDirtyAudio && !currentDirtyAudio.ended)) return;
             lastDirtyTime = now;
@@ -266,6 +306,7 @@
         }
 
         async function detectNudity(poses) {
+            // Mismo...
             if (poses.length === 0) return false;
             const keypoints = poses[0].keypoints;
             const leftShoulder = keypoints.find(kp => kp.name === 'left_shoulder');
@@ -286,33 +327,36 @@
             const rightHip = keypoints.find(kp => kp.name === 'right_hip');
             if (!leftHip || !rightHip || leftHip.score < 0.7 || rightHip.score < 0.7) return false;
 
-            const x = Math.min(leftHip.x, rightHip.x) - 50;
-            const y = Math.max(leftHip.y, rightHip.y) - 100;
-            const width = Math.abs(leftHip.x - rightHip.x) + 100;
-            const height = 150;
+            // Set box coords pa' visual
+            boxX = Math.min(leftHip.x, rightHip.x) - 50;
+            boxY = Math.max(leftHip.y, rightHip.y) - 100;
+            boxW = Math.abs(leftHip.x - rightHip.x) + 100;
+            boxH = 150;
+
             const croppedCanvas = document.createElement('canvas');
-            croppedCanvas.width = width;
-            croppedCanvas.height = height;
-            const ctx = croppedCanvas.getContext('2d');
-            ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+            croppedCanvas.width = boxW;
+            croppedCanvas.height = boxH;
+            const cropCtx = croppedCanvas.getContext('2d');
+            cropCtx.drawImage(canvas, boxX, boxY, boxW, boxH, 0, 0, boxW, boxH);
 
             const predictions = await nsfwModel.classify(croppedCanvas);
             const pornScore = predictions.find(p => p.className === 'Porn')?.probability || 0;
             return pornScore > 0.7;
         }
 
-        // Upgradado con predictor
         let frameCount = 0;
         function detectSpeedAndStrokes(poses) {
             frameCount++;
             if (frameCount % 5 !== 0) return masturbationSpeed;
             if (poses.length === 0) {
                 prevHandY = null;
-                if (Date.now() - lastSampleTime > 5000) { // Reset si parado >5s
+                if (Date.now() - lastSampleTime > 5000) {
                     speedHistory = [];
                     orgasmMode = false;
                     if (countdownInterval) clearInterval(countdownInterval);
                     orgasmCountdown.style.display = 'none';
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
                 }
                 return 0;
             }
@@ -332,25 +376,28 @@
             handVelocity = Math.abs(deltaY);
             masturbationSpeed = Math.min(10, handVelocity * 10);
 
-            // Stroke count
+            // Stroke + partícula
             const newDirection = deltaY > 0 ? -1 : 1;
             if (direction !== 0 && direction !== newDirection && handVelocity > strokeThreshold) {
                 strokeCount++;
+                createParticle(rightWrist.x, rightWrist.y); // ❤️ desde mano
             }
             direction = newDirection;
             prevHandY = currentY;
 
-            // Sample pa' history cada seg
+            // History y predictor (mismo)
             const now = Date.now();
             if (now - lastSampleTime >= SAMPLE_INTERVAL) {
                 speedHistory.push({time: now, speed: masturbationSpeed});
                 if (speedHistory.length > HISTORY_SIZE) speedHistory.shift();
                 lastSampleTime = now;
+                // Progress bar: % basado en avg speed
+                const avgSpeed = speedHistory.reduce((sum, s) => sum + s.speed, 0) / speedHistory.length;
+                progressFill.style.width = Math.min(100, (avgSpeed / 10) * 100) + '%';
 
-                // Chequea aceleración
                 if (speedHistory.length >= 5 && masturbationSpeed > 2) {
                     const recentAvg = speedHistory.slice(-5).reduce((sum, s) => sum + s.speed, 0) / 5;
-                    const prevAvg = speedHistory.slice(0, -5).reduce((sum, s) => sum + s.speed, 0) / (speedHistory.length - 5) || 1;
+                    const prevAvg = speedHistory.length > 5 ? speedHistory.slice(0, -5).reduce((sum, s) => sum + s.speed, 0) / (speedHistory.length - 5) : 1;
                     if (recentAvg > prevAvg * ACCEL_THRESHOLD) {
                         triggerOrgasmPredictor();
                     }
@@ -361,6 +408,7 @@
         }
 
         async function showRandomPhotos() {
+            // Mismo fetch...
             photosDiv.innerHTML = '';
             try {
                 for (let i = 0; i < 3; i++) {
@@ -386,24 +434,54 @@
             gallery.style.display = 'block';
         }
 
-        async function detectLoop() {
-            if (detector && video.readyState === 4) {
-                const canvas = document.createElement('canvas');
+        // Draw loop: video + overlays
+        function drawLoop() {
+            if (video.readyState === 4) {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Bounding box pene
+                if (penisDetected && boxX) {
+                    ctx.strokeStyle = masturbationSpeed > 5 ? '#00ff00' : '#ff0000'; // Verde si rápido
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(boxX, boxY, boxW, boxH);
+                    // Pulso con speed
+                    ctx.globalAlpha = 0.5 + (masturbationSpeed / 10) * 0.5;
+                    ctx.fillStyle = ctx.strokeStyle;
+                    ctx.fillRect(boxX, boxY, boxW, boxH);
+                    ctx.globalAlpha = 1;
+                }
+
+                // Contador strokes en esquina
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 24px Arial';
+                ctx.fillText(`Strokes: ${strokeCount}`, 10, 30);
+
+                requestAnimationFrame(drawLoop);
+            }
+        }
+
+        async function detectLoop() {
+            if (detector && video.readyState === 4) {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = video.videoWidth;
+                tempCanvas.height = video.videoHeight;
+                tempCanvas.getContext('2d').drawImage(video, 0, 0);
                 const poses = await detector.estimatePoses(video);
                 isNaked = await detectNudity(poses);
-                penisDetected = await detectPenis(poses, canvas);
+                penisDetected = await detectPenis(poses, tempCanvas);
                 const speed = detectSpeedAndStrokes(poses);
 
                 if (isNaked) {
                     status.textContent = `Desnudo on. Movs: ${strokeCount} | Speed: ${speed.toFixed(1)}`;
+                    progressBar.style.display = 'block';
                     showRandomPhotos();
                 } else {
                     status.textContent = 'No desnudo aún...';
                     gallery.style.display = 'none';
                     strokeCount = 0;
+                    progressBar.style.display = 'none';
                 }
 
                 if (penisDetected && isNaked) {
@@ -432,17 +510,21 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                 video.srcObject = stream;
+                video.style.display = 'none'; // Canvas maneja
+                canvas.style.display = 'block';
+                await video.play();
                 initAudio();
                 detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
                 nsfwModel = await nsfwjs.load();
-                status.textContent = 'Cámara up. Acelera pa\' predictor.';
+                status.textContent = 'Cámara up con overlays. ¡Mira los efectos!';
+                drawLoop(); // Inicia draw
                 detectLoop();
             } catch (err) {
                 status.textContent = 'Error: ' + err.message;
             }
         });
 
-        console.log('Predictor listo. ¡Siente la predicción, carnal!');
+        console.log('Visuales AR up. ¡Boxes, partículas y barra pa\' el hype!');
     </script>
 </body>
 </html>
