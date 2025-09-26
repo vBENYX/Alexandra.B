@@ -2795,275 +2795,156 @@ function hapticFeedback() {
 
 </script>
 
-<!-- === INYECCIÓN: NIEVE DINÁMICA + ACUMULACIÓN SOBRE BOTONES + GLOW HEADER === -->
-<style id="snow-and-glow-styles">
-/* Canvas overlay (no interfiere con clicks) */
+<!-- === NAVIDAD PACK: NIEVE + GLOW CODE + LUCES HEADER === -->
+<style id="navidad-style">
+/* ===== NIEVE ===== */
 #snow-canvas {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 99990; /* encima de los botones pero por debajo de overlays welcome (99999) */
-  transition: opacity 0.4s ease;
+  z-index: 99990;
 }
-
-/* Extra small style safety */
-.snow-hidden { display: none !important; }
-
-/* Modern holiday glow for the CODE header (no color override, only glow) */
+/* ===== GLOW NAVIDEÑO CODE ===== */
 .code-logo-modern {
-  /* preserve existing color, only add glow */
-  animation: holidayGlow 3.2s ease-in-out infinite;
-  will-change: text-shadow, transform;
+  background: linear-gradient(90deg, #ff0000, #ffd700, #00ff00, #ff0000);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: codeGradientMove 8s ease infinite;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5), 0 0 16px rgba(255,215,0,0.4);
 }
-@keyframes holidayGlow {
-  0% {
-    text-shadow:
-      0 0 4px rgba(255,255,255,0.55),
-      0 0 10px rgba(255,80,80,0.06),
-      0 0 18px rgba(255,200,80,0.04);
-    transform: translateY(0);
-  }
-  50% {
-    text-shadow:
-      0 0 12px rgba(255,255,255,0.95),
-      0 0 28px rgba(255,80,80,0.22),
-      0 0 46px rgba(255,200,80,0.10);
-    transform: translateY(-1px);
-  }
-  100% {
-    text-shadow:
-      0 0 4px rgba(255,255,255,0.55),
-      0 0 10px rgba(255,80,80,0.06),
-      0 0 18px rgba(255,200,80,0.04);
-    transform: translateY(0);
-  }
+@keyframes codeGradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* small visual polish for snow piles */
-.snow-pile-sheen {
-  mix-blend-mode: screen;
-  opacity: 0.9;
+/* ===== GUIRNALDA DE LUCES ===== */
+#header-lights {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 12px;
+  z-index: 99991;
+  pointer-events: none;
+}
+.light-bulb {
+  width: 8px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffd700;
+  box-shadow: 0 0 6px rgba(255,215,0,0.8);
+  animation: flicker 3s infinite;
+}
+.light-bulb.red { background: #ff4d4d; box-shadow: 0 0 6px rgba(255,77,77,0.8); }
+.light-bulb.green { background: #4dff4d; box-shadow: 0 0 6px rgba(77,255,77,0.8); }
+.light-bulb.blue { background: #4dc4ff; box-shadow: 0 0 6px rgba(77,196,255,0.8); }
+
+@keyframes flicker {
+  0%,100% { opacity: 1; transform: translateY(0); }
+  50% { opacity: 0.6; transform: translateY(1px); }
+}
+.header {
+  position: relative;
+  overflow: visible;
 }
 </style>
 
 <canvas id="snow-canvas" aria-hidden="true"></canvas>
+<div id="header-lights"></div>
 
 <script>
-/* NIEVE DINÁMICA + ACUMULACIÓN (encapsulado para no tocar lógica existente) */
+/* ===== GENERADOR DE LUCES ===== */
+(function(){
+  const colors = ['red','green','blue'];
+  const container = document.getElementById('header-lights');
+  if(container){
+    for(let i=0;i<20;i++){
+      const bulb = document.createElement('div');
+      bulb.className = 'light-bulb ' + colors[Math.floor(Math.random()*colors.length)];
+      bulb.style.animationDelay = (Math.random()*3)+'s';
+      container.appendChild(bulb);
+    }
+  }
+})();
+
+/* ===== NIEVE SUAVE ===== */
 (function () {
   const canvas = document.getElementById('snow-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d', { alpha: true });
-  let DPR = Math.max(1, window.devicePixelRatio || 1);
-
-  function fitCanvas() {
-    // reset transform then size for crisp rendering
-    canvas.style.width = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
-    canvas.width = Math.round(window.innerWidth * DPR);
-    canvas.height = Math.round(window.innerHeight * DPR);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  }
-
-  fitCanvas();
-
-  // Select relevant buttons (keeps original selectors; won't change their structure)
-  function collectButtons() {
-    const nodes = Array.from(document.querySelectorAll('.btn, .btn-modern, .btn-resumen, .floating-btn, button'));
-    const boxes = nodes
-      .filter(el => {
-        const rect = el.getBoundingClientRect();
-        // ignore invisible or zero-size elements
-        return rect.width > 6 && rect.height > 6 && el.offsetParent !== null;
-      })
-      .map(el => {
-        const rect = el.getBoundingClientRect();
-        return {
-          el,
-          left: rect.left,
-          top: rect.top,
-          width: rect.width,
-          height: rect.height,
-          right: rect.right,
-          bottom: rect.bottom,
-          pile: 0,
-          maxPile: Math.min(rect.height * 0.9, 80) // cap pile visually
-        };
-      });
-    return boxes;
-  }
-
-  let buttons = collectButtons();
-
-  // Recompute button bounds on resize/scroll/dom changes
-  function refreshButtons() {
-    const nodeList = buttons.map(b => b.el).filter(Boolean);
-    buttons = collectButtons();
-  }
+  const ctx = canvas.getContext('2d');
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
 
   window.addEventListener('resize', () => {
-    fitCanvas();
-    refreshButtons();
-  }, { passive: true });
-
-  window.addEventListener('orientationchange', () => {
-    setTimeout(()=>{ fitCanvas(); refreshButtons(); }, 120);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
   });
 
-  window.addEventListener('scroll', () => {
-    // on scroll update bounding rects
-    buttons.forEach(b => {
-      const r = b.el.getBoundingClientRect();
-      b.left = r.left; b.top = r.top; b.width = r.width; b.height = r.height; b.right = r.right; b.bottom = r.bottom;
-      b.maxPile = Math.min(b.height * 0.9, 80);
-    });
-  }, { passive: true });
-
-  // Create resize observer for dynamic elements
-  const ro = new ResizeObserver(entries => {
-    // slight throttle
-    setTimeout(refreshButtons, 20);
-  });
-  buttons.forEach(b => ro.observe(b.el));
-  // also observe body for added/removed buttons
-  const mo = new MutationObserver(() => {
-    setTimeout(refreshButtons, 30);
-  });
-  mo.observe(document.body, { childList: true, subtree: true });
-
-  // Snowflake pool
-  const MAX_FLAKES = 130; // tuned for performance
   const flakes = [];
-  function rand(min, max) { return Math.random() * (max - min) + min; }
-
-  function spawnFlake() {
-    return {
-      x: rand(0, window.innerWidth),
-      y: rand(-window.innerHeight, -10),
-      r: rand(0.9, 4.2),
-      vx: rand(-0.25, 0.25),
-      vy: rand(0.35, 1.4) * (0.9 + Math.random()*0.9),
-      drift: rand(-0.2, 0.2)
-    };
-  }
-
-  for (let i = 0; i < MAX_FLAKES; i++) flakes.push(spawnFlake());
-
-  // Utility to draw rounded rect path
-  function roundRectPath(ctx, x, y, w, h, r) {
-    const radius = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.arcTo(x + w, y, x + w, y + h, radius);
-    ctx.arcTo(x + w, y + h, x, y + h, radius);
-    ctx.arcTo(x, y + h, x, y, radius);
-    ctx.arcTo(x, y, x + w, y, radius);
-    ctx.closePath();
-  }
-
-  // Main animation loop
-  let last = performance.now();
-  function frame(now) {
-    const dt = Math.min(40, now - last);
-    last = now;
-    // subtle wind oscillation
-    const wind = Math.sin(now / 2200) * 0.25;
-
-    ctx.clearRect(0, 0, canvas.width / DPR, canvas.height / DPR);
-
-    // update button rects to handle layout changes
-    buttons.forEach(b => {
-      const r = b.el.getBoundingClientRect();
-      b.left = r.left; b.top = r.top; b.width = r.width; b.height = r.height; b.right = r.right; b.bottom = r.bottom;
-      b.maxPile = Math.min(b.height * 0.9, 80);
+  for(let i=0;i<80;i++){
+    flakes.push({
+      x: Math.random()*width,
+      y: Math.random()*height,
+      r: Math.random()*3+1,
+      d: Math.random()+1,
+      alpha: 0.6 + Math.random()*0.4,
+      twinkle: Math.random() > 0.8
     });
-
-    // Draw flakes and handle collisions
-    for (let i = 0; i < flakes.length; i++) {
-      const f = flakes[i];
-      // physics
-      f.vx += (wind * 0.01) * (dt / 16);
-      f.x += f.vx * (dt / 16) + f.drift * 0.03;
-      f.y += f.vy * (dt / 16);
-
-      // wrap horizontally
-      if (f.x < -10) f.x = window.innerWidth + 10;
-      if (f.x > window.innerWidth + 10) f.x = -10;
-
-      // check collision with buttons - when hitting top of button or top of pile
-      let landed = false;
-      for (let b of buttons) {
-        // we only consider flakes that are within button horizontal range (with small margin)
-        if (f.x >= b.left - 1 && f.x <= b.left + b.width + 1) {
-          const pileTop = b.top - b.pile; // y coordinate where new snow should land
-          // if flake reaches equal or slightly below pileTop, consider it landed
-          if (f.y + f.r >= pileTop && f.y - f.r <= b.bottom) {
-            // add to pile (small increments)
-            const added = Math.max(0.8, f.r * (0.6 + Math.random() * 1.1));
-            b.pile = Math.min(b.pile + added, b.maxPile);
-            // respawn flake at top to avoid keeping it stuck
-            flakes[i] = spawnFlake();
-            landed = true;
-            break;
-          }
-        }
-      }
-      if (landed) continue;
-
-      // if flake reaches bottom of viewport, respawn
-      if (f.y - f.r > window.innerHeight + 10) {
-        flakes[i] = spawnFlake();
-        continue;
-      }
-
-      // draw the flake
-      ctx.beginPath();
-      ctx.fillStyle = 'rgba(255,255,255,0.95)';
-      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // draw accumulated piles on buttons (soft rounded shapes)
-    for (let b of buttons) {
-      if (!b.pile || b.pile < 1) continue;
-      const x = Math.round(b.left);
-      const w = Math.round(b.width);
-      const h = Math.round(Math.min(b.pile, b.maxPile));
-      const y = Math.round(b.top - h);
-
-      // base snow
-      ctx.fillStyle = 'rgba(255,255,255,0.98)';
-      roundRectPath(ctx, x - 1, y - 1, w + 2, h + 2, Math.min(12, h/2 + 4));
-      ctx.fill();
-
-      // subtle gradient & sheen
-      const g = ctx.createLinearGradient(0, y, 0, y + h);
-      g.addColorStop(0, 'rgba(255,255,255,0.95)');
-      g.addColorStop(0.6, 'rgba(250,250,250,0.96)');
-      g.addColorStop(1, 'rgba(240,240,240,0.96)');
-      ctx.fillStyle = g;
-      roundRectPath(ctx, x, y, w, h, Math.min(12, h/2 + 3));
-      ctx.fill();
-
-      // tiny soft shadow on underside to integrate with button
-      ctx.fillStyle = 'rgba(0,0,0,0.04)';
-      roundRectPath(ctx, x, y + h - 3, w, 3, 2);
-      ctx.fill();
-    }
-
-    requestAnimationFrame(frame);
   }
 
-  requestAnimationFrame(frame);
+  function draw(){
+    ctx.clearRect(0,0,width,height);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    for(let i=0;i<flakes.length;i++){
+      const f = flakes[i];
+      ctx.moveTo(f.x,f.y);
+      ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
+    }
+    ctx.fill();
+    move();
+  }
 
-  // initial refresh (in case elements load later)
-  setTimeout(() => {
-    refreshButtons();
-    // observe new buttons added later
-    const allButtons = Array.from(document.querySelectorAll('.btn, .btn-modern, .btn-resumen, .floating-btn, button'));
-    allButtons.forEach(el => ro.observe(el));
-  }, 300);
+  let angle = 0;
+  function move(){
+    angle += 0.01;
+    for(let i=0;i<flakes.length;i++){
+      const f = flakes[i];
+      f.y += Math.pow(f.d,2) + 0.5;
+      f.x += Math.sin(angle)*0.5;
+
+      if(f.twinkle){
+        f.alpha = 0.5 + Math.sin(angle*10 + i)*0.5;
+      }
+
+      if(f.y > height){
+        flakes[i] = {
+          x: Math.random()*width,
+          y: 0,
+          r: f.r,
+          d: f.d,
+          alpha: f.alpha,
+          twinkle: Math.random() > 0.8
+        };
+      }
+    }
+  }
+
+  function animate(){
+    draw();
+    requestAnimationFrame(animate);
+  }
+  animate();
 })();
 </script>
