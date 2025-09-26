@@ -2794,4 +2794,189 @@ function hapticFeedback() {
 }
 
 </script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Efecto nieve realista SVG + luces</title>
+<style>
+  /* Luces navideñas arriba */
+  .luces {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    background: transparent;
+    z-index: 9999;
+    pointer-events: none;
+  }
+  .luces span {
+    width: 20px;
+    height: 30px;
+    border-radius: 50%;
+    background: red;
+    animation: parpadeo 1.2s infinite alternate;
+    box-shadow: 0 0 12px red;
+  }
+  .luces span:nth-child(2n) {
+    background: green;
+    box-shadow: 0 0 12px green;
+    animation-delay: 0.4s;
+  }
+  .luces span:nth-child(3n) {
+    background: yellow;
+    box-shadow: 0 0 12px yellow;
+    animation-delay: 0.8s;
+  }
+  .luces span:nth-child(4n) {
+    background: blue;
+    box-shadow: 0 0 12px blue;
+    animation-delay: 1.2s;
+  }
+  @keyframes parpadeo {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.3;
+    }
+  }
+
+  /* Contenedor nieve */
+  .nieve {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 9000;
+  }
+
+  /* Manto de nieve con bordes ondulados */
+  .manto-nieve {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background: white;
+    border-top-left-radius: 50% 30px;
+    border-top-right-radius: 50% 35px;
+    clip-path: polygon(
+      0 100%,
+      8% 85%,
+      15% 93%,
+      22% 80%,
+      30% 90%,
+      37% 85%,
+      45% 95%,
+      53% 80%,
+      60% 90%,
+      69% 85%,
+      75% 95%,
+      82% 80%,
+      90% 90%,
+      95% 85%,
+      100% 95%,
+      100% 100%
+    );
+    transition: height 0.8s linear;
+    z-index: 8000;
+    pointer-events: none;
+  }
+
+  /* SVG Copo nieve estilos */
+  .copo-snowflake {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.7));
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+  .copo-snowflake svg {
+    fill: white;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Tira de bombillas -->
+  <div class="luces">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span>
+  </div>
+
+  <!-- Contenedor para los copos SVG -->
+  <div class="nieve" id="nieve"></div>
+
+  <!-- Manto de nieve -->
+  <div class="manto-nieve" id="manto"></div>
+
+  <!-- Definición SVG copo nieve -->
+  <svg style="display:none;">
+    <symbol id="copo" viewBox="0 0 24 24">
+      <path d="M12 2 L12 22 M2 12 L22 12 M4.93 4.93 L19.07 19.07 M4.93 19.07 L19.07 4.93" stroke="white" stroke-width="1" />
+    </symbol>
+  </svg>
+
+<script>
+  const nieve = document.getElementById('nieve');
+  const manto = document.getElementById('manto');
+  let alturaManto = 0;
+
+  function crearCopo() {
+    const NS = "http://www.w3.org/2000/svg";
+    const copo = document.createElement('div');
+    copo.classList.add('copo-snowflake');
+    // Insertar SVG usando innerHTML para evitar problemas de namespace
+    copo.innerHTML = `<svg viewBox="0 0 24 24" width="10" height="10" fill="white" style="display:block;">
+      <path d="M12 2 L12 22 M2 12 L22 12 M4.93 4.93 L19.07 19.07 M4.93 19.07 L19.07 4.93" stroke="white" stroke-width="1"/>
+    </svg>`;
+    copo.style.left = Math.random() * 100 + 'vw';
+    copo.style.top = '-10px';
+    let duracion = Math.random() * 6 + 6;
+    let direction = Math.random() < 0.5 ? 1 : -1;
+    let amplitude = Math.random() * 15 + 10; // desplazamiento horizontal
+    let frequency = Math.random() * 0.005 + 0.002;
+
+    let start = performance.now();
+
+    function animar(time) {
+      let elapsed = time - start;
+      let progress = elapsed / (duracion * 1000);
+
+      if (progress > 1) {
+        copo.remove();
+        if (alturaManto < 150) {
+          alturaManto += 0.4;
+          manto.style.height = alturaManto + 'px';
+        }
+        return;
+      }
+
+      let y = progress * window.innerHeight * 0.95;
+      let xOsc = amplitude * Math.sin(progress * 2 * Math.PI / frequency) * direction;
+      let rotation = progress * 360;
+
+      copo.style.transform = `translate3d(${xOsc}px, ${y}px, 0) rotate(${rotation}deg)`;
+      requestAnimationFrame(animar);
+    }
+    requestAnimationFrame(animar);
+
+    nieve.appendChild(copo);
+  }
+  setInterval(crearCopo, 180);
+</script>
+
+</body>
+</html>
 </body>
