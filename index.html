@@ -1608,7 +1608,32 @@ function goToStep(step) {
                 ).join('');
             }
         }
-        function generatePDF() {
+        
+function getSeasonSymbol() {
+    const month = new Date().getMonth(); // 0 = enero
+    if (month >= 2 && month <= 4) return "🌸"; // Primavera
+    if (month >= 5 && month <= 7) return "☀️"; // Verano
+    if (month >= 8 && month <= 10) return "🍂"; // Otoño
+    return "❄️"; // Invierno
+}
+
+
+function drawCardTitle(doc, text, x, y) {
+    const textWidth = doc.getTextWidth(text) + 6; // ancho adaptable
+    const textHeight = 8;
+    const paddingX = 3;
+    // Fondo tarjeta
+    doc.setFillColor(243, 244, 246); // gris claro
+    doc.setDrawColor(229, 231, 235); // borde gris
+    doc.roundedRect(x - paddingX, y - textHeight + 2, textWidth, textHeight, 3, 3, 'FD');
+    // Texto título
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(31, 41, 55);
+    doc.text(text, x, y);
+}
+
+function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const today = new Date();
@@ -1642,7 +1667,8 @@ function goToStep(step) {
             // Logo XPO Logistics (centrado)
             doc.setFontSize(20);
             doc.setTextColor(239, 68, 68); // rojo para Xpo
-            doc.text('XPO', 105, 25, { align: 'center' });
+            const seasonIcon = getSeasonSymbol();
+    doc.text(`XP${seasonIcon}`, 105, 25, { align: 'center' });
             doc.setTextColor(0, 0, 0); // negro para Logistics
             doc.text('LOGISTICS', 105, 35, { align: 'center' });
 
@@ -1673,10 +1699,10 @@ function goToStep(step) {
                 doc.setTextColor(0, 0, 0);
                 
                 if (leftData.length > 0) {
-                    doc.text(leftTitle.toUpperCase(), leftX, currentY);
+                    drawCardTitle(doc, leftTitle.toUpperCase(), leftX, currentY);
                 }
                 if (rightData.length > 0) {
-                    doc.text(rightTitle.toUpperCase(), rightX, currentY);
+                    drawCardTitle(doc, rightTitle.toUpperCase(), rightX, currentY);
                 }
                 
                 currentY += 8;
@@ -1759,7 +1785,7 @@ function goToStep(step) {
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(12);
                 doc.setTextColor(0, 0, 0);
-                doc.text(title.toUpperCase(), 15, currentY);
+                drawCardTitle(doc, title.toUpperCase(), 15, currentY);
                 currentY += 8;
 
                 // Header
@@ -2793,158 +2819,4 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
-</script>
-
-<!-- === NAVIDAD PACK: NIEVE + GLOW CODE + LUCES HEADER === -->
-<style id="navidad-style">
-/* ===== NIEVE ===== */
-#snow-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 99990;
-}
-/* ===== GLOW NAVIDEÑO CODE ===== */
-.code-logo-modern {
-  background: linear-gradient(90deg, #ff0000, #ffd700, #00ff00, #ff0000);
-  background-size: 400% 400%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: codeGradientMove 8s ease infinite;
-  text-shadow: 0 0 8px rgba(255,255,255,0.5), 0 0 16px rgba(255,215,0,0.4);
-}
-@keyframes codeGradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* ===== GUIRNALDA DE LUCES ===== */
-#header-lights {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 600px;
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 12px;
-  z-index: 99991;
-  pointer-events: none;
-}
-.light-bulb {
-  width: 8px;
-  height: 14px;
-  border-radius: 50%;
-  background: #ffd700;
-  box-shadow: 0 0 6px rgba(255,215,0,0.8);
-  animation: flicker 3s infinite;
-}
-.light-bulb.red { background: #ff4d4d; box-shadow: 0 0 6px rgba(255,77,77,0.8); }
-.light-bulb.green { background: #4dff4d; box-shadow: 0 0 6px rgba(77,255,77,0.8); }
-.light-bulb.blue { background: #4dc4ff; box-shadow: 0 0 6px rgba(77,196,255,0.8); }
-
-@keyframes flicker {
-  0%,100% { opacity: 1; transform: translateY(0); }
-  50% { opacity: 0.6; transform: translateY(1px); }
-}
-.header {
-  position: relative;
-  overflow: visible;
-}
-</style>
-
-<canvas id="snow-canvas" aria-hidden="true"></canvas>
-<div id="header-lights"></div>
-
-<script>
-/* ===== GENERADOR DE LUCES ===== */
-(function(){
-  const colors = ['red','green','blue'];
-  const container = document.getElementById('header-lights');
-  if(container){
-    for(let i=0;i<20;i++){
-      const bulb = document.createElement('div');
-      bulb.className = 'light-bulb ' + colors[Math.floor(Math.random()*colors.length)];
-      bulb.style.animationDelay = (Math.random()*3)+'s';
-      container.appendChild(bulb);
-    }
-  }
-})();
-
-/* ===== NIEVE SUAVE ===== */
-(function () {
-  const canvas = document.getElementById('snow-canvas');
-  const ctx = canvas.getContext('2d');
-  let width = window.innerWidth;
-  let height = window.innerHeight;
-  canvas.width = width;
-  canvas.height = height;
-
-  window.addEventListener('resize', () => {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
-  });
-
-  const flakes = [];
-  for(let i=0;i<80;i++){
-    flakes.push({
-      x: Math.random()*width,
-      y: Math.random()*height,
-      r: Math.random()*3+1,
-      d: Math.random()+1,
-      alpha: 0.6 + Math.random()*0.4,
-      twinkle: Math.random() > 0.8
-    });
-  }
-
-  function draw(){
-    ctx.clearRect(0,0,width,height);
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.beginPath();
-    for(let i=0;i<flakes.length;i++){
-      const f = flakes[i];
-      ctx.moveTo(f.x,f.y);
-      ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
-    }
-    ctx.fill();
-    move();
-  }
-
-  let angle = 0;
-  function move(){
-    angle += 0.01;
-    for(let i=0;i<flakes.length;i++){
-      const f = flakes[i];
-      f.y += Math.pow(f.d,2) + 0.5;
-      f.x += Math.sin(angle)*0.5;
-
-      if(f.twinkle){
-        f.alpha = 0.5 + Math.sin(angle*10 + i)*0.5;
-      }
-
-      if(f.y > height){
-        flakes[i] = {
-          x: Math.random()*width,
-          y: 0,
-          r: f.r,
-          d: f.d,
-          alpha: f.alpha,
-          twinkle: Math.random() > 0.8
-        };
-      }
-    }
-  }
-
-  function animate(){
-    draw();
-    requestAnimationFrame(animate);
-  }
-  animate();
-})();
 </script>
