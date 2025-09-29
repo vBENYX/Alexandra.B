@@ -113,6 +113,97 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
+
+function drawHeader(doc, dateString) {
+    // Tarjeta cabecera
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(10, 8, 190, 40, 8, 8, 'FD');
+
+    // CODE arriba izquierda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CODE', 16, 20);
+
+    // Logo XPO centrado
+    doc.setFontSize(22);
+    doc.setTextColor(239, 68, 68);
+    doc.text('XPO', 105, 24, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(17, 24, 39);
+    doc.text('LOGISTICS', 105, 32, { align: 'center' });
+
+    // Fecha a la derecha
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(dateString.toUpperCase(), 195, 20, { align: 'right' });
+
+    return 55;
+}
+
+function drawGroupTitle(doc, x, y, title) {
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(230, 230, 230); 
+    doc.roundedRect(x, y, 180, 12, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), x + 6, y + 8);
+
+    return y + 20;
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const today = new Date();
+    const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let yPosition = drawHeader(doc, dateString);
+
+    const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+    const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+    const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+    // CARGADAS + VACIAS (columnas originales)
+    if (cargadas.length > 0 || vacias.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Cargadas (' + cargadas.length + ') / Vacías (' + vacias.length + ')'
+        );
+
+        yPosition = createTwoColumnTables(
+            'PLATAFORMAS CARGADAS (' + cargadas.length + ')',
+            cargadas,
+            'PLATAFORMAS VACÍAS (' + vacias.length + ')',
+            vacias,
+            yPosition
+        );
+    }
+
+    // AVERIADAS (columna única original)
+    if (averiadas.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Averiadas (' + averiadas.length + ')'
+        );
+
+        yPosition = createSingleTable(
+            'PLATAFORMAS AVERIADAS (' + averiadas.length + ')', 
+            averiadas, 
+            yPosition
+        );
+    }
+
+    doc.save('reporte-plataformas.pdf');
+}
+
 </script>
 <style>@keyframes fadePlatform {
   0% {
@@ -1608,101 +1699,8 @@ function goToStep(step) {
                 ).join('');
             }
         }
-        
-function getSeasonSymbol() {
-    const month = new Date().getMonth(); // 0 = enero
-    if (month >= 2 && month <= 4) return "🌸"; // Primavera
-    if (month >= 5 && month <= 7) return "☀️"; // Verano
-    if (month >= 8 && month <= 10) return "🍂"; // Otoño
-    return "❄️"; // Invierno
-}
-
-
-function drawCardTitle(doc, text, x, y) {
-    const textWidth = doc.getTextWidth(text) + 6; // ancho adaptable
-    const textHeight = 8;
-    const paddingX = 3;
-    // Fondo tarjeta
-    doc.setFillColor(243, 244, 246); // gris claro
-    doc.setDrawColor(229, 231, 235); // borde gris
-    doc.roundedRect(x - paddingX, y - textHeight + 2, textWidth, textHeight, 3, 3, 'FD');
-    // Texto título
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.setTextColor(31, 41, 55);
-    doc.text(text, x, y);
-}
-
-function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const today = new Date();
-            const dateString = today.toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            }).toUpperCase();
-
-            const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
-            const vacias = plataformas.filter(p => p.estado === 'VACÍA');
-            const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
-
-            let yPosition = 25;
-
-            
-            
-            // Header del PDF estilo Apple card
-            doc.setFillColor(255, 255, 255);
-            doc.roundedRect(10, 8, 190, 45, 6, 6, 'F'); // tarjeta blanca con más altura
-            doc.setDrawColor(220, 220, 220);
-            doc.roundedRect(10, 8, 190, 45, 6, 6); // borde gris claro
-            doc.setFont('helvetica', 'bold');
-
-            // CODE (arriba derecha, pequeño)
-            doc.setFontSize(10);
-            doc.setTextColor(30, 30, 30);
-            doc.text('CODE', 195, 15, { align: 'right' });
-
-            // Logo XPO Logistics (centrado)
-            doc.setFontSize(20);
-            doc.setTextColor(239, 68, 68); // rojo para Xpo
-            const seasonIcon = getSeasonSymbol();
-    doc.text(`XP${seasonIcon}`, 105, 25, { align: 'center' });
-            doc.setTextColor(0, 0, 0); // negro para Logistics
-            doc.text('LOGISTICS', 105, 35, { align: 'center' });
-
-            // Título dentro de la tarjeta
-            doc.setFontSize(12);
-            doc.setTextColor(17, 24, 39);
-            doc.text('REPORTE DIARIO DE PLATAFORMAS', 105, 43, { align: 'center' });
-
-            // Fecha dentro de la tarjeta
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-            doc.setTextColor(75, 85, 99);
-            doc.text(dateString, 105, 50, { align: 'center' });
-
-            yPosition = 65; // Ajustamos el inicio del contenido debajo de la tarjeta
-
-
-            // Función para crear columnas lado a lado
-            function createTwoColumnTables(leftTitle, leftData, rightTitle, rightData, startY) {
-                let currentY = startY;
-                const leftX = 15;
-                const rightX = 110;
-                const columnWidth = 85;
-
-                // Títulos de las columnas
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(12);
-                doc.setTextColor(0, 0, 0);
-                
-                if (leftData.length > 0) {
-                    drawCardTitle(doc, leftTitle.toUpperCase(), leftX, currentY);
-                }
-                if (rightData.length > 0) {
-                    drawCardTitle(doc, rightTitle.toUpperCase(), rightX, currentY);
+                        if (rightData.length > 0) {
+                    doc.text(rightTitle.toUpperCase(), rightX, currentY);
                 }
                 
                 currentY += 8;
@@ -1785,7 +1783,7 @@ function generatePDF() {
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(12);
                 doc.setTextColor(0, 0, 0);
-                drawCardTitle(doc, title.toUpperCase(), 15, currentY);
+                doc.text(title.toUpperCase(), 15, currentY);
                 currentY += 8;
 
                 // Header
@@ -2031,6 +2029,97 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
+
+function drawHeader(doc, dateString) {
+    // Tarjeta cabecera
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(10, 8, 190, 40, 8, 8, 'FD');
+
+    // CODE arriba izquierda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CODE', 16, 20);
+
+    // Logo XPO centrado
+    doc.setFontSize(22);
+    doc.setTextColor(239, 68, 68);
+    doc.text('XPO', 105, 24, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(17, 24, 39);
+    doc.text('LOGISTICS', 105, 32, { align: 'center' });
+
+    // Fecha a la derecha
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(dateString.toUpperCase(), 195, 20, { align: 'right' });
+
+    return 55;
+}
+
+function drawGroupTitle(doc, x, y, title) {
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(230, 230, 230); 
+    doc.roundedRect(x, y, 180, 12, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), x + 6, y + 8);
+
+    return y + 20;
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const today = new Date();
+    const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let yPosition = drawHeader(doc, dateString);
+
+    const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+    const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+    const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+    // CARGADAS + VACIAS (columnas originales)
+    if (cargadas.length > 0 || vacias.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Cargadas (' + cargadas.length + ') / Vacías (' + vacias.length + ')'
+        );
+
+        yPosition = createTwoColumnTables(
+            'PLATAFORMAS CARGADAS (' + cargadas.length + ')',
+            cargadas,
+            'PLATAFORMAS VACÍAS (' + vacias.length + ')',
+            vacias,
+            yPosition
+        );
+    }
+
+    // AVERIADAS (columna única original)
+    if (averiadas.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Averiadas (' + averiadas.length + ')'
+        );
+
+        yPosition = createSingleTable(
+            'PLATAFORMAS AVERIADAS (' + averiadas.length + ')', 
+            averiadas, 
+            yPosition
+        );
+    }
+
+    doc.save('reporte-plataformas.pdf');
+}
+
 </script>
 
 <script>
@@ -2103,6 +2192,97 @@ function animateCount(id, value) {
 // Haptic feedback
 function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
+}
+
+
+function drawHeader(doc, dateString) {
+    // Tarjeta cabecera
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(10, 8, 190, 40, 8, 8, 'FD');
+
+    // CODE arriba izquierda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CODE', 16, 20);
+
+    // Logo XPO centrado
+    doc.setFontSize(22);
+    doc.setTextColor(239, 68, 68);
+    doc.text('XPO', 105, 24, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(17, 24, 39);
+    doc.text('LOGISTICS', 105, 32, { align: 'center' });
+
+    // Fecha a la derecha
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(dateString.toUpperCase(), 195, 20, { align: 'right' });
+
+    return 55;
+}
+
+function drawGroupTitle(doc, x, y, title) {
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(230, 230, 230); 
+    doc.roundedRect(x, y, 180, 12, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), x + 6, y + 8);
+
+    return y + 20;
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const today = new Date();
+    const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let yPosition = drawHeader(doc, dateString);
+
+    const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+    const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+    const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+    // CARGADAS + VACIAS (columnas originales)
+    if (cargadas.length > 0 || vacias.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Cargadas (' + cargadas.length + ') / Vacías (' + vacias.length + ')'
+        );
+
+        yPosition = createTwoColumnTables(
+            'PLATAFORMAS CARGADAS (' + cargadas.length + ')',
+            cargadas,
+            'PLATAFORMAS VACÍAS (' + vacias.length + ')',
+            vacias,
+            yPosition
+        );
+    }
+
+    // AVERIADAS (columna única original)
+    if (averiadas.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Averiadas (' + averiadas.length + ')'
+        );
+
+        yPosition = createSingleTable(
+            'PLATAFORMAS AVERIADAS (' + averiadas.length + ')', 
+            averiadas, 
+            yPosition
+        );
+    }
+
+    doc.save('reporte-plataformas.pdf');
 }
 
 </script>
@@ -2188,6 +2368,97 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
+
+function drawHeader(doc, dateString) {
+    // Tarjeta cabecera
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(10, 8, 190, 40, 8, 8, 'FD');
+
+    // CODE arriba izquierda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CODE', 16, 20);
+
+    // Logo XPO centrado
+    doc.setFontSize(22);
+    doc.setTextColor(239, 68, 68);
+    doc.text('XPO', 105, 24, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(17, 24, 39);
+    doc.text('LOGISTICS', 105, 32, { align: 'center' });
+
+    // Fecha a la derecha
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(dateString.toUpperCase(), 195, 20, { align: 'right' });
+
+    return 55;
+}
+
+function drawGroupTitle(doc, x, y, title) {
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(230, 230, 230); 
+    doc.roundedRect(x, y, 180, 12, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), x + 6, y + 8);
+
+    return y + 20;
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const today = new Date();
+    const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let yPosition = drawHeader(doc, dateString);
+
+    const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+    const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+    const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+    // CARGADAS + VACIAS (columnas originales)
+    if (cargadas.length > 0 || vacias.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Cargadas (' + cargadas.length + ') / Vacías (' + vacias.length + ')'
+        );
+
+        yPosition = createTwoColumnTables(
+            'PLATAFORMAS CARGADAS (' + cargadas.length + ')',
+            cargadas,
+            'PLATAFORMAS VACÍAS (' + vacias.length + ')',
+            vacias,
+            yPosition
+        );
+    }
+
+    // AVERIADAS (columna única original)
+    if (averiadas.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Averiadas (' + averiadas.length + ')'
+        );
+
+        yPosition = createSingleTable(
+            'PLATAFORMAS AVERIADAS (' + averiadas.length + ')', 
+            averiadas, 
+            yPosition
+        );
+    }
+
+    doc.save('reporte-plataformas.pdf');
+}
+
 </script>
 <script>
 function applyHighlight(id) {
@@ -2261,6 +2532,97 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
+
+function drawHeader(doc, dateString) {
+    // Tarjeta cabecera
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(10, 8, 190, 40, 8, 8, 'FD');
+
+    // CODE arriba izquierda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CODE', 16, 20);
+
+    // Logo XPO centrado
+    doc.setFontSize(22);
+    doc.setTextColor(239, 68, 68);
+    doc.text('XPO', 105, 24, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(17, 24, 39);
+    doc.text('LOGISTICS', 105, 32, { align: 'center' });
+
+    // Fecha a la derecha
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(dateString.toUpperCase(), 195, 20, { align: 'right' });
+
+    return 55;
+}
+
+function drawGroupTitle(doc, x, y, title) {
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(230, 230, 230); 
+    doc.roundedRect(x, y, 180, 12, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), x + 6, y + 8);
+
+    return y + 20;
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const today = new Date();
+    const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let yPosition = drawHeader(doc, dateString);
+
+    const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+    const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+    const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+    // CARGADAS + VACIAS (columnas originales)
+    if (cargadas.length > 0 || vacias.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Cargadas (' + cargadas.length + ') / Vacías (' + vacias.length + ')'
+        );
+
+        yPosition = createTwoColumnTables(
+            'PLATAFORMAS CARGADAS (' + cargadas.length + ')',
+            cargadas,
+            'PLATAFORMAS VACÍAS (' + vacias.length + ')',
+            vacias,
+            yPosition
+        );
+    }
+
+    // AVERIADAS (columna única original)
+    if (averiadas.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Averiadas (' + averiadas.length + ')'
+        );
+
+        yPosition = createSingleTable(
+            'PLATAFORMAS AVERIADAS (' + averiadas.length + ')', 
+            averiadas, 
+            yPosition
+        );
+    }
+
+    doc.save('reporte-plataformas.pdf');
+}
+
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -2331,6 +2693,97 @@ function animateCount(id, value) {
 // Haptic feedback
 function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
+}
+
+
+function drawHeader(doc, dateString) {
+    // Tarjeta cabecera
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(10, 8, 190, 40, 8, 8, 'FD');
+
+    // CODE arriba izquierda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CODE', 16, 20);
+
+    // Logo XPO centrado
+    doc.setFontSize(22);
+    doc.setTextColor(239, 68, 68);
+    doc.text('XPO', 105, 24, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(17, 24, 39);
+    doc.text('LOGISTICS', 105, 32, { align: 'center' });
+
+    // Fecha a la derecha
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(dateString.toUpperCase(), 195, 20, { align: 'right' });
+
+    return 55;
+}
+
+function drawGroupTitle(doc, x, y, title) {
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(230, 230, 230); 
+    doc.roundedRect(x, y, 180, 12, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), x + 6, y + 8);
+
+    return y + 20;
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const today = new Date();
+    const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let yPosition = drawHeader(doc, dateString);
+
+    const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+    const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+    const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+    // CARGADAS + VACIAS (columnas originales)
+    if (cargadas.length > 0 || vacias.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Cargadas (' + cargadas.length + ') / Vacías (' + vacias.length + ')'
+        );
+
+        yPosition = createTwoColumnTables(
+            'PLATAFORMAS CARGADAS (' + cargadas.length + ')',
+            cargadas,
+            'PLATAFORMAS VACÍAS (' + vacias.length + ')',
+            vacias,
+            yPosition
+        );
+    }
+
+    // AVERIADAS (columna única original)
+    if (averiadas.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Averiadas (' + averiadas.length + ')'
+        );
+
+        yPosition = createSingleTable(
+            'PLATAFORMAS AVERIADAS (' + averiadas.length + ')', 
+            averiadas, 
+            yPosition
+        );
+    }
+
+    doc.save('reporte-plataformas.pdf');
 }
 
 </script>
@@ -2765,6 +3218,97 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
+
+function drawHeader(doc, dateString) {
+    // Tarjeta cabecera
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(10, 8, 190, 40, 8, 8, 'FD');
+
+    // CODE arriba izquierda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CODE', 16, 20);
+
+    // Logo XPO centrado
+    doc.setFontSize(22);
+    doc.setTextColor(239, 68, 68);
+    doc.text('XPO', 105, 24, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(17, 24, 39);
+    doc.text('LOGISTICS', 105, 32, { align: 'center' });
+
+    // Fecha a la derecha
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(dateString.toUpperCase(), 195, 20, { align: 'right' });
+
+    return 55;
+}
+
+function drawGroupTitle(doc, x, y, title) {
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(230, 230, 230); 
+    doc.roundedRect(x, y, 180, 12, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), x + 6, y + 8);
+
+    return y + 20;
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const today = new Date();
+    const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let yPosition = drawHeader(doc, dateString);
+
+    const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+    const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+    const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+    // CARGADAS + VACIAS (columnas originales)
+    if (cargadas.length > 0 || vacias.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Cargadas (' + cargadas.length + ') / Vacías (' + vacias.length + ')'
+        );
+
+        yPosition = createTwoColumnTables(
+            'PLATAFORMAS CARGADAS (' + cargadas.length + ')',
+            cargadas,
+            'PLATAFORMAS VACÍAS (' + vacias.length + ')',
+            vacias,
+            yPosition
+        );
+    }
+
+    // AVERIADAS (columna única original)
+    if (averiadas.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Averiadas (' + averiadas.length + ')'
+        );
+
+        yPosition = createSingleTable(
+            'PLATAFORMAS AVERIADAS (' + averiadas.length + ')', 
+            averiadas, 
+            yPosition
+        );
+    }
+
+    doc.save('reporte-plataformas.pdf');
+}
+
 </script>
 
 <script>
@@ -2819,4 +3363,94 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
-</script>
+
+function drawHeader(doc, dateString) {
+    // Tarjeta cabecera
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(10, 8, 190, 40, 8, 8, 'FD');
+
+    // CODE arriba izquierda
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CODE', 16, 20);
+
+    // Logo XPO centrado
+    doc.setFontSize(22);
+    doc.setTextColor(239, 68, 68);
+    doc.text('XPO', 105, 24, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(17, 24, 39);
+    doc.text('LOGISTICS', 105, 32, { align: 'center' });
+
+    // Fecha a la derecha
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(dateString.toUpperCase(), 195, 20, { align: 'right' });
+
+    return 55;
+}
+
+function drawGroupTitle(doc, x, y, title) {
+    doc.setFillColor(248, 250, 252); 
+    doc.setDrawColor(230, 230, 230); 
+    doc.roundedRect(x, y, 180, 12, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), x + 6, y + 8);
+
+    return y + 20;
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const today = new Date();
+    const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let yPosition = drawHeader(doc, dateString);
+
+    const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+    const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+    const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+    // CARGADAS + VACIAS (columnas originales)
+    if (cargadas.length > 0 || vacias.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Cargadas (' + cargadas.length + ') / Vacías (' + vacias.length + ')'
+        );
+
+        yPosition = createTwoColumnTables(
+            'PLATAFORMAS CARGADAS (' + cargadas.length + ')',
+            cargadas,
+            'PLATAFORMAS VACÍAS (' + vacias.length + ')',
+            vacias,
+            yPosition
+        );
+    }
+
+    // AVERIADAS (columna única original)
+    if (averiadas.length > 0) {
+        yPosition = drawGroupTitle(doc, 15, yPosition, 
+            'Plataformas Averiadas (' + averiadas.length + ')'
+        );
+
+        yPosition = createSingleTable(
+            'PLATAFORMAS AVERIADAS (' + averiadas.length + ')', 
+            averiadas, 
+            yPosition
+        );
+    }
+
+    doc.save('reporte-plataformas.pdf');
+}
+
