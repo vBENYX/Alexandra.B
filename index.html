@@ -1749,10 +1749,10 @@ function generatePDF() {
             }
             currentY += 6;
 
-            if (currentY > 285) { // aprovechar hasta abajo de la página
-                doc.addPage();
-                currentY = 20;
-            }
+            if (currentY > 265) { // deja hueco para pie
+    doc.addPage();
+    currentY = 30; // margen superior en nueva página
+}
         }
         return currentY + 8;
     }
