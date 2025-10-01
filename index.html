@@ -1,4 +1,3 @@
-
 <html lang="es"><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" name="viewport">
@@ -1614,6 +1613,8 @@ function goToStep(step) {
 
 
 
+
+
 function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -1629,13 +1630,16 @@ function generatePDF() {
     const vacias = plataformas.filter(p => p.estado === 'VACÍA');
     const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
 
-    // ==== HEADER ====
+    // ==== HEADER PRONUNCIADO ====
     doc.setFillColor(255,255,255);
-    doc.roundedRect(10, 8, 190, 42, 6, 6, 'F');
-    doc.setDrawColor(230,230,235);
-    doc.roundedRect(10, 8, 190, 42, 6, 6);
+    doc.roundedRect(10, 8, 190, 36, 5, 5, 'F');
+    doc.setDrawColor(220,220,220);
+    doc.roundedRect(10, 8, 190, 36, 5, 5);
+    // sombra ligera (simulada con línea inferior más oscura)
+    doc.setDrawColor(200,200,200);
+    doc.line(10, 44, 200, 44);
 
-    // CODE
+    // CODE (arriba derecha)
     doc.setFont('helvetica','bold');
     doc.setFontSize(11);
     doc.setTextColor(40,40,40);
@@ -1653,82 +1657,73 @@ function generatePDF() {
     doc.setTextColor(0,0,0);
     doc.text('LOGISTICS', nextX, 22);
 
-    // Título + fecha
-    doc.setFontSize(10);
-    doc.setTextColor(20,20,20);
-    doc.text('REPORTE DIARIO DE PLATAFORMAS', 105, 28, { align: 'center' });
+    // Fecha ligera
     doc.setFont('helvetica','normal');
     doc.setFontSize(8);
-    doc.setTextColor(100,100,110);
-    doc.text(dateString, 105, 33, { align: 'center' });
+    doc.setTextColor(120,120,130);
+    doc.text(dateString, 105, 28, { align: 'center' });
 
-    // línea divisoria
-    doc.setDrawColor(220,220,220);
-    doc.line(15, 40, 195, 40);
-
-    // ==== TARJETAS ====
-    const badgeY = 36;
-    const badgeWidth = 34;
+    // ==== BADGES ====
+    const badgeY = 32;
+    const badgeWidth = 40;
     const badgeHeight = 8;
-    const gap = 5;
+    const gap = 8;
     const totalWidth = badgeWidth*3 + gap*2;
     let bx = 105 - totalWidth/2;
 
-    function roundRect(doc, x, y, w, h, r, style) {
-        if (typeof doc.roundedRect === 'function') {
-            try { doc.roundedRect(x, y, w, h, r, r, style); return; } catch(e) {}
-        }
-        doc.rect(x, y, w, h, style);
-    }
-
     function drawBadge(x,y,w,h,bg,num,label,numColor){
         doc.setFillColor(...bg);
-        roundRect(doc,x,y,w,h,2,'F');
+        doc.roundedRect(x,y,w,h,2,2,'F');
         doc.setFont('helvetica','bold');
-        doc.setFontSize(7.5);
+        doc.setFontSize(8);
         doc.setTextColor(...numColor);
-        doc.text(String(num), x+5, y+h/2+2);
-        doc.setFont('helvetica','normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor(80,80,90);
-        doc.text(label, x+13, y+h/2+2);
+        doc.text(String(num), x+w*0.3, y+h/2+2, { align: 'center' });
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(7);
+        doc.setTextColor(60,60,70);
+        doc.text(label, x+w*0.7, y+h/2+2, { align: 'center' });
     }
 
-    drawBadge(bx,badgeY,badgeWidth,badgeHeight,[254,226,226],cargadas.length,'CARG.',[180,30,50]);
+    drawBadge(bx,badgeY,badgeWidth,badgeHeight,[254,226,226],cargadas.length,'CARGADAS',[180,30,50]);
     bx+=badgeWidth+gap;
     drawBadge(bx,badgeY,badgeWidth,badgeHeight,[237,249,237],vacias.length,'VACÍAS',[16,185,129]);
     bx+=badgeWidth+gap;
-    drawBadge(bx,badgeY,badgeWidth,badgeHeight,[255,245,230],averiadas.length,'AVER.',[200,110,20]);
+    drawBadge(bx,badgeY,badgeWidth,badgeHeight,[255,245,230],averiadas.length,'AVERIADAS',[200,110,20]);
 
-    let yPosition = badgeY + badgeHeight + 12;
+    let yPosition = 52; // más abajo para no invadir header
 
     // ==== TABLAS ====
+    const bottomMargin = 260;
+
     function createTwoColumnTables(leftTitle,leftData,rightTitle,rightData,startY){
         let currentY=startY;
         const leftX=15;
         const rightX=110;
         const columnWidth=85;
 
+        // Título de tabla fuerte
         doc.setFont('helvetica','bold');
-        doc.setFontSize(11);
+        doc.setFontSize(12);
         if(leftData.length>0) doc.text(leftTitle.toUpperCase(),leftX,currentY);
         if(rightData.length>0) doc.text(rightTitle.toUpperCase(),rightX,currentY);
-        currentY+=7;
+        currentY+=8;
 
         if(leftData.length>0){
-            doc.setFillColor(245,245,245);
-            doc.rect(leftX,currentY-3,columnWidth,6,'F');
+            doc.setFillColor(230,230,230);
+            doc.rect(leftX,currentY-4,columnWidth,7,'F');
+            doc.setFont('helvetica','bold');
             doc.setFontSize(9);
             doc.text('MATRICULA',leftX+2,currentY);
             doc.text('CONTENIDO',leftX+35,currentY);
         }
         if(rightData.length>0){
-            doc.setFillColor(245,245,245);
-            doc.rect(rightX,currentY-3,columnWidth,6,'F');
+            doc.setFillColor(230,230,230);
+            doc.rect(rightX,currentY-4,columnWidth,7,'F');
+            doc.setFont('helvetica','bold');
             doc.setFontSize(9);
             doc.text('MATRICULA',rightX+2,currentY);
         }
-        currentY+=7;
+        currentY+=8;
 
         doc.setFont('helvetica','normal');
         doc.setFontSize(8);
@@ -1752,28 +1747,30 @@ function generatePDF() {
             }
             currentY+=6;
 
-            if(currentY>265){ // deja hueco para footer
+            if(currentY>bottomMargin){
                 doc.addPage();
                 currentY=30;
             }
         }
-        return currentY+8;
+        return currentY+10;
     }
 
     function createSingleTable(title,data,startY){
         let currentY=startY;
         if(data.length===0) return currentY;
-        doc.setFont('helvetica','bold');
-        doc.setFontSize(11);
-        doc.text(title.toUpperCase(),15,currentY);
-        currentY+=7;
 
-        doc.setFillColor(245,245,245);
-        doc.rect(15,currentY-3,180,6,'F');
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(12);
+        doc.text(title.toUpperCase(),15,currentY);
+        currentY+=8;
+
+        doc.setFillColor(230,230,230);
+        doc.rect(15,currentY-4,180,7,'F');
+        doc.setFont('helvetica','bold');
         doc.setFontSize(9);
         doc.text('MATRICULA',17,currentY);
         doc.text('DESCRIPCION',70,currentY);
-        currentY+=7;
+        currentY+=8;
 
         doc.setFont('helvetica','normal');
         doc.setFontSize(8);
@@ -1786,9 +1783,12 @@ function generatePDF() {
                 if(lines.length>1) currentY+=(lines.length-1)*3;
             }
             currentY+=6;
-            if(currentY>265){doc.addPage();currentY=30;}
+            if(currentY>bottomMargin){
+                doc.addPage();
+                currentY=30;
+            }
         });
-        return currentY+8;
+        return currentY+10;
     }
 
     if(cargadas.length>0||vacias.length>0){
@@ -1812,11 +1812,16 @@ function generatePDF() {
         doc.setFontSize(8);
         doc.setTextColor(100,100,110);
         doc.text('© 2025 XPO LOGISTICS – Informe interno',20,285);
-        doc.text('Página '+i+' de '+pageCount,180,285,{align:'right'});
+        doc.setTextColor(60,90,180);
+        doc.text('appcode.com',105,285,{align:'center'});
+        doc.setTextColor(100,100,110);
+        doc.text('Página '+i+' de '+pageCount,190,285,{align:'right'});
     }
 
     doc.save('reporte_plataformas.pdf');
 }
+
+
 
 
 
@@ -2771,3 +2776,4 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
+</script>
