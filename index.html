@@ -2,11 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>XPO Logistics - Registro de Plataformas</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <style>
         :root {
             --system-blue: #007AFF;
@@ -28,6 +27,9 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         
         body {
@@ -36,6 +38,7 @@
             color: var(--system-label-primary);
             line-height: 1.47;
             overflow-x: hidden;
+            touch-action: pan-y;
         }
         
         /* Header estilo iOS mejorado */
@@ -44,7 +47,7 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
-            padding: 12px 20px 8px;
+            padding: 16px 20px 12px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -190,6 +193,8 @@
             font-weight: 400;
             color: var(--system-label-primary);
             transition: all 0.2s ease;
+            -webkit-user-select: text;
+            user-select: text;
         }
         
         .input:focus, .textarea:focus {
@@ -241,7 +246,7 @@
             color: white;
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover, .btn-primary:active {
             background: #0056CC;
             transform: translateY(-1px);
         }
@@ -251,7 +256,7 @@
             color: var(--system-label-primary);
         }
         
-        .btn-secondary:hover {
+        .btn-secondary:hover, .btn-secondary:active {
             background: var(--system-gray-4);
         }
         
@@ -261,7 +266,7 @@
             flex: 1;
         }
         
-        .btn-cargada:hover {
+        .btn-cargada:hover, .btn-cargada:active {
             background: #333333;
         }
         
@@ -271,7 +276,7 @@
             flex: 1;
         }
         
-        .btn-vacia:hover {
+        .btn-vacia:hover, .btn-vacia:active {
             background: #333333;
         }
         
@@ -281,8 +286,17 @@
             flex: 1;
         }
         
-        .btn-averiada:hover {
+        .btn-averiada:hover, .btn-averiada:active {
             background: #333333;
+        }
+        
+        .btn-pdf {
+            background: var(--system-blue);
+            color: white;
+        }
+        
+        .btn-pdf:hover, .btn-pdf:active {
+            background: #0056CC;
         }
         
         .btn-danger {
@@ -290,7 +304,7 @@
             color: white;
         }
         
-        .btn-danger:hover {
+        .btn-danger:hover, .btn-danger:active {
             background: #D70015;
         }
         
@@ -504,13 +518,9 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .floating-btn:hover {
+        .floating-btn:hover, .floating-btn:active {
             transform: translateY(-2px) scale(1.05);
             box-shadow: 0 6px 25px rgba(0, 122, 255, 0.4);
-        }
-        
-        .floating-btn:active {
-            transform: translateY(0) scale(0.98);
         }
         
         .floating-btn svg {
@@ -860,33 +870,36 @@
             </section>
             
             <section class="lists-container">
-                <div class="list">
-                    <div class="list-header">
-                        <h3 class="list-title">Plataformas cargadas</h3>
-                        <span class="list-count" id="cargadasListCount">0</span>
+                <div class="search-container" id="searchContainer"></div>
+                <div class="lists-container">
+                    <div class="list">
+                        <div class="list-header">
+                            <h3 class="list-title">Plataformas cargadas</h3>
+                            <span class="list-count" id="cargadasListCount">0</span>
+                        </div>
+                        <div class="platforms-list" id="cargadasList">
+                            <div class="empty-message">No hay plataformas cargadas registradas</div>
+                        </div>
                     </div>
-                    <div class="platforms-list" id="cargadasList">
-                        <div class="empty-message">No hay plataformas cargadas registradas</div>
+                    
+                    <div class="list">
+                        <div class="list-header">
+                            <h3 class="list-title">Plataformas vacías</h3>
+                            <span class="list-count" id="vaciasListCount">0</span>
+                        </div>
+                        <div class="platforms-list" id="vaciasList">
+                            <div class="empty-message">No hay plataformas vacías registradas</div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="list">
-                    <div class="list-header">
-                        <h3 class="list-title">Plataformas vacías</h3>
-                        <span class="list-count" id="vaciasListCount">0</span>
-                    </div>
-                    <div class="platforms-list" id="vaciasList">
-                        <div class="empty-message">No hay plataformas vacías registradas</div>
-                    </div>
-                </div>
-                
-                <div class="list">
-                    <div class="list-header">
-                        <h3 class="list-title">Plataformas averiadas</h3>
-                        <span class="list-count" id="averiadasListCount">0</span>
-                    </div>
-                    <div class="platforms-list" id="averiadasList">
-                        <div class="empty-message">No hay plataformas averiadas registradas</div>
+                    
+                    <div class="list">
+                        <div class="list-header">
+                            <h3 class="list-title">Plataformas averiadas</h3>
+                            <span class="list-count" id="averiadasListCount">0</span>
+                        </div>
+                        <div class="platforms-list" id="averiadasList">
+                            <div class="empty-message">No hay plataformas averiadas registradas</div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -897,7 +910,8 @@
                 </div>
                 <div class="card-content">
                     <div class="actions">
-                        <button class="btn btn-danger" onclick="clearData()">Limpiar Registros</button>
+                        <button class="btn btn-pdf" onclick="generatePDF()">📄 Generar PDF</button>
+                        <button class="btn btn-danger" onclick="clearData()">🗑 Limpiar Registros</button>
                     </div>
                 </div>
             </section>
@@ -969,7 +983,17 @@
         function loadData() {
             const savedData = localStorage.getItem(getStorageKey());
             if (savedData) {
-                plataformas = JSON.parse(savedData);
+                try {
+                    plataformas = JSON.parse(savedData);
+                // Asegurarse de que cada plataforma tenga un ID
+                    plataformas = plataformas.map(p => {
+                        if (!p.id) p.id = Date.now() + Math.random();
+                        return p;
+                    });
+                } catch(e) {
+                    console.error("Error loading data:", e);
+                    plataformas = [];
+                }
             }
         }
         
@@ -1065,8 +1089,10 @@
                 
                 // Añadir efecto de confirmación al botón
                 const registrarBtn = document.querySelector('#step3 .btn-primary');
-                registrarBtn.classList.add('btn-confirm');
-                registrarBtn.disabled = true;
+                if (registrarBtn) {
+                    registrarBtn.classList.add('btn-confirm');
+                    registrarBtn.disabled = true;
+                }
                 
                 setTimeout(() => {
                     showNotification('Plataforma registrada correctamente', 'success');
@@ -1088,7 +1114,7 @@
         
         function updateStepIndicator(step) {
             for (let i = 1; i <= 3; i++) {
-                document.getElementById('stepCircle" + i).classList.remove('active');
+                document.getElementById('stepCircle' + i).classList.remove('active');
             }
             if (step >= 1 && step <= 3) {
                 document.getElementById('stepCircle' + step).classList.add('active');
@@ -1181,13 +1207,13 @@
                     </div>
                     <div class="modal-content">
                         <div class="form">
-                            <input class="input" id="editMatricula" value="${platform.matricula}" placeholder="Matrícula">
+                            <input class="input" id="editMatricula" value="" placeholder="Matrícula">
                             <select class="input" id="editEstado">
-                                <option value="CARGADA" ${platform.estado === 'CARGADA' ? 'selected' : ''}>Cargada</option>
-                                <option value="VACÍA" ${platform.estado === 'VACÍA' ? 'selected' : ''}>Vacía</option>
-                                <option value="AVERIADA" ${platform.estado === 'AVERIADA' ? 'selected' : ''}>Averiada</option>
+                                <option value="CARGADA"  ''>Cargada</option>
+                                <option value="VACÍA"  ''>Vacía</option>
+                                <option value="AVERIADA"  ''>Averiada</option>
                             </select>
-                            <textarea class="textarea" id="editContenido" placeholder="Contenido">${platform.contenido || ''}</textarea>
+                            <textarea class="textarea" id="editContenido" placeholder="Contenido"></textarea>
                         </div>
                     </div>
                     <div class="modal-actions">
@@ -1467,9 +1493,9 @@
         // 1. SISTEMA DE NOTIFICACIONES
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
+            notification.className = `notification notification-`;
             notification.innerHTML = `
-                <span>${message}</span>
+                <span></span>
                 <button onclick="this.parentElement.remove()">×</button>
             `;
             
