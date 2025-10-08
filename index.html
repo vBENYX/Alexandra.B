@@ -13,17 +13,14 @@
       --system-green: #34C759;
       --system-orange: #FF9500;
       --system-red: #FF3B30;
+      --system-purple: #AF52DE;
+      
       --system-gray-1: #8E8E93;
       --system-gray-2: #AEAEB2;
       --system-gray-3: #C7C7CC;
       --system-gray-4: #D1D1D6;
       --system-gray-5: #E5E5EA;
       --system-gray-6: #F2F2F7;
-      
-      --primary: var(--system-blue);
-      --success: var(--system-green);
-      --warning: var(--system-orange);
-      --danger: var(--system-red);
       
       --text-primary: #000000;
       --text-secondary: var(--system-gray-1);
@@ -44,6 +41,11 @@
       --radius-medium: 10px;
       --radius-large: 12px;
       --radius-full: 9999px;
+      
+      --spring: #4CAF50;
+      --summer: #FF9800;
+      --autumn: #795548;
+      --winter: #03A9F4;
     }
 
     /* ===== RESET Y BASE ===== */
@@ -78,16 +80,17 @@
       position: relative;
     }
 
-    /* ===== HEADER APPLE STYLE ===== */
+    /* ===== HEADER APPLE STYLE CON ESTACIÓN ===== */
     .app-header {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.72);
+      background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 0.5px solid var(--border);
       padding: 12px 0;
+      transition: all 0.5s ease;
     }
 
     .header-content {
@@ -108,13 +111,13 @@
     .app-icon {
       width: 28px;
       height: 28px;
-      background: linear-gradient(135deg, var(--system-blue), #5856D6);
       border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
       box-shadow: var(--elevation-1);
+      transition: all 0.5s ease;
     }
 
     .app-icon svg {
@@ -157,6 +160,13 @@
       letter-spacing: -0.24px;
     }
 
+    .season-indicator {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      transition: all 0.5s ease;
+    }
+
     /* ===== MAIN CONTENT AREA ===== */
     .main-content {
       padding: 24px;
@@ -164,10 +174,20 @@
 
     /* ===== SECTION STYLES ===== */
     .section {
-      background: var(--background-primary);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-radius: var(--radius-large);
       margin-bottom: 16px;
       overflow: hidden;
+      border: 0.5px solid rgba(255, 255, 255, 0.5);
+      box-shadow: var(--elevation-1);
+      transition: all 0.3s ease;
+    }
+
+    .section:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--elevation-2);
     }
 
     .section-header {
@@ -219,7 +239,8 @@
       border-radius: var(--radius-medium);
       font-size: 16px;
       font-family: inherit;
-      background: var(--background-primary);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
       transition: all 0.2s ease;
       -webkit-appearance: none;
     }
@@ -228,6 +249,7 @@
       outline: none;
       border-color: var(--system-blue);
       box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      transform: translateY(-1px);
     }
 
     .form-textarea {
@@ -236,7 +258,7 @@
       line-height: 1.4;
     }
 
-    /* ===== BUTTON STYLES ===== */
+    /* ===== BOTONES DE ESTADO MEJORADOS ===== */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -251,44 +273,92 @@
       text-decoration: none;
       gap: 8px;
       min-height: 44px;
-      background: var(--background-primary);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
+      background: var(--system-blue);
+      color: white;
       -webkit-tap-highlight-color: transparent;
+      position: relative;
+      overflow: hidden;
     }
 
     .btn:active {
       transform: scale(0.98);
     }
 
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%);
+      transform-origin: 50% 50%;
+    }
+
+    .btn:focus:not(:active)::after {
+      animation: ripple 1s ease-out;
+    }
+
+    @keyframes ripple {
+      0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(20, 20);
+        opacity: 0;
+      }
+    }
+
     .btn-primary {
       background: var(--system-blue);
-      color: white;
-      border: none;
     }
 
     .btn-success {
       background: var(--system-green);
-      color: white;
-      border: none;
     }
 
     .btn-warning {
       background: var(--system-orange);
-      color: white;
-      border: none;
     }
 
     .btn-danger {
       background: var(--system-red);
-      color: white;
-      border: none;
     }
 
     .btn-secondary {
       background: transparent;
       color: var(--system-blue);
       border: 1px solid var(--system-blue);
+    }
+
+    /* Estados de botón mejorados */
+    .btn-success-state {
+      background: var(--system-green) !important;
+      animation: pulse 0.5s ease;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Grupo de botones de estado */
+    .estado-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .estado-buttons .btn {
+      flex: 1;
+      padding: 14px 12px;
+      font-size: 15px;
+      font-weight: 600;
     }
 
     .btn-group {
@@ -321,7 +391,7 @@
       transform: scale(1.2);
     }
 
-    /* ===== STATS GRID ===== */
+    /* ===== STATS GRID CON ANIMACIÓN ===== */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -330,19 +400,38 @@
     }
 
     .stat-card {
-      background: var(--background-secondary);
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
       border-radius: var(--radius-medium);
       padding: 16px;
       text-align: center;
+      border: 0.5px solid rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--elevation-2);
     }
 
     .stat-number {
       display: block;
       font-size: 24px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--system-blue);
       margin-bottom: 4px;
       letter-spacing: -0.32px;
+      transition: all 0.3s ease;
+    }
+
+    .stat-number.animating {
+      animation: countUp 0.5s ease-out;
+    }
+
+    @keyframes countUp {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
     }
 
     .stat-label {
@@ -351,7 +440,7 @@
       color: var(--text-secondary);
     }
 
-    /* ===== LISTS STYLES ===== */
+    /* ===== LISTS STYLES MEJORADAS ===== */
     .lists-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -360,9 +449,11 @@
     }
 
     .list-section {
-      background: var(--background-primary);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
       border-radius: var(--radius-large);
       overflow: hidden;
+      border: 0.5px solid rgba(255, 255, 255, 0.5);
     }
 
     .list-header {
@@ -383,12 +474,19 @@
 
     .list-content {
       padding: 0;
+      max-height: 400px;
+      overflow-y: auto;
     }
 
+    /* Plataformas más compactas y editables */
     .platform-item {
-      padding: 16px 20px;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--border-light);
-      transition: background-color 0.2s ease;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
     }
 
     .platform-item:last-child {
@@ -396,7 +494,12 @@
     }
 
     .platform-item:hover {
-      background-color: var(--background-secondary);
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .platform-info {
+      flex: 1;
+      min-width: 0;
     }
 
     .platform-header {
@@ -422,6 +525,38 @@
       color: var(--text-secondary);
       font-size: 15px;
       line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .platform-actions {
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .platform-item:hover .platform-actions {
+      opacity: 1;
+    }
+
+    .btn-icon {
+      padding: 6px;
+      background: transparent;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      border-radius: var(--radius-small);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-icon:hover {
+      background: var(--background-tertiary);
+      color: var(--text-primary);
     }
 
     .empty-state {
@@ -513,6 +648,10 @@
         padding: 16px;
       }
       
+      .estado-buttons {
+        flex-direction: column;
+      }
+      
       .btn-group {
         flex-direction: column;
       }
@@ -528,7 +667,7 @@
       }
     }
 
-    /* ===== ANIMATIONS ===== */
+    /* ===== ANIMACIONES MEJORADAS ===== */
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -544,17 +683,19 @@
       animation: fadeIn 0.4s ease;
     }
 
-    @keyframes bounce {
-      0%, 100% {
-        transform: scale(1);
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
       }
-      50% {
-        transform: scale(1.1);
+      to {
+        opacity: 1;
+        transform: translateX(0);
       }
     }
 
-    .bounce {
-      animation: bounce 0.3s ease;
+    .slide-in {
+      animation: slideIn 0.3s ease;
     }
 
     /* ===== WELCOME OVERLAY ===== */
@@ -614,11 +755,11 @@
 
   <!-- Main App -->
   <div class="app">
-    <!-- Header Apple Style -->
-    <header class="app-header">
+    <!-- Header Apple Style con estación dinámica -->
+    <header class="app-header" id="appHeader">
       <div class="header-content">
         <div class="header-brand">
-          <div class="app-icon">
+          <div class="app-icon" id="appIcon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/>
               <path d="M5 7H11M5 5H11M5 9H8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
@@ -630,6 +771,7 @@
           </div>
         </div>
         <div class="header-actions">
+          <div class="season-indicator" id="seasonIndicator"></div>
           <div class="current-time" id="currentTime">--:--</div>
         </div>
       </div>
@@ -672,10 +814,10 @@
                   </div>
                 </div>
               </div>
-              <div class="btn-group">
-                <button class="btn btn-danger" onclick="selectEstado('CARGADA')">Cargada</button>
-                <button class="btn btn-success" onclick="selectEstado('VACÍA')">Vacía</button>
-                <button class="btn btn-warning" onclick="selectEstado('AVERIADA')">Averiada</button>
+              <div class="estado-buttons">
+                <button class="btn btn-danger" id="btnCargada" onclick="selectEstado('CARGADA')">Cargada</button>
+                <button class="btn btn-success" id="btnVacia" onclick="selectEstado('VACÍA')">Vacía</button>
+                <button class="btn btn-warning" id="btnAveriada" onclick="selectEstado('AVERIADA')">Averiada</button>
               </div>
               <div class="btn-group mt-4">
                 <button class="btn btn-secondary" onclick="goToStep(1)">Volver</button>
@@ -698,7 +840,7 @@
                 <textarea class="form-input form-textarea" id="contenidoInput" placeholder="Describe qué contiene la plataforma o el problema..."></textarea>
               </div>
               <div class="btn-group">
-                <button class="btn btn-primary" onclick="registrarPlataforma()">Registrar</button>
+                <button class="btn btn-primary" id="registrarBtn" onclick="registrarPlataforma()">Registrar</button>
                 <button class="btn btn-secondary" onclick="goToStep(2)">Volver</button>
               </div>
             </div>
@@ -827,6 +969,7 @@
       loadData();
       updateDisplay();
       updateTime();
+      setSeasonTheme();
       
       // Actualizar la hora cada minuto
       setInterval(updateTime, 60000);
@@ -906,7 +1049,18 @@
         plataformas.push(nuevaPlataforma);
         saveData();
         updateDisplay();
-        resetForm();
+        
+        // Efecto de confirmación en el botón
+        const boton = document.getElementById('btnVacia');
+        const originalText = boton.textContent;
+        boton.textContent = '✓ Registrado';
+        boton.classList.add('btn-success-state');
+        
+        setTimeout(() => {
+          boton.textContent = originalText;
+          boton.classList.remove('btn-success-state');
+          resetForm();
+        }, 1500);
       } else {
         goToStep(3);
       }
@@ -926,7 +1080,18 @@
         plataformas.push(nuevaPlataforma);
         saveData();
         updateDisplay();
-        resetForm();
+        
+        // Efecto de confirmación en el botón
+        const boton = document.getElementById('registrarBtn');
+        const originalText = boton.textContent;
+        boton.textContent = '✓ Registrado';
+        boton.classList.add('btn-success-state');
+        
+        setTimeout(() => {
+          boton.textContent = originalText;
+          boton.classList.remove('btn-success-state');
+          resetForm();
+        }, 1500);
       } else {
         alert('Por favor, describe el contenido de la plataforma');
       }
@@ -988,24 +1153,50 @@
         `;
       } else {
         listElement.innerHTML = items.map(item => `
-          <div class="platform-item">
-            <div class="platform-header">
-              <span class="platform-matricula">${item.matricula}</span>
-              <span class="platform-time">${item.timestamp}</span>
+          <div class="platform-item slide-in">
+            <div class="platform-info">
+              <div class="platform-header">
+                <span class="platform-matricula">${item.matricula}</span>
+                <span class="platform-time">${item.timestamp}</span>
+              </div>
+              ${item.contenido ? `<div class="platform-content">${item.contenido}</div>` : ''}
             </div>
-            ${item.contenido ? `<div class="platform-content">${item.contenido}</div>` : ''}
+            <div class="platform-actions">
+              <button class="btn-icon" onclick="eliminarPlataforma(${item.id})" title="Eliminar">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                  <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+              </button>
+            </div>
           </div>
         `).join('');
       }
     }
 
-    function animateCount(id, value) {
+    function animateCount(id, end) {
       const element = document.getElementById(id);
-      if (element && element.textContent != value) {
-        element.textContent = value;
-        element.classList.add('bounce');
-        setTimeout(() => element.classList.remove('bounce'), 300);
-      }
+      let start = parseInt(element.textContent) || 0;
+      
+      if (start === end) return;
+      
+      element.classList.add('animating');
+      
+      const duration = 500;
+      const stepTime = Math.max(Math.floor(duration / Math.abs(end - start)), 20);
+      let current = start;
+      
+      const timer = setInterval(() => {
+        current += (end > start) ? 1 : -1;
+        element.textContent = current;
+        
+        if (current === end) {
+          clearInterval(timer);
+          setTimeout(() => {
+            element.classList.remove('animating');
+          }, 300);
+        }
+      }, stepTime);
     }
 
     function updateTime() {
@@ -1019,8 +1210,58 @@
 
     // ===== FUNCIONES DE ACCIÓN =====
     function generatePDF() {
-      // Implementación simplificada de PDF
-      alert('Función de PDF implementada correctamente');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Título
+      doc.setFontSize(20);
+      doc.text('Reporte de Plataformas - Xpo Logistics', 20, 20);
+      
+      // Fecha
+      const today = new Date();
+      const dateString = today.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      doc.setFontSize(12);
+      doc.text(`Fecha: ${dateString}`, 20, 30);
+      
+      // Estadísticas
+      const cargadas = plataformas.filter(p => p.estado === 'CARGADA').length;
+      const vacias = plataformas.filter(p => p.estado === 'VACÍA').length;
+      const averiadas = plataformas.filter(p => p.estado === 'AVERIADA').length;
+      const total = plataformas.length;
+      
+      doc.text(`Total: ${total}`, 20, 45);
+      doc.text(`Cargadas: ${cargadas}`, 20, 55);
+      doc.text(`Vacías: ${vacias}`, 20, 65);
+      doc.text(`Averiadas: ${averiadas}`, 20, 75);
+      
+      // Lista de plataformas
+      let y = 90;
+      doc.setFontSize(14);
+      doc.text('Plataformas Registradas:', 20, y);
+      y += 10;
+      
+      doc.setFontSize(10);
+      plataformas.forEach((p, index) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(`${p.matricula} - ${p.estado} - ${p.timestamp}`, 20, y);
+        y += 7;
+        if (p.contenido) {
+          const lines = doc.splitTextToSize(p.contenido, 170);
+          doc.text(lines, 25, y);
+          y += (lines.length * 5) + 2;
+        }
+        y += 3;
+      });
+      
+      doc.save('reporte_plataformas.pdf');
     }
 
     function clearData() {
@@ -1029,6 +1270,55 @@
         saveData();
         updateDisplay();
         resetForm();
+      }
+    }
+
+    function eliminarPlataforma(id) {
+      if (confirm('¿Estás seguro de que quieres eliminar esta plataforma?')) {
+        plataformas = plataformas.filter(p => p.id !== id);
+        saveData();
+        updateDisplay();
+      }
+    }
+
+    // ===== ESTACIÓN DEL AÑO =====
+    function setSeasonTheme() {
+      const now = new Date();
+      const month = now.getMonth() + 1; // 1-12
+      let season = '';
+      let color = '';
+      
+      // Determinar estación (para hemisferio norte)
+      if (month >= 3 && month <= 5) {
+        season = 'spring';
+        color = '#4CAF50'; // Verde primavera
+      } else if (month >= 6 && month <= 8) {
+        season = 'summer';
+        color = '#FF9800'; // Naranja verano
+      } else if (month >= 9 && month <= 11) {
+        season = 'autumn';
+        color = '#795548'; // Marrón otoño
+      } else {
+        season = 'winter';
+        color = '#03A9F4'; // Azul invierno
+      }
+      
+      // Aplicar color al indicador de estación
+      const indicator = document.getElementById('seasonIndicator');
+      indicator.style.backgroundColor = color;
+      
+      // Aplicar gradiente al icono de la app según la estación
+      const appIcon = document.getElementById('appIcon');
+      appIcon.style.background = `linear-gradient(135deg, ${color}, ${getSeasonSecondaryColor(season)})`;
+    }
+
+    function getSeasonSecondaryColor(season) {
+      switch(season) {
+        case 'spring': return '#8BC34A';
+        case 'summer': return '#FFC107';
+        case 'autumn': return '#5D4037';
+        case 'winter': return '#29B6F6';
+        default: return '#007AFF';
       }
     }
 
