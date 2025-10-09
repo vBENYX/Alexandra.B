@@ -71,6 +71,25 @@
       overflow-x: hidden;
     }
 
+    /* ===== EFECTO PARALLAX ===== */
+    .parallax-container {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .parallax-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 120%;
+      background: linear-gradient(135deg, rgba(0, 122, 255, 0.03) 0%, rgba(52, 199, 89, 0.03) 100%);
+      z-index: -1;
+      transform: translateZ(-1px) scale(1.2);
+      transition: transform 0.1s ease-out;
+      will-change: transform;
+    }
+
     /* ===== APP LAYOUT ===== */
     .app {
       min-height: 100vh;
@@ -80,7 +99,7 @@
       position: relative;
     }
 
-    /* ===== HEADER APPLE STYLE CON ANIMACIÓN DE ESTACIÓN ===== */
+    /* ===== HEADER APPLE STYLE ===== */
     .app-header {
       position: sticky;
       top: 0;
@@ -91,48 +110,6 @@
       border-bottom: 0.5px solid var(--border);
       padding: 12px 0;
       transition: all 0.5s ease;
-      overflow: hidden;
-    }
-
-    .header-background {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      opacity: 0.1;
-      transition: all 1.5s ease;
-    }
-
-    .spring-bg {
-      background: linear-gradient(45deg, #4CAF50, #8BC34A, #CDDC39);
-      background-size: 400% 400%;
-      animation: gradientShift 8s ease infinite;
-    }
-
-    .summer-bg {
-      background: linear-gradient(45deg, #FF9800, #FFC107, #FFEB3B);
-      background-size: 400% 400%;
-      animation: gradientShift 8s ease infinite;
-    }
-
-    .autumn-bg {
-      background: linear-gradient(45deg, #795548, #8D6E63, #A1887F);
-      background-size: 400% 400%;
-      animation: gradientShift 8s ease infinite;
-    }
-
-    .winter-bg {
-      background: linear-gradient(45deg, #03A9F4, #29B6F6, #4FC3F7);
-      background-size: 400% 400%;
-      animation: gradientShift 8s ease infinite;
-    }
-
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
     }
 
     .header-content {
@@ -159,7 +136,7 @@
       justify-content: center;
       color: white;
       box-shadow: var(--elevation-1);
-      transition: all 0.5s ease;
+      background: var(--system-blue);
     }
 
     .app-icon svg {
@@ -200,13 +177,6 @@
       color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
       letter-spacing: -0.24px;
-    }
-
-    .season-indicator {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      transition: all 0.5s ease;
     }
 
     /* ===== MAIN CONTENT AREA ===== */
@@ -300,7 +270,7 @@
       line-height: 1.4;
     }
 
-    /* ===== BOTONES DE ESTADO MEJORADOS - TODOS AZULES ===== */
+    /* ===== BOTONES DE ESTADO ===== */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -360,15 +330,15 @@
     }
 
     .btn-success {
-      background: var(--system-blue); /* Cambiado a azul */
+      background: var(--system-blue);
     }
 
     .btn-warning {
-      background: var(--system-blue); /* Cambiado a azul */
+      background: var(--system-blue);
     }
 
     .btn-danger {
-      background: var(--system-blue); /* Cambiado a azul */
+      background: var(--system-blue);
     }
 
     .btn-secondary {
@@ -601,6 +571,14 @@
       color: var(--text-primary);
     }
 
+    .btn-edit:hover {
+      color: var(--system-blue);
+    }
+
+    .btn-delete:hover {
+      color: var(--system-red);
+    }
+
     .empty-state {
       padding: 40px 20px;
       text-align: center;
@@ -666,7 +644,77 @@
       margin-bottom: 16px;
     }
 
-    /* ===== RESPONSIVE DESIGN ===== */
+    /* ===== WELCOME OVERLAY ===== */
+    .welcome-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--background-primary);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeOut 0.5s ease 2s forwards;
+    }
+
+    .welcome-content {
+      text-align: center;
+      animation: fadeIn 0.8s ease;
+    }
+
+    .welcome-logo {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--system-blue);
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+      animation: logoFadeIn 1.2s ease-out;
+    }
+
+    .welcome-title {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.48px;
+    }
+
+    .welcome-subtitle {
+      font-size: 17px;
+      color: var(--text-secondary);
+    }
+
+    @keyframes logoFadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    /* ===== RESPONSIVE DESIGN MEJORADO ===== */
     @media (min-width: 768px) {
       .lists-grid {
         grid-template-columns: 1fr 1fr 1fr;
@@ -707,24 +755,44 @@
         bottom: 16px;
         right: 16px;
       }
+
+      .platform-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .platform-actions {
+        opacity: 1; /* Siempre visibles en móvil */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .section-header {
+        padding: 16px 16px 0;
+      }
+
+      .section-title {
+        font-size: 20px;
+      }
+
+      .platform-item {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .platform-actions {
+        align-self: flex-end;
+      }
     }
 
     /* ===== ANIMACIONES MEJORADAS ===== */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.4s ease;
-    }
-
     @keyframes slideIn {
       from {
         opacity: 0;
@@ -739,70 +807,27 @@
     .slide-in {
       animation: slideIn 0.3s ease;
     }
-
-    /* ===== WELCOME OVERLAY ===== */
-    .welcome-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--background-primary);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: fadeOut 0.5s ease 2s forwards;
-    }
-
-    .welcome-content {
-      text-align: center;
-      animation: fadeIn 0.8s ease;
-    }
-
-    .welcome-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-    }
-
-    .welcome-title {
-      font-size: 28px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      letter-spacing: -0.48px;
-    }
-
-    .welcome-subtitle {
-      font-size: 17px;
-      color: var(--text-secondary);
-    }
-
-    @keyframes fadeOut {
-      to {
-        opacity: 0;
-        visibility: hidden;
-      }
-    }
   </style>
 </head>
 <body>
   <!-- Welcome Overlay -->
   <div class="welcome-overlay">
     <div class="welcome-content">
-      <div class="welcome-icon">🚛</div>
+      <div class="welcome-logo">CODE</div>
       <h1 class="welcome-title" id="greeting">Buenos días</h1>
-      <p class="welcome-subtitle">Registro de Plataformas</p>
+      <p class="welcome-subtitle">Sistema de registro de plataformas</p>
     </div>
   </div>
 
   <!-- Main App -->
-  <div class="app">
-    <!-- Header Apple Style con animación de estación -->
-    <header class="app-header" id="appHeader">
-      <div class="header-background" id="headerBackground"></div>
+  <div class="app parallax-container">
+    <div class="parallax-background"></div>
+    
+    <!-- Header Apple Style -->
+    <header class="app-header">
       <div class="header-content">
         <div class="header-brand">
-          <div class="app-icon" id="appIcon">
+          <div class="app-icon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/>
               <path d="M5 7H11M5 5H11M5 9H8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
@@ -814,7 +839,6 @@
           </div>
         </div>
         <div class="header-actions">
-          <div class="season-indicator" id="seasonIndicator"></div>
           <div class="current-time" id="currentTime">--:--</div>
         </div>
       </div>
@@ -934,7 +958,6 @@
               </div>
               <div class="list-content" id="cargadasList">
                 <div class="empty-state">
-                  <div class="empty-state-icon">📦</div>
                   <div class="empty-state-text">No hay plataformas cargadas</div>
                 </div>
               </div>
@@ -947,7 +970,6 @@
               </div>
               <div class="list-content" id="vaciasList">
                 <div class="empty-state">
-                  <div class="empty-state-icon">🚛</div>
                   <div class="empty-state-text">No hay plataformas vacías</div>
                 </div>
               </div>
@@ -960,7 +982,6 @@
               </div>
               <div class="list-content" id="averiadasList">
                 <div class="empty-state">
-                  <div class="empty-state-icon">🛠️</div>
                   <div class="empty-state-text">No hay plataformas averiadas</div>
                 </div>
               </div>
@@ -1006,13 +1027,14 @@
     let currentStep = 1;
     let currentMatricula = '';
     let currentEstado = '';
+    let editingPlatformId = null;
 
     // ===== INICIALIZACIÓN =====
     window.addEventListener('DOMContentLoaded', () => {
       loadData();
       updateDisplay();
       updateTime();
-      setSeasonTheme();
+      setupParallax();
       
       // Actualizar la hora cada minuto
       setInterval(updateTime, 60000);
@@ -1033,6 +1055,17 @@
         greetingEl.textContent = "Buenas noches";
       }
     });
+
+    // ===== PARALLAX EFFECT =====
+    function setupParallax() {
+      const parallaxBg = document.querySelector('.parallax-background');
+      
+      window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.5;
+        parallaxBg.style.transform = `translate3d(0, ${rate}px, 0)`;
+      });
+    }
 
     // ===== FUNCIONES DE DATOS =====
     function getStorageKey() {
@@ -1074,7 +1107,7 @@
           return;
         }
         
-        const existe = plataformas.some(p => p.matricula === currentMatricula && p.estado === 'VACÍA');
+        const existe = plataformas.some(p => p.matricula === currentMatricula && p.estado === 'VACÍA' && p.id !== editingPlatformId);
         if (existe) {
           alert('⚠️ Esta matrícula ya fue registrada como VACÍA.');
           resetForm();
@@ -1082,21 +1115,32 @@
         }
 
         const nuevaPlataforma = {
-          id: Date.now(),
+          id: editingPlatformId || Date.now(),
           matricula: currentMatricula,
           estado: estado,
           contenido: '',
           timestamp: new Date().toLocaleTimeString('es-ES')
         };
         
-        plataformas.push(nuevaPlataforma);
+        if (editingPlatformId) {
+          // Actualizar plataforma existente
+          const index = plataformas.findIndex(p => p.id === editingPlatformId);
+          if (index !== -1) {
+            plataformas[index] = nuevaPlataforma;
+          }
+          editingPlatformId = null;
+        } else {
+          // Agregar nueva plataforma
+          plataformas.push(nuevaPlataforma);
+        }
+        
         saveData();
         updateDisplay();
         
         // Efecto de confirmación en el botón
         const boton = document.getElementById('btnVacia');
         const originalText = boton.textContent;
-        boton.textContent = '✓ Registrado';
+        boton.textContent = editingPlatformId ? '✓ Actualizado' : '✓ Registrado';
         boton.classList.add('btn-success-state');
         
         setTimeout(() => {
@@ -1113,25 +1157,36 @@
       const contenido = document.getElementById('contenidoInput').value.trim();
       if (contenido) {
         const nuevaPlataforma = {
-          id: Date.now(),
+          id: editingPlatformId || Date.now(),
           matricula: currentMatricula,
           estado: currentEstado,
           contenido: contenido,
           timestamp: new Date().toLocaleTimeString('es-ES')
         };
         
-        plataformas.push(nuevaPlataforma);
+        if (editingPlatformId) {
+          // Actualizar plataforma existente
+          const index = plataformas.findIndex(p => p.id === editingPlatformId);
+          if (index !== -1) {
+            plataformas[index] = nuevaPlataforma;
+          }
+          editingPlatformId = null;
+        } else {
+          // Agregar nueva plataforma
+          plataformas.push(nuevaPlataforma);
+        }
+        
         saveData();
         updateDisplay();
         
         // Efecto de confirmación en el botón
         const boton = document.getElementById('registrarBtn');
         const originalText = boton.textContent;
-        boton.textContent = '✓ Registrado';
+        boton.textContent = editingPlatformId ? '✓ Actualizado' : '✓ Registrado';
         boton.classList.add('btn-success-state');
         
         setTimeout(() => {
-          boton.textContent = originalText;
+          boton.textContent = 'Registrar';
           boton.classList.remove('btn-success-state');
           resetForm();
         }, 1500);
@@ -1153,9 +1208,41 @@
       currentStep = 1;
       currentMatricula = '';
       currentEstado = '';
+      editingPlatformId = null;
       document.getElementById('matriculaInput').value = '';
       document.getElementById('contenidoInput').value = '';
+      document.getElementById('registrarBtn').textContent = 'Registrar';
       goToStep(1);
+    }
+
+    // ===== FUNCIONES DE EDICIÓN =====
+    function editarPlataforma(id) {
+      const plataforma = plataformas.find(p => p.id === id);
+      if (!plataforma) return;
+      
+      // Cargar datos en el formulario
+      currentMatricula = plataforma.matricula;
+      currentEstado = plataforma.estado;
+      editingPlatformId = id;
+      
+      document.getElementById('matriculaInput').value = plataforma.matricula;
+      document.getElementById('matriculaDisplay').textContent = plataforma.matricula;
+      document.getElementById('matriculaDisplay2').textContent = plataforma.matricula;
+      document.getElementById('estadoDisplay').textContent = plataforma.estado;
+      
+      if (plataforma.contenido) {
+        document.getElementById('contenidoInput').value = plataforma.contenido;
+      }
+      
+      // Cambiar texto del botón
+      document.getElementById('registrarBtn').textContent = 'Actualizar';
+      
+      // Ir al paso adecuado según el estado
+      if (plataforma.estado === 'VACÍA') {
+        goToStep(2);
+      } else {
+        goToStep(3);
+      }
     }
 
     // ===== FUNCIONES DE INTERFAZ =====
@@ -1190,7 +1277,6 @@
       if (items.length === 0) {
         listElement.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state-icon">${listId === 'cargadasList' ? '📦' : listId === 'vaciasList' ? '🚛' : '🛠️'}</div>
             <div class="empty-state-text">No hay plataformas ${listId === 'cargadasList' ? 'cargadas' : listId === 'vaciasList' ? 'vacías' : 'averiadas'}</div>
           </div>
         `;
@@ -1205,7 +1291,12 @@
               ${item.contenido ? `<div class="platform-content">${item.contenido}</div>` : ''}
             </div>
             <div class="platform-actions">
-              <button class="btn-icon" onclick="eliminarPlataforma(${item.id})" title="Eliminar">
+              <button class="btn-icon btn-edit" onclick="editarPlataforma(${item.id})" title="Editar">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.251c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.558 1.953 1.953-.558a.25.25 0 0 0 .108-.064l6.286-6.286z"/>
+                </svg>
+              </button>
+              <button class="btn-icon btn-delete" onclick="eliminarPlataforma(${item.id})" title="Eliminar">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                   <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
@@ -1472,51 +1563,6 @@
         plataformas = plataformas.filter(p => p.id !== id);
         saveData();
         updateDisplay();
-      }
-    }
-
-    // ===== ESTACIÓN DEL AÑO CON ANIMACIÓN =====
-    function setSeasonTheme() {
-      const now = new Date();
-      const month = now.getMonth() + 1; // 1-12
-      let season = '';
-      let color = '';
-      
-      // Determinar estación (para hemisferio norte)
-      if (month >= 3 && month <= 5) {
-        season = 'spring';
-        color = '#4CAF50'; // Verde primavera
-      } else if (month >= 6 && month <= 8) {
-        season = 'summer';
-        color = '#FF9800'; // Naranja verano
-      } else if (month >= 9 && month <= 11) {
-        season = 'autumn';
-        color = '#795548'; // Marrón otoño
-      } else {
-        season = 'winter';
-        color = '#03A9F4'; // Azul invierno
-      }
-      
-      // Aplicar color al indicador de estación
-      const indicator = document.getElementById('seasonIndicator');
-      indicator.style.backgroundColor = color;
-      
-      // Aplicar gradiente al icono de la app según la estación
-      const appIcon = document.getElementById('appIcon');
-      appIcon.style.background = `linear-gradient(135deg, ${color}, ${getSeasonSecondaryColor(season)})`;
-      
-      // Aplicar animación de fondo al header
-      const headerBackground = document.getElementById('headerBackground');
-      headerBackground.className = 'header-background ' + season + '-bg';
-    }
-
-    function getSeasonSecondaryColor(season) {
-      switch(season) {
-        case 'spring': return '#8BC34A';
-        case 'summer': return '#FFC107';
-        case 'autumn': return '#5D4037';
-        case 'winter': return '#29B6F6';
-        default: return '#007AFF';
       }
     }
 
