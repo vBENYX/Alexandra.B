@@ -1,257 +1,368 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glow N' Go | Estudio de Uñas de Lujo - Estilo Apple Pro</title>
+    <title>Manicura Exclusive - Reserva Tu Estilo</title>
     <style>
-        /* Variables y Base - Mantenemos la paleta limpia de Apple */
+        /* Variables y Estilos Base */
         :root {
-            --apple-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --primary-color: #000;
-            --secondary-color: #f5f5f7; /* Gris claro de fondo */
-            --accent-color: #007aff; /* Azul de llamada a la acción */
-            --text-color: #1d1d1f;
-            --smooth-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Curva de aceleración/desaceleración */
+            --color-fondo: #f5f5f7;
+            --color-texto: #1d1d1f;
+            --color-acento: #007aff;
+            --color-claro: #ffffff;
+            --tipografia-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
         body {
-            font-family: var(--apple-font);
+            font-family: var(--tipografia-principal);
             margin: 0;
             padding: 0;
-            background-color: #fff;
-            color: var(--text-color);
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
             line-height: 1.6;
-            overflow-x: hidden; /* Evita barras horizontales por animaciones */
+            scroll-behavior: smooth;
         }
 
-        /* Tipografía */
-        h1, h2, h3 {
-            font-weight: 700; /* Apple usa un peso más fuerte en títulos grandes */
-            letter-spacing: -0.03em;
-            margin-top: 0;
-        }
-        h1 { font-size: 4em; opacity: 0; animation: fadeInDown 1s ease forwards 0.2s; } /* Animación inicial */
-        h2 { font-size: 3em; }
-        p { font-size: 1.25em; font-weight: 400; }
-        .hero p { opacity: 0; animation: fadeIn 1s ease forwards 0.8s; } /* Animación inicial */
+        /* --- Encabezado y Logo --- */
 
-        /* ------------------------------------------------------------------ */
-        /* MICROANIMACIONES Y TRANSICIONES (El corazón del estilo Apple)       */
-        /* ------------------------------------------------------------------ */
-
-        /* Animación de Entrada de la Sección Principal (Hero) */
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Botón (Llamada a la Acción) - Efecto de Profundidad */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            background-color: var(--accent-color);
-            color: #fff;
-            padding: 12px 30px;
-            margin-top: 30px;
-            border-radius: 980px;
-            text-decoration: none;
-            font-size: 1.1em;
-            font-weight: 500;
-            transition: all var(--smooth-transition); /* Aplicamos la transición suave */
-            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2); /* Sombra sutil para profundidad */
-        }
-        .btn:hover {
-            background-color: #005bb5;
-            transform: translateY(-2px); /* Deslizamiento hacia arriba sutil (elevación) */
-            box-shadow: 0 6px 15px rgba(0, 122, 255, 0.3); /* Sombra más fuerte al pasar el ratón */
-        }
-        .btn:active {
-            transform: scale(0.98); /* Ligera compresión al hacer clic */
-        }
-
-        /* Tarjetas de Servicio - Efecto 3D / Elevación */
-        .service-card {
-            width: 30%;
-            margin-bottom: 30px;
-            padding: 30px 20px;
-            background-color: #fff;
-            border-radius: 18px; /* Bordes más generosos */
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 8px 15px rgba(0, 0, 0, 0.05);
-            text-align: left;
-            transition: transform var(--smooth-transition), box-shadow var(--smooth-transition);
-        }
-        .service-card:hover {
-            transform: translateY(-8px); /* Elevación más notable */
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Sombra de elevación */
-        }
-
-        /* Footer links - Microinteracción */
-        footer a {
-            transition: color var(--smooth-transition);
-        }
-        footer a:hover {
-            color: var(--text-color); /* Se oscurece al pasar el ratón */
-        }
-
-        /* ------------------------------------------------------------------ */
-        /* ESTRUCTURA DE PÁGINA                                               */
-        /* ------------------------------------------------------------------ */
-
-        /* Barra Falsa (Simula barra superior de Apple - muy minimalista) */
-        .top-bar {
-            position: sticky;
+        .header {
+            position: fixed;
             top: 0;
-            z-index: 100;
-            padding: 18px 0;
-            text-align: center;
-            font-size: 1.1em;
-            font-weight: 600;
-            letter-spacing: 0.05em;
+            left: 0;
+            width: 100%;
             background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px); /* Efecto de desenfoque */
-            border-bottom: 1px solid #eee;
-            color: var(--text-color);
-        }
-
-        .section-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 80px 20px;
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
             text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         }
 
-        .hero {
-            background-color: #fff;
-            padding: 150px 20px 100px; /* Mayor padding vertical */
-            min-height: 70vh;
+        .header.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
             display: flex;
-            align-items: center;
             justify-content: center;
-            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo-main {
+            color: var(--color-texto);
+        }
+
+        /* Estilo para "With Alexandra" con Animación de Brillo Pulido (Glossy) */
+        .logo-with-alexandra {
+            /* AJUSTE: Mismo tamaño y peso que .logo-main */
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            
+            /* Mantener el gradiente de transluz base */
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+            
+            /* Quitar el pseudo-elemento de brillo pasante */
+            position: relative;
+            overflow: hidden;
+
+            /* NUEVA ANIMACIÓN: Brillo/Glossy Effect */
+            opacity: 0.8; /* Opacidad base para que la animación se note */
+            animation: glossy-pulse 3s infinite ease-in-out alternate;
+        }
+
+        /* Eliminar la animación transluz-shine y el ::after que la creaba */
+        .logo-with-alexandra::after {
+            content: none; 
+        }
+
+        @keyframes glossy-pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; } /* Brilla sutilmente */
+            100% { opacity: 0.7; }
+        }
+
+        /* --- Botón de Reserva Fijo (Call to Action) --- */
+
+        .cta-fixed {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .cta-fixed a, .btn-reserva {
+            display: block;
+            background-color: var(--color-acento);
+            color: var(--color-claro);
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 999px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            border: none;
+            cursor: pointer;
             text-align: center;
         }
 
-        .service-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
+        .cta-fixed a:hover, .btn-reserva:hover {
+            background-color: #006ee6;
+            transform: scale(1.02);
+        }
+
+        /* --- Estilos de Contenido General --- */
+        .seccion {
+            min-height: 80vh;
+            padding: 100px 5% 50px;
+            text-align: center;
+            max-width: 980px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            margin-top: 60px;
+            margin-bottom: 25px;
+        }
+
+        p {
+            font-size: 1.15rem;
+            color: #424245;
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- Animación de Título PRINCIPAL (Slide-In by Clipping) --- */
+
+        .hero h1 {
+            position: relative; 
+            display: inline-block;
+            overflow: hidden; 
+            line-height: 1.1;
             margin-top: 50px;
         }
-
-        .banner {
-            background-color: var(--secondary-color);
-            padding: 100px 20px;
-            margin: 80px 0;
-            color: var(--text-color);
-        }
-        .banner h2 {
-            font-size: 2.5em;
-            color: var(--primary-color);
+        
+        .animated-reveal-text {
+            display: block;
+            transform: translateY(100%);
+            transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* Footer */
-        footer {
-            background-color: var(--secondary-color);
-            padding: 50px 20px;
-            font-size: 0.8em;
-            color: #6e6e73;
-            text-align: center;
-            border-top: 1px solid #ddd;
+        /* El resto del contenido animado mantendrá el fade-in y scale */
+        .animated-text {
+            opacity: 0;
+            transform: scale(0.98); 
+            transition: opacity 1.8s cubic-bezier(0.25, 0.1, 0.25, 1), transform 1.8s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
-        footer .footer-content {
-            max-width: 1000px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        footer a {
-            color: #6e6e73;
-            text-decoration: none;
-            margin-left: 20px;
+
+        /* Clases de visibilidad */
+        .animated-text.visible {
+            opacity: 1;
+            transform: scale(1);
         }
         
-        /* Responsiveness */
-        @media (max-width: 768px) {
-            h1 { font-size: 2.5em; }
-            h2 { font-size: 2em; }
-            .service-card { width: 100%; margin-bottom: 20px; }
-            .service-grid { flex-direction: column; }
-            .hero { padding: 100px 20px 50px; }
-            .footer-content { justify-content: center; }
-            footer a { margin: 5px 10px; }
+        .animated-reveal-text.visible {
+            transform: translateY(0);
         }
+        
+
+        /* Sección de Héroe */
+        .hero {
+            padding-top: 100px;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        
+        /* Parallax Simple (CSS) */
+        .parallax-bg {
+            background-color: #e3e3e3;
+            height: 50vh;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            background-image: linear-gradient(180deg, var(--color-fondo) 0%, #d8d8d8 100%);
+        }
+        
+        .parallax-text {
+            color: var(--color-texto);
+            font-size: 2.5rem;
+            font-weight: 600;
+            letter-spacing: -0.04em;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        Glow N' Go
-    </div>
-
-    <header class="hero">
-        <h1>La belleza empieza en tus manos.</h1>
-        <p>Un servicio de uñas de **alta costura**. Diseño, calidad y una experiencia sin igual.</p>
-        
-        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20solicitar%20una%20cita%20para%20uñas%20de%20lujo." target="_blank" class="btn">
-            <span style="font-size: 1.2em; margin-right: 8px;">💬</span> Reservar Cita por WhatsApp
-        </a>
+    <header class="header">
+        <div class="logo">
+            <span class="logo-main">Manicura Exclusive</span>
+            <span class="logo-with-alexandra">With Alexandra</span>
+        </div>
     </header>
 
-    <hr>
-
-    <section class="section-container">
-        <h2>Nuestro Arte. Tu Estilo.</h2>
-        <p>Técnicas perfeccionadas, solo productos de las mejores marcas del sector.</p>
-        
-        <div class="service-grid">
-            
-            <article class="service-card">
-                <h3>💅 Manicura de Autor</h3>
-                <p>Cuidado integral de la uña natural. Limpieza profunda, hidratación y esmaltado de larga duración.</p>
-            </article>
-
-            <article class="service-card">
-                <h3>💎 Extensiones Esculpidas</h3>
-                <p>Uñas de gel y acrílico ligeras y resistentes. Personalizamos la forma (Almond, Stiletto, Coffin) a la perfección.</p>
-            </article>
-
-            <article class="service-card">
-                <h3>🎨 Nail Art Exclusivo</h3>
-                <p>Diseños avanzados: micro-pintura, encapsulados, efectos cromados. Tu idea, nuestra obra maestra.</p>
-            </article>
-
-        </div>
-    </section>
-
-    <hr>
-
-    <section class="banner">
-        <h2>Listas para brillar en tu próximo evento.</h2>
-        <p>Asegura tu momento de belleza. Abrimos nuestra agenda con anticipación.</p>
-        <a href="https://wa.me/34641916779?text=Quiero%20saber%20la%20disponibilidad%20para%20una%20cita%20urgente." target="_blank" class="btn">
-            <span style="font-size: 1.2em; margin-right: 8px;">🚀</span> ¡Reserva Ya!
+    <div class="cta-fixed" id="ctaFixed">
+        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20reservar%20una%20cita%20de%20manicura." target="_blank" class="btn-reserva">
+            Reservar por WhatsApp
         </a>
+    </div>
+
+    <section class="seccion hero">
+        
+        <h1>
+            <span class="animated-reveal-text">La belleza empieza en tus manos.</span>
+        </h1>
+        
+        <p class="animated-text" style="transition-delay: 0.2s;">
+            Una experiencia de manicura que fusiona la **excelencia** con el **diseño minimalista**. Redefine tu estilo.
+        </p>
+        
+        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20reservar%20una%20cita%20de%20manicura." target="_blank" class="btn-reserva animated-text" style="margin-top: 30px; display: inline-block; transition-delay: 0.4s;">
+            Reservar Cita Ahora
+        </a>
+
+        <div style="margin-top: 50px;">
+            <p class="animated-text" style="font-size: 0.9rem; transition-delay: 0.6s; color: #888;">
+                Diseño atemporal, calidad duradera. Tu cita con la perfección.
+            </p>
+        </div>
+
     </section>
 
-    <hr>
+    <section class="seccion">
+        <h2 class="animated-text">Servicios a tu Medida.</h2>
 
-    <footer>
-        <div class="footer-content">
-            <p>© 2024 Glow N' Go. Todos los derechos reservados. Diseño inspirado en la experiencia Apple.</p>
-            <div>
-                <a href="#">Privacidad</a>
-                <a href="#">Términos</a>
-                <a href="tel:+34641916779">Contacto</a>
-            </div>
+        <div class="servicio">
+            <h3 class="animated-text" style="font-weight: 600; font-size: 1.5rem; margin-top: 40px; transition-delay: 0.6s;">Manicura Signature Pro</h3>
+            <p class="animated-text" style="transition-delay: 0.8s;">
+                **Precisión y Duración.** Un proceso meticuloso que garantiza un esmaltado perfecto y duradero. 
+                Utilizamos fórmulas de vanguardia para proteger la salud de tu uña y mantener el brillo intacto por semanas. 
+                *Diseñada para la mujer moderna que valora el tiempo y la calidad.*
+            </p>
         </div>
-    </footer>
 
+        <div class="servicio">
+            <h3 class="animated-text" style="font-weight: 600; font-size: 1.5rem; margin-top: 40px; transition-delay: 1.0s;">Tratamiento Wellness Integral</h3>
+            <p class="animated-text" style="transition-delay: 1.2s;">
+                **Nutrición Profunda.** Más que un esmalte, es un tratamiento. Incluye exfoliación y una mascarilla 
+                reparadora con ingredientes botánicos avanzados para hidratar y revitalizar la piel y las uñas.
+                *El secreto para unas manos visiblemente más jóvenes y cuidadas.*
+            </p>
+        </div>
+    </section>
+
+    <div class="parallax-bg">
+        <p class="parallax-text animated-text">La calidad se siente en el detalle.</p>
+    </div>
+
+    <section class="seccion">
+        <h2 class="animated-text">Reserva con Confianza.</h2>
+        <p class="animated-text" style="transition-delay: 0.2s;">
+            Nuestra agenda es limitada para asegurar que cada cliente reciba el tiempo y la **atención exclusiva** que merece. 
+            El proceso es simple, directo y sin esperas.
+        </p>
+        <p class="animated-text" style="transition-delay: 0.4s;">
+            **Te esperamos.** Usa el botón de reserva principal (fijo en pantalla) para obtener tu confirmación inmediata.
+        </p>
+    </section>
+
+    <script>
+        const header = document.querySelector('.header');
+        const ctaFixed = document.getElementById('ctaFixed');
+        let lastScrollTop = 0;
+        const scrollThreshold = 100;
+
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // 1. Ocultar/Mostrar Header
+            if (scrollTop > lastScrollTop && scrollTop > scrollThreshold) {
+                header.classList.add('hidden');
+            } else {
+                header.classList.remove('hidden');
+            }
+            
+            // 2. Mostrar/Ocultar CTA fijo
+            if (scrollTop > window.innerHeight * 0.9) { 
+                ctaFixed.style.opacity = 1;
+            } else {
+                ctaFixed.style.opacity = 0;
+            }
+
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+            
+            checkTextVisibility();
+        });
+
+        // Animación de aparición de texto (Usando Intersection Observer)
+        const animatedTexts = document.querySelectorAll('.animated-text');
+        const animatedRevealText = document.querySelector('.animated-reveal-text');
+        
+        // Agregamos el texto principal a la lista de observación
+        const allAnimatedElements = [...animatedTexts, animatedRevealText]; 
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); 
+                }
+            });
+        }, {
+            rootMargin: '0px',
+            threshold: 0.1 
+        });
+
+        // Inicializar el observador para todos los textos
+        allAnimatedElements.forEach(element => {
+            observer.observe(element);
+        });
+
+        // Función para check inicial
+        function checkTextVisibility() {
+             allAnimatedElements.forEach(element => {
+                if (element.getBoundingClientRect().top < window.innerHeight - 50 && !element.classList.contains('visible')) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+        
+        checkTextVisibility();
+
+    </script>
 </body>
-</html>
