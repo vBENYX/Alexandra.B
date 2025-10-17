@@ -1351,7 +1351,124 @@ input:focus, textarea:focus {
 }
 
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Pacifico&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&amp;display=swap" rel="stylesheet"></head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Pacifico&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&amp;display=swap" rel="stylesheet">
+<!-- APPLE STYLE ENHANCEMENTS -->
+<style>
+/* =====================  APPLE ENHANCEMENTS ===================== */
+
+/* Optimizar animaciones */
+* { -webkit-font-smoothing: antialiased; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* Header efecto parallax y glassmorphism */
+.header {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  transition: transform .25s ease-out, box-shadow .25s ease-out;
+}
+.header.scroll-glow {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+}
+
+/* Tarjetas con glassmorphism y animación */
+.platform-card {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.platform-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+/* Animaciones de aparición/desaparición */
+.platform-card.enter {
+  animation: cardIn .45s cubic-bezier(.22,1,.36,1) both;
+}
+.platform-card.leave {
+  animation: cardOut .35s ease both;
+}
+@keyframes cardIn {
+  0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cardOut {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(10px) scale(0.98); }
+}
+
+/* Botones con efecto magnético y ripple */
+.btn, .floating-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.btn::after, .floating-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  background: rgba(255,255,255,0.2);
+  border-radius: 100%;
+  width: 300%; height: 300%;
+  transition: transform 0.4s ease, opacity 0.6s ease;
+  opacity: 0;
+}
+.btn:active::after, .floating-btn:active::after {
+  transform: translate(-50%,-50%) scale(1);
+  opacity: 1;
+  transition: 0s;
+}
+.btn:hover, .floating-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+/* Contadores animados */
+.stat-number.animate {
+  animation: bounceNum 0.45s cubic-bezier(.22,1,.36,1);
+}
+@keyframes bounceNum {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* Toast de confirmación */
+.toast-notice {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: rgba(15,23,42,0.92);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity .35s ease, transform .35s ease;
+  z-index: 9999;
+}
+.toast-notice.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsividad mejorada */
+@media (max-width: 768px) {
+  .header { padding: 14px; }
+  .platform-card { padding: 12px; font-size: 0.95rem; }
+  .btn, .floating-btn { font-size: 0.9rem; padding: 10px; }
+}
+</style>
+
+</head>
 <body>
 <div class="welcome-overlay" id="welcome-overlay">
 <div class="welcome-box">
@@ -2368,7 +2485,124 @@ function hapticFeedback() {
 }
 
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Pacifico&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&amp;display=swap" rel="stylesheet"></head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Pacifico&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&amp;display=swap" rel="stylesheet">
+<!-- APPLE STYLE ENHANCEMENTS -->
+<style>
+/* =====================  APPLE ENHANCEMENTS ===================== */
+
+/* Optimizar animaciones */
+* { -webkit-font-smoothing: antialiased; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* Header efecto parallax y glassmorphism */
+.header {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  transition: transform .25s ease-out, box-shadow .25s ease-out;
+}
+.header.scroll-glow {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+}
+
+/* Tarjetas con glassmorphism y animación */
+.platform-card {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.platform-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+/* Animaciones de aparición/desaparición */
+.platform-card.enter {
+  animation: cardIn .45s cubic-bezier(.22,1,.36,1) both;
+}
+.platform-card.leave {
+  animation: cardOut .35s ease both;
+}
+@keyframes cardIn {
+  0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cardOut {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(10px) scale(0.98); }
+}
+
+/* Botones con efecto magnético y ripple */
+.btn, .floating-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.btn::after, .floating-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  background: rgba(255,255,255,0.2);
+  border-radius: 100%;
+  width: 300%; height: 300%;
+  transition: transform 0.4s ease, opacity 0.6s ease;
+  opacity: 0;
+}
+.btn:active::after, .floating-btn:active::after {
+  transform: translate(-50%,-50%) scale(1);
+  opacity: 1;
+  transition: 0s;
+}
+.btn:hover, .floating-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+/* Contadores animados */
+.stat-number.animate {
+  animation: bounceNum 0.45s cubic-bezier(.22,1,.36,1);
+}
+@keyframes bounceNum {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* Toast de confirmación */
+.toast-notice {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: rgba(15,23,42,0.92);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity .35s ease, transform .35s ease;
+  z-index: 9999;
+}
+.toast-notice.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsividad mejorada */
+@media (max-width: 768px) {
+  .header { padding: 14px; }
+  .platform-card { padding: 12px; font-size: 0.95rem; }
+  .btn, .floating-btn { font-size: 0.9rem; padding: 10px; }
+}
+</style>
+
+</head>
 <body>
 <!-- ... (todo el contenido HTML existente se mantiene igual) ... -->
 </main>
@@ -2822,3 +3056,40 @@ function hapticFeedback() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
+</script>
+
+<!-- APPLE STYLE JS ENHANCEMENTS -->
+<script>
+(function(){
+  // Parallax header
+  const header = document.querySelector('.header');
+  if(header){
+    window.addEventListener('scroll', ()=>{
+      const scrollY = window.scrollY;
+      if(scrollY > 10) header.classList.add('scroll-glow');
+      else header.classList.remove('scroll-glow');
+      header.style.transform = `translateY(${scrollY * 0.05}px)`;
+    }, { passive:true });
+  }
+
+  // Toast helper
+  const toast = document.createElement('div');
+  toast.className = 'toast-notice';
+  document.body.appendChild(toast);
+  window.appleToast = function(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(()=>toast.classList.remove('show'),2500);
+  }
+
+  // Animar contadores cuando cambian
+  function animateNumber(el){
+    if(!el) return;
+    el.classList.remove('animate');
+    void el.offsetWidth;
+    el.classList.add('animate');
+  }
+  window.animateNumber = animateNumber;
+
+})();
