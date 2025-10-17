@@ -3,50 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CODE | Logística Minimalista y Premium</title>
     
+    <title>CODE | Logística Minimalista y Premium</title>
+    <meta name="description" content="CODE Logistics es su socio en logística inteligente. Aplicamos el código de vanguardia para optimizar rutas, garantizar velocidad y precisión inigualables.">
+    
+    <meta property="og:title" content="CODE | Logística Inteligente">
+    <meta property="og:description" content="Optimización, velocidad y precisión en cada entrega con la vanguardia del código.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.codelogistics.com">
     <style>
         /* ---------------------- REINICIO GLOBAL Y ADAPTABILIDAD CRÍTICA ---------------------- */
+        :root {
+            /* Variables de color */
+            --color-blue: #007aff;
+            --color-light: #f5f5f7;
+            --color-dark: #1d1d1f;
+            --color-grey: #86868b;
+        }
+
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth; 
         }
         
-        /* SOLUCIÓN MÁS RADICAL PARA EL SCROLL HORIZONTAL */
+        /* SOLUCIÓN RADICAL Y DEFINITIVA PARA EL SCROLL HORIZONTAL */
         html {
             width: 100vw; 
             max-width: 100vw;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden; /* Forzamos la desaparición del scroll X */
-            scroll-behavior: smooth; 
+            overflow-x: hidden;
         }
 
         body {
-            width: 100vw; /* Forzamos el ancho del body al viewport */
+            width: 100vw; 
             max-width: 100vw;
-            margin: 0;
-            padding: 0; /* Padding CERO en los lados para evitar que se sume al 100vw */
             display: flex;
             flex-direction: column;
             align-items: center; 
             justify-content: flex-start;
             min-height: 100vh;
-            background-color: #f5f5f7; 
+            /* Fondo tipo Apple: degradado radial muy sutil */
+            background: radial-gradient(at 0% 0%, rgba(240, 245, 255, 0.4) 0%, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(250, 245, 255, 0.4) 0%, transparent 50%),
+                        var(--color-light); 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: #1d1d1f;
-            padding-top: 50px; /* Sólo padding vertical */
-            overflow-x: hidden; /* Doble seguridad */
+            color: var(--color-dark);
+            padding-top: 0; 
+            overflow-x: hidden; 
             transition: background-color 0.5s; 
+            position: relative; 
         }
 
-        /* ---------------------- PRE-LOADER (INDICADOR DE CARGA) ---------------------- */
+        /* FIX CRÍTICO: Bloquea el scroll del body cuando el menú está abierto */
+        @media (max-width: 767px) {
+            body.menu-open {
+                overflow: hidden;
+            }
+        }
+        
+        /* Contenedor principal que envuelve todo el contenido */
+        .page-container {
+            width: 100%;
+            max-width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1; 
+            padding-top: 0; 
+            position: relative;
+        }
+
+        /* ---------------------- HERO BACKGROUND ---------------------- */
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                180deg, 
+                rgba(240, 245, 255, 0.5) 0%,
+                rgba(240, 245, 255, 0) 30%,
+                rgba(240, 245, 255, 0) 70%,
+                rgba(240, 245, 255, 0.5) 100%
+            );
+            /* Sutil efecto de Parallax (se ajusta en JS) */
+            transform: translateZ(-1px) scale(1.05);
+            filter: saturate(1.2);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ---------------------- ANIMACIÓN DE SCROLL ---------------------- */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(20px);
+            /* Curva de animación suave */
+            transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .scroll-animate.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ---------------------- PRE-LOADER ---------------------- */
         #preloader {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #f5f5f7;
+            background: var(--color-light);
             z-index: 99999;
             display: flex;
             justify-content: center;
@@ -57,7 +126,7 @@
 
         .spinner {
             border: 4px solid rgba(0, 122, 255, 0.2);
-            border-top: 4px solid #007aff;
+            border-top: 4px solid var(--color-blue);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -69,7 +138,167 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* ---------------------- HERO Y GLOW (Asegurado) ---------------------- */
+        /* ---------------------- ENCABEZADO Y MENÚ HAMBURGUESA ---------------------- */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            max-width: 100vw;
+            z-index: 1000;
+            padding: 15px 20px;
+            background-color: rgba(245, 245, 247, 0.8); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            animation: fadeInButton 0.8s ease-out forwards;
+            animation-delay: 1.0s;
+        }
+
+        .header-content {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--color-dark);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex; 
+        }
+        
+        .nav-links a {
+            color: var(--color-grey);
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 1em;
+            font-weight: 500;
+            /* Micro-Interacción */
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--color-blue);
+            transform: translateY(-1px); /* Subida sutil */
+        }
+
+        .menu-toggle {
+            display: none; 
+            width: 30px;
+            height: 20px;
+            position: relative;
+            cursor: pointer;
+            z-index: 1001; 
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .menu-toggle span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background: var(--color-dark);
+            border-radius: 9px;
+            opacity: 1;
+            transform: rotate(0deg);
+            transition: .25s ease-in-out;
+        }
+
+        .menu-toggle.open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .menu-toggle.open span:nth-child(2) { opacity: 0; }
+        .menu-toggle.open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+        @media (max-width: 767px) {
+            .menu-toggle {
+                display: flex; 
+            }
+            
+            .nav-links {
+                display: none; 
+                position: fixed; 
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh; /* FIX: Usa 100vh para cubrir la altura completa */
+                background-color: var(--color-light);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: transform 0.3s ease-in-out;
+                transform: translateX(100%);
+                z-index: 999;
+            }
+
+            .nav-links.open {
+                display: flex;
+                transform: translateX(0);
+            }
+
+            .nav-links a {
+                margin: 20px 0;
+                font-size: 1.5em;
+                color: var(--color-dark);
+            }
+        }
+
+        /* ---------------------- BOTÓN DE LLAMADA FIJO ---------------------- */
+        .fixed-call-button {
+            position: fixed; 
+            top: 25px; 
+            right: 20px; 
+            z-index: 10000; 
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            width: 44px;
+            height: 44px;
+            background-color: rgba(0, 122, 255, 0.1); 
+            border: 1px solid rgba(0, 122, 255, 0.2);
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            cursor: pointer;
+            text-decoration: none;
+            opacity: 0;
+            animation: fadeInButton 0.8s ease-out forwards;
+            animation-delay: 1.5s; 
+        }
+
+        @media (min-width: 768px) {
+            .fixed-call-button {
+                display: flex; 
+            }
+        }
+
+        .fixed-call-button:hover {
+            transform: scale(1.1);
+            background-color: rgba(0, 122, 255, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .fixed-call-button svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--color-blue);
+        }
+
+        @keyframes fadeInButton {
+            to { opacity: 1; }
+        }
+
+        /* ---------------------- HERO Y GLOW ---------------------- */
         .hero-glow-blob {
             position: absolute;
             top: 50%;
@@ -77,111 +306,26 @@
             transform: translate(-50%, -50%); 
             width: clamp(350px, 80vw, 1000px); 
             height: clamp(350px, 80vw, 1000px);
-            background: radial-gradient(circle, rgba(0, 122, 255, 0.2) 0%, transparent 70%); 
+            background: radial-gradient(circle, rgba(0, 122, 255, 0.1) 0%, transparent 70%); 
             border-radius: 50%;
-            filter: blur(80px);
-            z-index: -1;
-            animation: moveGlow 15s ease-in-out infinite alternate, subtleScale 8s ease-in-out infinite alternate;
+            filter: blur(100px); 
+            z-index: -2; 
+            animation: moveGlow 18s ease-in-out infinite alternate, subtleScale 10s ease-in-out infinite alternate;
+            transform-origin: center center;
+            will-change: transform;
         }
 
         @keyframes moveGlow {
-            0% { transform: translate(-50%, -50%) scale(0.95); }
-            100% { transform: translate(-45%, -55%) scale(1.05); }
+            0% { transform: translate(-50%, -50%) scale(0.98); }
+            100% { transform: translate(-48%, -52%) scale(1.02); }
         }
         
         @keyframes subtleScale {
-            0% { transform: translate(-50%, -50%) scale(0.98); } 
-            100% { transform: translate(-50%, -50%) scale(1.02); } 
+            0% { transform: translate(-50%, -50%) scale(0.99); } 
+            100% { transform: translate(-50%, -50%) scale(1.01); } 
         }
 
-        /* ---------------------- BOTÓN DE LLAMADA DESPLEGABLE (Derecha Superior) ---------------------- */
-        .call-dropdown-container {
-            position: fixed; 
-            top: 15px; 
-            right: 15px; 
-            z-index: 10000; 
-            opacity: 0;
-            animation: fadeInButton 0.8s ease-out forwards;
-            animation-delay: 1.0s;
-        }
-        
-        .call-dropdown-menu {
-            position: absolute;
-            top: 100%; 
-            right: 0; 
-            margin-top: 10px; 
-            padding: 8px 0;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            min-width: 150px;
-            
-            visibility: hidden;
-            opacity: 0;
-            transform: translateY(-5px);
-            transition: visibility 0.3s, opacity 0.3s, transform 0.3s;
-        }
-        
-        .call-dropdown-container:hover .call-dropdown-menu {
-            visibility: visible;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .call-toggle-button {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 38px;
-            height: 38px;
-            background-color: rgba(0, 122, 255, 0.1); 
-            border: 1px solid rgba(0, 122, 255, 0.2);
-            border-radius: 50%;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-            cursor: pointer;
-            position: relative;
-            z-index: 1000;
-        }
-        
-        .call-toggle-button:hover {
-            transform: scale(1.1);
-            background-color: rgba(0, 122, 255, 0.2);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .call-toggle-button svg {
-            width: 18px;
-            height: 18px;
-            fill: #007aff;
-        }
-
-        .dropdown-item {
-            display: block;
-            padding: 8px 15px;
-            color: #1d1d1f;
-            font-size: 0.9em;
-            text-decoration: none;
-            transition: background-color 0.2s;
-            font-weight: 500;
-        }
-        
-        .dropdown-item span {
-            color: #86868b;
-            font-size: 0.75em;
-            display: block; 
-        }
-        
-        .dropdown-item:hover {
-            background-color: #f0f0f5; 
-            color: #007aff;
-        }
-        
-        @keyframes fadeInButton {
-            to { opacity: 1; }
-        }
-
-        /* ---------------------- CONTENIDO PRINCIPAL Y LOGO TRASLUZ ---------------------- */
+        /* ---------------------- CONTENIDO PRINCIPAL ---------------------- */
         .content-section {
             width: 100%;
             max-width: 1000px;
@@ -190,39 +334,41 @@
             display: flex;
             flex-direction: column;
             justify-content: center; 
-            /* Padding horizontal seguro para todos los dispositivos */
             padding: 0 15px; 
+            padding-top: clamp(100px, 15vh, 140px); 
+            padding-bottom: clamp(50px, 10vh, 100px); 
+            position: relative;
+            transform-style: preserve-3d; 
+            perspective: 1px;
         }
 
         .welcome-text {
             font-size: clamp(3rem, 10vw, 6rem); 
             font-weight: 800;
-            letter-spacing: -0.04em;
+            letter-spacing: -0.05em; 
             text-transform: uppercase;
-            color: #1d1d1f; 
-            margin-bottom: clamp(10px, 2vw, 20px);
-            
             opacity: 0;
             transform: translateY(20px);
-            
-            /* Trasluz Apple-Style */
-            background: linear-gradient(90deg, 
-                #1d1d1f 0%, #1d1d1f 10%, 
-                #a0a0a0 25%, 
-                #1d1d1f 40%, #1d1d1f 100% 
-            ); 
-            background-size: 200% auto; 
+            margin-bottom: clamp(10px, 2vw, 20px);
+            background-color: var(--color-dark); 
+            background-image: linear-gradient(
+                90deg, 
+                var(--color-dark) 0%,       
+                var(--color-dark) 20%,      
+                #e0f0ff 50%,       
+                var(--color-dark) 80%,       
+                var(--color-dark) 100%       
+            );
+            background-size: 300% 100%; 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
             animation: textSlideUp 1.2s cubic-bezier(0.2, 0.5, 0.2, 1) forwards, 
-                       shine 8s ease-in-out infinite 1.5s;
+                       shine-sutil 8s ease-out 1s forwards; 
         }
 
-        /* Animación del efecto de trasluz */
-        @keyframes shine {
-            0% { background-position: -100% 0; } 
-            10% { background-position: 150% 0; } 
-            100% { background-position: 150% 0; } 
+        @keyframes shine-sutil {
+            0% { background-position: -150% 0; }
+            100% { background-position: 150% 0; }
         }
         
         @keyframes textSlideUp {
@@ -232,18 +378,18 @@
 
         .description {
             font-size: clamp(1em, 3vw, 1.4em); 
-            color: #86868b;
+            color: var(--color-grey);
             max-width: 650px;
             margin: 0 auto clamp(30px, 5vw, 50px) auto;
             padding: 0 10px;
             opacity: 0;
-            animation: fadeIn 1s ease-out forwards;
-            animation-delay: 1.0s;
+            animation: fadeIn 1.2s ease-out forwards; 
+            animation-delay: 1.8s; 
         }
 
         @keyframes fadeIn { to { opacity: 1; } }
 
-        /* ---------------------- TARJETAS (CARDS) ---------------------- */
+        /* ---------------------- TARJETAS (CARDS) y Hitos/Milestones ---------------------- */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
@@ -252,8 +398,8 @@
             width: 100%;
             opacity: 0;
             transform: translateY(30px);
-            animation: statsSlideUp 1.5s cubic-bezier(0.2, 0.5, 0.2, 1) forwards;
-            animation-delay: 1.5s;
+            animation: statsSlideUp 1.8s cubic-bezier(0.2, 0.5, 0.2, 1) forwards; 
+            animation-delay: 1.8s; 
         }
 
         @keyframes statsSlideUp {
@@ -261,33 +407,116 @@
         }
 
         .stat-item {
-            background-color: #ffffff;
-            border-radius: 18px;
-            padding: clamp(20px, 4vw, 35px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); 
-            transition: transform 0.3s ease, box-shadow 0.3s ease; 
+            background-color: rgba(255, 255, 255, 0.8); 
+            border-radius: 24px; 
+            padding: clamp(25px, 4vw, 40px); 
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04); 
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; 
             text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.03); 
+            position: relative; 
+            overflow: hidden; 
         }
 
         .stat-item:hover {
-            transform: translateY(-5px); 
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12); 
+            transform: translateY(-8px); 
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); 
+            background-color: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
         }
         
         .stat-number {
-            font-size: clamp(2.2em, 5vw, 3.5em);
+            font-size: clamp(2.5em, 5vw, 4em); 
             font-weight: 700;
-            color: #007aff; 
+            color: var(--color-blue); 
             line-height: 1.1;
             margin-bottom: 5px;
         }
 
         .stat-label {
-            font-size: clamp(1em, 2vw, 1.1em);
+            font-size: clamp(1em, 2vw, 1.2em); 
             font-weight: 600;
-            color: #1d1d1f;
+            color: var(--color-dark);
+            transition: color 0.5s ease, font-weight 0.5s ease;
         }
         
+        /* HITO/MILESTONE COMPLETADO */
+        .stat-label.is-completed {
+            color: var(--color-blue); 
+            font-weight: 700;
+        }
+        
+        /* ---------------------- SECCIÓN MISIÓN ---------------------- */
+        .mission-section {
+            width: 100%;
+            max-width: 800px;
+            padding: clamp(60px, 10vh, 100px) 15px;
+            text-align: center;
+        }
+
+        .mission-section h2 {
+            font-size: clamp(2em, 5vw, 3em);
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--color-dark);
+        }
+        
+        .mission-section p {
+            font-size: clamp(1.1em, 2vw, 1.3em);
+            color: #55555a;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        /* ---------------------- SECCIÓN DE SERVICIOS ---------------------- */
+        .services-section {
+            width: 100%;
+            max-width: 1000px;
+            padding: clamp(60px, 10vh, 120px) 15px;
+            text-align: center;
+        }
+
+        .services-section h2 {
+            font-size: clamp(2em, 5vw, 3em);
+            font-weight: 700;
+            margin-bottom: 50px;
+            color: var(--color-dark);
+        }
+
+        .service-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .service-item {
+            max-width: 300px;
+            padding: 30px;
+            background-color: #ffffff; 
+            border-radius: 20px;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); 
+            transition: box-shadow 0.3s ease;
+        }
+
+        .service-item:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07); 
+        }
+
+        .service-item h3 {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--color-blue);
+        }
+
+        .service-item p {
+            color: #55555a;
+            line-height: 1.6;
+        }
+
         /* ---------------------- PIE DE PÁGINA (FOOTER) ---------------------- */
         .footer {
             width: 100%;
@@ -296,22 +525,59 @@
             margin-top: 40px;
             border-top: 1px solid #e0e0e5; 
             text-align: center;
-            color: #86868b;
+            color: var(--color-grey);
             font-size: 0.9em;
             opacity: 0;
             animation: fadeIn 1s ease-out forwards;
-            animation-delay: 2.5s; 
+            animation-delay: 3.5s; 
         }
         
         .footer a {
-            color: #86868b;
+            color: var(--color-grey);
             text-decoration: none;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.2s;
             margin: 0 10px;
+            display: inline-block; /* Necesario para el transform */
         }
         
         .footer a:hover {
-            color: #1d1d1f;
+            color: var(--color-dark);
+            transform: translateY(-1px); /* Subida sutil */
+        }
+
+        /* ---------------------- BOTÓN CTA FLOTANTE (INFERIOR) - Arreglo del Scroll ---------------------- */
+        .floating-cta-button {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: linear-gradient(135deg, var(--color-blue), #0056b3); 
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px; 
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2); 
+            /* La transición es crucial para evitar el 'stuck scroll' */
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            opacity: 1; /* Necesario para que la animación inicial de CSS funcione */
+            animation: fadeInButton 0.8s ease-out forwards;
+            animation-delay: 4.0s; 
+        }
+        
+        /* ⭐ FIX: Clase para ocultar el CTA de forma controlada por JS ⭐ */
+        .floating-cta-button.hidden {
+            opacity: 0;
+            transform: translateY(100px) translateX(-50%);
+            pointer-events: none; /* Deshabilita clics cuando está oculto */
+        }
+
+        .floating-cta-button:hover {
+            transform: translateX(-50%) translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 25px rgba(0, 122, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #006aff, #004599); 
         }
     </style>
 </head>
@@ -321,59 +587,106 @@
         <div class="spinner"></div>
     </div>
 
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">CODE.</a>
+            <nav class="nav-links" id="nav-links" aria-label="Navegación Principal">
+                <a href="#mision">Misión</a>
+                <a href="#servicios">Servicios</a>
+                <a href="#stats">Nuestra Data</a>
+                <a href="mailto:info@codelogistics.com">Contacto</a>
+            </nav>
+            <div class="menu-toggle" id="menu-toggle" role="button" aria-controls="nav-links" aria-expanded="false" aria-label="Abrir menú de navegación">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <a href="tel:+34642638704" class="fixed-call-button" aria-label="Llamar a CODE Logistics">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.45.57 3.57.11.35.03.74-.24 1.02l-2.2 2.2z"/></svg>
+    </a>
+
     <div class="hero-glow-blob"></div>
-
-    <div class="call-dropdown-container">
-        <div class="call-toggle-button" aria-label="Opciones de Llamada">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.45.57 3.57.11.35.03.74-.24 1.02l-2.2 2.2z"/></svg>
-        </div>
-        
-        <div class="call-dropdown-menu">
-            <a href="tel:+34642638704" class="dropdown-item">
-                Central <span>+34 642 638 704</span>
-            </a>
-            <a href="tel:+34607371053" class="dropdown-item">
-                Soporte Técnico <span>+34 607 371 053</span>
-            </a>
-        </div>
-    </div>
-
-    <div class="content-section">
-        
-        <h1 class="welcome-text">CODE</h1>
-        
-        <p class="description">
-            Su socio en logística inteligente. Aplicamos la vanguardia del código para optimizar cada ruta y entrega, garantizando velocidad y precisión inigualables.
-        </p>
-
-        <div class="stats-grid">
-            
-            <div class="stat-item">
-                <div class="stat-number" data-stat-id="routes" data-target="15800">0</div>
-                <div class="stat-label">Rutas Completadas</div>
-            </div>
-            
-            <div class="stat-item">
-                <div class="stat-number" data-stat-id="km" data-target="450000">0</div>
-                <div class="stat-label">Kilómetros Recorridos</div>
-            </div>
-            
-            <div class="stat-item">
-                <div class="stat-number" data-stat-id="efficiency" data-target="99.9">0</div>
-                <div class="stat-label">Tasa de Eficiencia (%)</div>
-            </div>
-
-        </div>
-    </div>
     
-    <footer class="footer">
-        © 2025 CODE Logistics. Todos los derechos reservados.
-        <a href="#">Política de Privacidad</a> | 
-        <a href="#">Términos de Uso</a>
-    </footer>
+    <div class="page-container">
+        
+        <div class="hero-overlay"></div>
+        
+        <div class="content-section" id="hero">
+            
+            <h1 class="welcome-text">CODE</h1>
+            
+            <p class="description">
+                Su socio en logística inteligente. Aplicamos la vanguardia del código para optimizar cada ruta y entrega, garantizando velocidad y precisión inigualables.
+            </p>
+
+            <div class="stats-grid" id="stats">
+                
+                <div class="stat-item">
+                    <div class="stat-number" data-stat-id="routes" data-target="0">0</div>
+                    <div class="stat-label">Rutas Completadas</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-number" data-stat-id="km" data-target="0">0</div>
+                    <div class="stat-label">Kilómetros Recorridos</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-number" data-stat-id="efficiency" data-target="0.0">0.0</div>
+                    <div class="stat-label">Tasa de Eficiencia (%)</div>
+                </div>
+
+            </div>
+        </div>
+        
+        <section class="mission-section scroll-animate" id="mision">
+            <h2>Nuestra Misión</h2>
+            <p>
+                Ser el estándar global de la logística **minimalista y precisa**. Creemos que cada envío debe ser perfecto, eliminando el desperdicio y la incertidumbre a través de la innovación en cada línea de código.
+            </p>
+            <p>
+                Nuestra visión es un mundo donde la cadena de suministro es invisible y sin fricción, ejecutada con la elegancia y la velocidad de un sistema perfectamente diseñado.
+            </p>
+        </section>
+
+        <section class="services-section" id="servicios">
+            <h2>Nuestra Propuesta de Valor</h2>
+            <div class="service-list">
+                
+                <div class="service-item scroll-animate">
+                    <h3>Rutas Inteligentes por IA</h3>
+                    <p>Utilizamos algoritmos de aprendizaje automático para predecir el tráfico y optimizar las rutas en tiempo real, reduciendo costes y tiempos de entrega.</p>
+                </div>
+
+                <div class="service-item scroll-animate">
+                    <h3>Seguimiento a Nivel de Código</h3>
+                    <p>Ofrecemos trazabilidad total, permitiendo a sus clientes y a usted monitorear el estado exacto del paquete, desde el almacén hasta la puerta.</p>
+                </div>
+
+                <div class="service-item scroll-animate">
+                    <h3>Logística Cero Errores</h3>
+                    <p>Minimizamos los errores humanos mediante sistemas automatizados y dobles verificaciones digitales, garantizando que el paquete correcto llegue al destino correcto.</p>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="footer">
+            © 2025 CODE Logistics. Todos los derechos reservados.
+            <a href="#">Política de Privacidad</a> | 
+            <a href="#">Términos de Uso</a>
+        </footer>
+
+    </div>
+
+    <a href="mailto:info@codelogistics.com" class="floating-cta-button" aria-label="Enviar correo electrónico a CODE Logistics">
+        Escribir un Correo
+    </a>
 
     <script>
-        // Función para calcular valores basados en la fecha actual (SIMULACIÓN DIARIA)
+        // ---------------------- LÓGICA DE CONTADORES Y HITOS ----------------------
         function calculateDynamicTarget(statId) {
             const baseDate = new Date('2025-10-01T00:00:00');
             const currentDate = new Date();
@@ -391,70 +704,178 @@
             } else if (statId === 'efficiency') {
                 return 99.9;
             }
+            return baseValue + (Math.max(0, diffDays) * dailyIncrease); 
+        }
+        
+        function startCounter(counter) {
+            const target = +counter.getAttribute('data-target'); 
+            const isFloat = counter.getAttribute('data-stat-id') === 'efficiency'; 
+            const duration = 2500;
+            const start = 0;
+            let startTime = null;
+            
+            const statItem = counter.closest('.stat-item');
+            const label = statItem ? statItem.querySelector('.stat-label') : null;
 
-            return baseValue + (diffDays * dailyIncrease);
+
+            const animate = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const progress = timestamp - startTime;
+                const percentage = Math.min(progress / duration, 1);
+                let value = percentage * (target - start) + start;
+
+                if (isFloat) {
+                    counter.textContent = value.toFixed(1);
+                } else {
+                    counter.textContent = Math.floor(value).toLocaleString('es-ES');
+                }
+
+                if (percentage < 1) {
+                    window.requestAnimationFrame(animate);
+                } else {
+                    counter.textContent = isFloat ? target.toFixed(1) : target.toLocaleString('es-ES');
+                    // Agrega la clase de hito al terminar 
+                    if (label) {
+                        label.classList.add('is-completed');
+                    }
+                }
+            };
+            window.requestAnimationFrame(animate);
         }
 
-        // Función principal de animación de contadores y lógica de pre-loader
-        document.addEventListener('DOMContentLoaded', () => {
-            const counters = document.querySelectorAll('.stat-number');
-            const duration = 2000; 
+        // ---------------------- LÓGICA DEL MENÚ HAMBURGUESA ----------------------
+        function setupHamburgerMenu() {
+            const toggle = document.getElementById('menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            const body = document.body;
 
+            toggle.addEventListener('click', () => {
+                const isOpened = navLinks.classList.toggle('open');
+                toggle.classList.toggle('open');
+                body.classList.toggle('menu-open', isOpened); 
+                toggle.setAttribute('aria-expanded', isOpened); 
+            });
+            
+            // Cerrar menú al hacer clic en un enlace
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navLinks.classList.contains('open')) {
+                        toggle.classList.remove('open');
+                        navLinks.classList.remove('open');
+                        body.classList.remove('menu-open'); 
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+        }
+        
+        // ---------------------- LÓGICA CTA SENSIBLE AL SCROLL ⭐ FIX DEL SCROLL ⭐ ----------------------
+        function setupScrollCta() {
+            const ctaButton = document.querySelector('.floating-cta-button');
+            let lastScrollTop = 0;
+
+            // Asegura que se oculte después de la animación inicial
+            setTimeout(() => {
+                 ctaButton.classList.add('hidden'); 
+            }, 5000); // Se oculta a los 5 segundos de carga o una vez que pasa la animación.
+
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Ocultar al hacer scroll down, mostrar al hacer scroll up o al estar cerca del top (scrollTop < 250)
+                if (scrollTop > lastScrollTop && scrollTop > 250) { 
+                    // Scrolling down (ocultar)
+                    ctaButton.classList.add('hidden');
+                } else if (scrollTop < lastScrollTop || scrollTop < 250) {
+                    // Scrolling up (mostrar) o cerca del top
+                    ctaButton.classList.remove('hidden');
+                }
+
+                lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+            }, false);
+        }
+
+        // ---------------------- LÓGICA DE ANIMACIÓN ESCALONADA ----------------------
+        function setupScrollAnimations() {
+            const elements = document.querySelectorAll('.scroll-animate');
+
+            elements.forEach((element, index) => {
+                // Aplica retraso escalonado solo a los ítems de servicio
+                if (element.closest('.service-list')) {
+                    element.style.transitionDelay = `${(index % 3) * 0.15}s`; 
+                }
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    rootMargin: '0px',
+                    threshold: 0.2 
+                });
+
+                observer.observe(element);
+            });
+        }
+        
+        // ---------------------- SIMULACIÓN PARALLAX (SUTIL) ----------------------
+        function setupParallax() {
+            const glowBlob = document.querySelector('.hero-glow-blob');
+            const heroOverlay = document.querySelector('.hero-overlay');
+
+            if (!glowBlob || !heroOverlay) return;
+
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+                
+                // Mueve el glow blob más lento
+                glowBlob.style.transform = `translate3d(-50%, calc(-50% + ${scrollY * 0.2}px), 0)`;
+                
+                // Mueve el hero overlay aún más lento
+                heroOverlay.style.transform = `translate3d(0, ${scrollY * 0.1}px, 0)`;
+            });
+        }
+        
+        // ---------------------- INICIALIZACIÓN GENERAL ----------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            setupHamburgerMenu();
+            setupScrollAnimations();
+            setupParallax();
+            setupScrollCta(); 
+
+            // 1. Inicializar contadores: calcula el objetivo dinámico
+            const counters = document.querySelectorAll('.stat-number');
             counters.forEach(counter => {
                 const statId = counter.getAttribute('data-stat-id');
-                if (statId !== 'efficiency') {
-                    const newTarget = calculateDynamicTarget(statId);
-                    counter.setAttribute('data-target', newTarget);
-                }
+                const newTarget = calculateDynamicTarget(statId);
+                counter.setAttribute('data-target', statId === 'efficiency' ? 99.9 : newTarget); 
             });
 
-            const startCounter = (counter) => {
-                const target = +counter.getAttribute('data-target');
-                const isFloat = counter.textContent.includes('.');
-                const start = 0;
-                let startTime = null;
-
-                const animate = (timestamp) => {
-                    if (!startTime) startTime = timestamp;
-                    const progress = timestamp - startTime;
-                    const percentage = Math.min(progress / duration, 1);
-                    let value = percentage * (target - start) + start;
-
-                    if (isFloat) {
-                        counter.textContent = value.toFixed(1);
-                    } else {
-                        counter.textContent = Math.floor(value).toLocaleString('es-ES');
-                    }
-
-                    if (percentage < 1) {
-                        window.requestAnimationFrame(animate);
-                    } else {
-                        counter.textContent = isFloat ? target.toFixed(1) : target.toLocaleString('es-ES');
-                    }
-                };
-                window.requestAnimationFrame(animate);
-            };
-
-            const observer = new IntersectionObserver((entries, observer) => {
+            // 2. Observer para iniciar el conteo cuando el grid esté visible
+            const statsGrid = document.querySelector('.stats-grid');
+            const counterObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         setTimeout(() => {
                              counters.forEach(startCounter);
                              observer.unobserve(entry.target);
-                        }, 500); 
+                        }, 100); 
                     }
                 });
             }, {
                 threshold: 0.1 
             });
 
-            const statsGrid = document.querySelector('.stats-grid');
             if (statsGrid) {
-                observer.observe(statsGrid);
+                counterObserver.observe(statsGrid);
             }
         });
 
-        // LÓGICA PARA OCULTAR EL PRE-LOADER
+        // ---------------------- LÓGICA DE PRE-LOADER ----------------------
         window.addEventListener('load', () => {
             const preloader = document.getElementById('preloader');
             if (preloader) {
