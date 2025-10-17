@@ -6,25 +6,36 @@
     <title>CODE | Logística Minimalista y Premium</title>
     
     <style>
-        /* ---------------------- ESTILOS GLOBALES ---------------------- */
-        html {
-            scroll-behavior: smooth; 
+        /* ---------------------- REINICIO GLOBAL Y ADAPTABILIDAD CRÍTICA ---------------------- */
+        * {
+            box-sizing: border-box;
         }
-        body {
+        
+        /* SOLUCIÓN MÁS RADICAL PARA EL SCROLL HORIZONTAL */
+        html {
+            width: 100vw; 
+            max-width: 100vw;
             margin: 0;
             padding: 0;
-            /* CORRECCIÓN 2: Asegura que el contenido esté centrado horizontalmente */
+            overflow-x: hidden; /* Forzamos la desaparición del scroll X */
+            scroll-behavior: smooth; 
+        }
+
+        body {
+            width: 100vw; /* Forzamos el ancho del body al viewport */
+            max-width: 100vw;
+            margin: 0;
+            padding: 0; /* Padding CERO en los lados para evitar que se sume al 100vw */
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centrado horizontal */
+            align-items: center; 
             justify-content: flex-start;
             min-height: 100vh;
             background-color: #f5f5f7; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: #1d1d1f;
-            padding: 20px;
-            padding-top: 50px; 
-            overflow-x: hidden;
+            padding-top: 50px; /* Sólo padding vertical */
+            overflow-x: hidden; /* Doble seguridad */
             transition: background-color 0.5s; 
         }
 
@@ -36,7 +47,7 @@
             width: 100%;
             height: 100%;
             background: #f5f5f7;
-            z-index: 9999;
+            z-index: 99999;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -58,14 +69,14 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* ---------------------- HERO Y GLOW ---------------------- */
+        /* ---------------------- HERO Y GLOW (Asegurado) ---------------------- */
         .hero-glow-blob {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%); 
-            width: clamp(500px, 80vw, 1000px); 
-            height: clamp(500px, 80vw, 1000px);
+            width: clamp(350px, 80vw, 1000px); 
+            height: clamp(350px, 80vw, 1000px);
             background: radial-gradient(circle, rgba(0, 122, 255, 0.2) 0%, transparent 70%); 
             border-radius: 50%;
             filter: blur(80px);
@@ -79,13 +90,12 @@
         }
         
         @keyframes subtleScale {
-            0% { transform: scale(0.98); }
-            100% { transform: scale(1.02); }
+            0% { transform: translate(-50%, -50%) scale(0.98); } 
+            100% { transform: translate(-50%, -50%) scale(1.02); } 
         }
 
         /* ---------------------- BOTÓN DE LLAMADA DESPLEGABLE (Derecha Superior) ---------------------- */
         .call-dropdown-container {
-            /* Fija el elemento en la esquina superior derecha */
             position: fixed; 
             top: 15px; 
             right: 15px; 
@@ -95,7 +105,6 @@
             animation-delay: 1.0s;
         }
         
-        /* El menú se posiciona absolutamente respecto al contenedor fijo, alineado a la derecha */
         .call-dropdown-menu {
             position: absolute;
             top: 100%; 
@@ -119,7 +128,6 @@
             transform: translateY(0);
         }
 
-        /* Estilos del botón principal y elementos del menú */
         .call-toggle-button {
             display: flex;
             justify-content: center;
@@ -182,7 +190,8 @@
             display: flex;
             flex-direction: column;
             justify-content: center; 
-            /* Se mantiene el centrado dentro del body centrado */
+            /* Padding horizontal seguro para todos los dispositivos */
+            padding: 0 15px; 
         }
 
         .welcome-text {
@@ -196,24 +205,24 @@
             opacity: 0;
             transform: translateY(20px);
             
-            /* Trasluz: Se ejecuta 1 vez cada 6 segundos */
+            /* Trasluz Apple-Style */
             background: linear-gradient(90deg, 
-                #1d1d1f 0%, #1d1d1f 5%, 
-                #a0a0a0 20%, /* El brillo (luz) */
-                #1d1d1f 35%, #1d1d1f 100% 
+                #1d1d1f 0%, #1d1d1f 10%, 
+                #a0a0a0 25%, 
+                #1d1d1f 40%, #1d1d1f 100% 
             ); 
             background-size: 200% auto; 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
             animation: textSlideUp 1.2s cubic-bezier(0.2, 0.5, 0.2, 1) forwards, 
-                       shine 6s linear infinite 1.5s; 
+                       shine 8s ease-in-out infinite 1.5s;
         }
 
-        /* Animación del efecto de trasluz con retorno al color base (Nítido) */
+        /* Animación del efecto de trasluz */
         @keyframes shine {
             0% { background-position: -100% 0; } 
-            16.6% { background-position: 200% 0; } 
-            100% { background-position: 200% 0; } 
+            10% { background-position: 150% 0; } 
+            100% { background-position: 150% 0; } 
         }
         
         @keyframes textSlideUp {
@@ -283,7 +292,7 @@
         .footer {
             width: 100%;
             max-width: 1000px;
-            padding: 20px 0;
+            padding: 20px 15px;
             margin-top: 40px;
             border-top: 1px solid #e0e0e5; 
             text-align: center;
