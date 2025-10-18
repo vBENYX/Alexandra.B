@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manicura Exclusive - Reserva Tu Estilo</title>
     <style>
-        /* Variables y Estilos Base */
+        /* Variables y Estilos Base - Estilo Apple/Alegre (Cheerful Coral) */
         :root {
-            --color-fondo: #f5f5f7;
-            --color-texto: #1d1d1f;
-            --color-acento: #007aff;
+            --color-fondo: #f9f9fb; /* Blanco muy suave para frescura */
+            --color-texto: #1d1d1f; 
+            --color-acento-secundario: #007aff; /* Azul clásico para CTA fijo */
+            --color-acento-principal: #ff6961; /* Coral Alegre y Vibrante */
             --color-claro: #ffffff;
+            --color-gris-suave: #e8e8ed;
             --tipografia-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
@@ -23,20 +24,20 @@
             color: var(--color-texto);
             line-height: 1.6;
             scroll-behavior: smooth;
+            overflow-x: hidden;
         }
 
-        /* --- Encabezado y Logo --- */
-
+        /* --- Encabezado con Glassmorphism Sutil --- */
         .header {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(12px); 
             padding: 15px 0;
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05); 
             z-index: 1000;
             transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         }
@@ -47,54 +48,53 @@
         }
 
         .logo {
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.04em; 
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 5px;
+            gap: 10px; 
         }
 
         .logo-main {
             color: var(--color-texto);
         }
 
-        /* Estilo para "With Alexandra" con Animación de Brillo Pulido (Glossy) */
+        /* Degradado de Coral en el logo */
         .logo-with-alexandra {
-            /* AJUSTE: Mismo tamaño y peso que .logo-main */
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            
-            /* Mantener el gradiente de transluz base */
-            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            background: linear-gradient(90deg, #ff8c88 0%, var(--color-acento-principal) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
             text-fill-color: transparent;
-            
-            /* Quitar el pseudo-elemento de brillo pasante */
             position: relative;
             overflow: hidden;
-
-            /* NUEVA ANIMACIÓN: Brillo/Glossy Effect */
-            opacity: 0.8; /* Opacidad base para que la animación se note */
-            animation: glossy-pulse 3s infinite ease-in-out alternate;
+            opacity: 1; 
+        }
+        
+        .logo-with-alexandra::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: skewX(-20deg);
+            animation: shine 3s infinite linear; 
         }
 
-        /* Eliminar la animación transluz-shine y el ::after que la creaba */
-        .logo-with-alexandra::after {
-            content: none; 
+        @keyframes shine {
+            0% { left: -100%; }
+            50% { left: 150%; }
+            100% { left: -100%; }
         }
 
-        @keyframes glossy-pulse {
-            0% { opacity: 0.7; }
-            50% { opacity: 1; } /* Brilla sutilmente */
-            100% { opacity: 0.7; }
-        }
-
-        /* --- Botón de Reserva Fijo (Call to Action) --- */
+        /* --- Botón de Reserva Fijo y CTA (Vibrante) --- */
 
         .cta-fixed {
             position: fixed;
@@ -105,107 +105,184 @@
             transition: opacity 0.3s ease-in-out;
         }
 
-        .cta-fixed a, .btn-reserva {
+        .cta-fixed a {
+            background-color: var(--color-acento-secundario);
+            box-shadow: 0 6px 15px rgba(0, 122, 255, 0.25);
+            border-radius: 999px; 
+        }
+        
+        .btn-reserva {
             display: block;
-            background-color: var(--color-acento);
+            background-color: var(--color-acento-principal); 
             color: var(--color-claro);
-            padding: 12px 25px;
+            padding: 14px 30px; 
             text-decoration: none;
-            border-radius: 999px;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            border-radius: 999px; 
+            font-size: 1.05rem;
+            font-weight: 600; 
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s;
             border: none;
             cursor: pointer;
             text-align: center;
+            box-shadow: 0 6px 15px rgba(255, 105, 97, 0.3); 
         }
 
-        .cta-fixed a:hover, .btn-reserva:hover {
-            background-color: #006ee6;
-            transform: scale(1.02);
+        .btn-reserva:active { 
+            background-color: #ff4a42; 
+            transform: translateY(0); 
+            box-shadow: 0 4px 10px rgba(255, 105, 97, 0.4);
+        }
+        
+        .btn-reserva:hover { 
+            background-color: #ff4a42; 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(255, 105, 97, 0.4);
         }
 
         /* --- Estilos de Contenido General --- */
         .seccion {
-            min-height: 80vh;
-            padding: 100px 5% 50px;
+            min-height: auto; /* Optimizado para móvil */
+            padding: 100px 5% 80px;
             text-align: center;
-            max-width: 980px;
+            max-width: 1050px; 
             margin: 0 auto;
             position: relative;
         }
-
-        h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            letter-spacing: -0.04em;
-            margin-bottom: 20px;
+        
+        .servicios-container {
+            background-color: var(--color-claro);
+            padding: 50px 40px;
+            border-radius: 20px; 
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); 
+            margin-top: 50px;
+            border: 1px solid var(--color-gris-suave); 
         }
 
-        h2 {
-            font-size: 2rem;
-            font-weight: 600;
+        .servicios-grid {
+            display: flex;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Estilo base de la tarjeta */
+        .servicio-card {
+            flex: 1;
+            min-width: 300px;
+            max-width: 450px;
+            background-color: var(--color-fondo); 
+            padding: 35px;
+            border-radius: 16px;
+            text-align: left;
+            /* Sombra inicial suave tipo Apple */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            border: 1px solid transparent; /* Para evitar salto al cambiar de borde */
+            border-top: 4px solid var(--color-acento-principal); 
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease; 
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        /* ESTILO VIVO Y DIFUSO AL SER VISIBLE (APLICADO POR LA CLASE JS) */
+        .servicio-card.animated-text.visible {
+            /* Sombra profunda y toque de color difuso (Depth Card) */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), /* Sombra de profundidad */
+                        inset 0 0 10px rgba(255, 105, 97, 0.08); /* Brillo interior difuso */
+            border: 1px solid rgba(255, 105, 97, 0.3); /* Borde sutilmente coloreado */
+            /* La animación de entrada la define .animated-text.visible */
+        }
+        
+        /* Pequeño feedback visual en móvil */
+        .servicio-card:active { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
+        }
+        /* Mantenemos el :hover solo para desktop */
+        .servicio-card:hover {
+            transform: translateY(-4px); 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .servicio-card h3 {
+            font-size: 1.8rem;
+            font-weight: 600; 
+            color: var(--color-texto); 
+            margin-top: 0;
+            margin-bottom: 15px;
             letter-spacing: -0.03em;
-            margin-top: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* DETALLE VISUAL para MÓVIL: Ícono de Uña Pulida (Media Luna) */
+        .servicio-card h3::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 0 0 50% 50%; 
+            background: linear-gradient(to right, #ff8c88, var(--color-acento-principal)); 
+            margin-right: 10px;
+            transform: scale(1.2); 
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1); 
+        }
+        
+        /* Tipografía Limpia (Apple) */
+        h1 {
+            font-size: 4rem; 
+            font-weight: 700; 
+            letter-spacing: -0.05em;
+            line-height: 1.1;
             margin-bottom: 25px;
         }
 
+        h2 {
+            font-size: 2.5rem; 
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
         p {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             color: #424245;
-            margin-bottom: 20px;
-            max-width: 600px;
+            margin-bottom: 25px;
+            max-width: 700px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        /* --- Animación de Título PRINCIPAL (Slide-In by Clipping) --- */
-
-        .hero h1 {
-            position: relative; 
-            display: inline-block;
-            overflow: hidden; 
-            line-height: 1.1;
-            margin-top: 50px;
-        }
-        
+        /* --- Animación de Contenido (MÁS PRONUNCIADA) --- */
         .animated-reveal-text {
             display: block;
             transform: translateY(100%);
             transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* El resto del contenido animado mantendrá el fade-in y scale */
         .animated-text {
             opacity: 0;
-            transform: scale(0.98); 
-            transition: opacity 1.8s cubic-bezier(0.25, 0.1, 0.25, 1), transform 1.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+            /* Animación de entrada con más profundidad: Mover y escalar */
+            transform: translateY(40px) scale(0.95); 
+            transition: opacity 1.0s cubic-bezier(0.25, 0.1, 0.25, 1), 
+                        transform 1.0s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
 
-        /* Clases de visibilidad */
         .animated-text.visible {
             opacity: 1;
-            transform: scale(1);
+            /* La tarjeta toma vida */
+            transform: translateY(0) scale(1);
         }
         
         .animated-reveal-text.visible {
             transform: translateY(0);
         }
         
-
-        /* Sección de Héroe */
-        .hero {
-            padding-top: 100px;
-            min-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-        }
-        
-        /* Parallax Simple (CSS) */
+        /* Parallax - Degradado Alegre y Sutil */
         .parallax-bg {
-            background-color: #e3e3e3;
-            height: 50vh;
+            height: 50vh; 
+            background: linear-gradient(180deg, var(--color-claro) 0%, #fff3f2 100%); 
             background-attachment: fixed;
             background-position: center;
             background-repeat: no-repeat;
@@ -213,16 +290,74 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0;
-            background-image: linear-gradient(180deg, var(--color-fondo) 0%, #d8d8d8 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02); 
         }
         
         .parallax-text {
-            color: var(--color-texto);
-            font-size: 2.5rem;
-            font-weight: 600;
+            color: var(--color-texto); 
+            font-size: 3rem; 
+            font-weight: 700;
             letter-spacing: -0.04em;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-shadow: 0 2px 3px rgba(0, 0, 0, 0.1); 
+            opacity: 0;
+            transform: translateY(20px); 
+            transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+        }
+        
+        .parallax-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Media Queries para optimizar tipografía en móvil */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.8rem; 
+                letter-spacing: -0.04em;
+            }
+            h2 {
+                font-size: 2rem;
+            }
+            p {
+                font-size: 1.1rem;
+            }
+            .servicio-card h3 {
+                font-size: 1.5rem;
+            }
+            .parallax-text {
+                font-size: 2.2rem;
+            }
+            .btn-reserva {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+        }
+
+        /* --- Pie de Página --- */
+        .footer {
+            background-color: var(--color-texto); 
+            color: var(--color-gris-suave);
+            padding: 40px 5%;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .footer-content p {
+            color: var(--color-gris-suave);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .footer-content a {
+            color: var(--color-acento-principal);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer-content a:hover {
+            color: var(--color-claro);
         }
 
     </style>
@@ -245,19 +380,20 @@
     <section class="seccion hero">
         
         <h1>
-            <span class="animated-reveal-text">La belleza empieza en tus manos.</span>
+            <span class="animated-reveal-text">La belleza empieza</span>
+            <span class="animated-reveal-text" style="transition-delay: 0.1s;">en tus manos.</span>
         </h1>
         
-        <p class="animated-text" style="transition-delay: 0.2s;">
+        <p class="animated-text" style="transition-delay: 0.3s;">
             Una experiencia de manicura que fusiona la **excelencia** con el **diseño minimalista**. Redefine tu estilo.
         </p>
         
-        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20reservar%20una%20cita%20de%20manicura." target="_blank" class="btn-reserva animated-text" style="margin-top: 30px; display: inline-block; transition-delay: 0.4s;">
+        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20reservar%20una%20cita%20de%20manicura." target="_blank" class="btn-reserva animated-text" style="margin-top: 30px; display: inline-block; transition-delay: 0.5s;">
             Reservar Cita Ahora
         </a>
 
-        <div style="margin-top: 50px;">
-            <p class="animated-text" style="font-size: 0.9rem; transition-delay: 0.6s; color: #888;">
+        <div style="margin-top: 60px;">
+            <p class="animated-text" style="font-size: 1rem; transition-delay: 0.7s; color: #888;">
                 Diseño atemporal, calidad duradera. Tu cita con la perfección.
             </p>
         </div>
@@ -265,29 +401,34 @@
     </section>
 
     <section class="seccion">
-        <h2 class="animated-text">Servicios a tu Medida.</h2>
+        <div class="servicios-container animated-text" style="transition-delay: 0.1s;">
+            <h2 class="animated-text" style="margin-top: 0; transition-delay: 0.3s;">Servicios a tu Medida.</h2>
 
-        <div class="servicio">
-            <h3 class="animated-text" style="font-weight: 600; font-size: 1.5rem; margin-top: 40px; transition-delay: 0.6s;">Manicura Signature Pro</h3>
-            <p class="animated-text" style="transition-delay: 0.8s;">
-                **Precisión y Duración.** Un proceso meticuloso que garantiza un esmaltado perfecto y duradero. 
-                Utilizamos fórmulas de vanguardia para proteger la salud de tu uña y mantener el brillo intacto por semanas. 
-                *Diseñada para la mujer moderna que valora el tiempo y la calidad.*
-            </p>
-        </div>
+            <div class="servicios-grid">
+                
+                <div class="servicio-card animated-text" style="transition-delay: 0.5s;">
+                    <h3>Manicura Signature Pro</h3>
+                    <p>
+                        **Precisión y Duración.** Un proceso meticuloso que garantiza un esmaltado perfecto y duradero. 
+                        Utilizamos fórmulas de vanguardia para proteger la salud de tu uña y mantener el brillo intacto por semanas. 
+                        *Diseñada para la mujer moderna que valora el tiempo y la calidad.*
+                    </p>
+                </div>
 
-        <div class="servicio">
-            <h3 class="animated-text" style="font-weight: 600; font-size: 1.5rem; margin-top: 40px; transition-delay: 1.0s;">Tratamiento Wellness Integral</h3>
-            <p class="animated-text" style="transition-delay: 1.2s;">
-                **Nutrición Profunda.** Más que un esmalte, es un tratamiento. Incluye exfoliación y una mascarilla 
-                reparadora con ingredientes botánicos avanzados para hidratar y revitalizar la piel y las uñas.
-                *El secreto para unas manos visiblemente más jóvenes y cuidadas.*
-            </p>
+                <div class="servicio-card animated-text" style="transition-delay: 0.7s;">
+                    <h3>Tratamiento Wellness Integral</h3>
+                    <p>
+                        **Nutrición Profunda.** Más que un esmalte, es un tratamiento. Incluye exfoliación y una mascarilla 
+                        reparadora con ingredientes botánicos avanzados para hidratar y revitalizar la piel y las uñas.
+                        *El secreto para unas manos visiblemente más jóvenes y cuidadas.*
+                    </p>
+                </div>
+            </div>
         </div>
     </section>
 
-    <div class="parallax-bg">
-        <p class="parallax-text animated-text">La calidad se siente en el detalle.</p>
+    <div class="parallax-bg" id="parallaxBg">
+        <p class="parallax-text" id="parallaxText">La calidad se siente en el detalle.</p>
     </div>
 
     <section class="seccion">
@@ -299,7 +440,20 @@
         <p class="animated-text" style="transition-delay: 0.4s;">
             **Te esperamos.** Usa el botón de reserva principal (fijo en pantalla) para obtener tu confirmación inmediata.
         </p>
+        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20reservar%20una%20cita%20de%20manicura." target="_blank" class="btn-reserva animated-text" style="margin-top: 30px; display: inline-block; transition-delay: 0.6s;">
+            ¡Quiero Reservar Mi Cita Exclusiva!
+        </a>
     </section>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Manicura Exclusive With Alexandra. Todos los derechos reservados.</p>
+            <p>
+                <a href="#hero">Inicio</a> | 
+                <a href="mailto:contacto@manicuraalexandra.com">Contacto</a>
+            </p>
+        </div>
+    </footer>
 
     <script>
         const header = document.querySelector('.header');
@@ -331,10 +485,11 @@
 
         // Animación de aparición de texto (Usando Intersection Observer)
         const animatedTexts = document.querySelectorAll('.animated-text');
-        const animatedRevealText = document.querySelector('.animated-reveal-text');
+        const animatedRevealText = document.querySelectorAll('.animated-reveal-text');
+        const parallaxText = document.getElementById('parallaxText');
         
-        // Agregamos el texto principal a la lista de observación
-        const allAnimatedElements = [...animatedTexts, animatedRevealText]; 
+        // Agregamos todos los elementos animados
+        const allAnimatedElements = [...animatedTexts, ...animatedRevealText, parallaxText]; 
 
         const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
@@ -362,7 +517,7 @@
             });
         }
         
-        checkTextVisibility();
-
+        // Ejecutar al cargar la página
+        document.addEventListener('DOMContentLoaded', checkTextVisibility);
     </script>
 </body>
