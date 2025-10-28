@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CODE XPO | Registro Táctil de Matrículas</title>
+    <title>XPO Logistics | CODE Registro Rápido</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -22,11 +22,12 @@
             --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             --transition-duration: 0.35s;
             --text-light-gray: #6d6d71;
-            --light-gray-apple: #f9f9f9; 
             --dark-text: #1c1c1e;
         }
 
-        /* Estilo Base: Fondo de iOS y Tipografía SF Pro */
+        /* ----------------------------------------------- */
+        /* --- ESTILOS BASE Y RESPONSIVIDAD (NUEVO) --- */
+        /* ----------------------------------------------- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
             background-color: var(--ios-gray-bg);
@@ -38,35 +39,117 @@
             min-height: 100vh;
             color: var(--dark-text);
             overflow-x: hidden;
+            /* Se ha ajustado el padding superior para el nuevo header */
+            padding-top: 55px; 
         }
         
-        /* Contenedor Principal (Límite de Ancho para simular móvil) */
+        /* Contenedor Principal: Limita el ancho del contenido en grandes pantallas */
         .container {
             width: 100%;
-            max-width: 450px;
-            margin-top: 15px;
+            max-width: 450px; /* Ancho máximo para el contenido principal (cards, steps) */
             background-color: transparent; 
             box-shadow: none;
-            position: relative; /* Clave para la posición de los pasos */
+            position: relative; 
             height: auto;
-            min-height: 600px;
+            min-height: calc(100vh - 65px); 
             overflow: hidden;
+            padding: 0 10px; 
         }
 
-        /* --- ESTILOS DE TRANSICIÓN DE PASOS (CORREGIDO) --- */
+        /* ----------------------------------------------- */
+        /* --- ENCABEZADO FIJO TIPO APPLE (MODIFICADO) --- */
+        /* ----------------------------------------------- */
+        .header-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px 15px; /* Padding más compacto */
+            z-index: 1000;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: transparent; 
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center; /* Centra el contenido interior */
+        }
+        
+        .header-content {
+            width: 100%;
+            max-width: 450px; /* El contenido interno se limita al ancho del .container */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Clase añadida por JS cuando se hace scroll */
+        .header-fixed.scrolled {
+            background-color: var(--ios-card-bg); 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-main { 
+            display: flex; 
+            align-items: center; 
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo-xpo { 
+            color: var(--ios-red); 
+            font-weight: 800;
+            margin-right: 2px;
+        }
+        
+        .logo-logistics { 
+            color: var(--dark-text); 
+            font-weight: 700;
+        }
+        
+        /* --- Efecto Transluz en CODE --- */
+        @keyframes shine {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .logo-code-effect {
+            font-size: 16px; 
+            font-weight: 900; 
+            letter-spacing: 1px;
+            color: var(--dark-text); /* Color de fallback */
+            text-transform: uppercase;
+            
+            /* Propiedades para el efecto de transluz */
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.9) 50%, 
+                transparent 100%);
+            background-size: 200% 100%;
+            
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; /* Oculta el texto por defecto */
+            
+            animation: shine 3s infinite linear;
+        }
+
+        /* --- Estilos de pasos y cards (Mantenidos) --- */
+        .card-section { 
+            background-color: var(--ios-card-bg); 
+            margin: 10px 0; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: var(--ios-shadow); 
+            position: relative; 
+        }
+        
         .step-content { 
-            /* Propiedades iniciales para la transición de desvanecimiento */
             opacity: 0; 
             transform: scale(0.98); 
             transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out; 
-            
-            /* Posicionamiento para que los pasos se superpongan */
             position: absolute; 
             top: 0; 
             left: 0; 
             width: 100%; 
-            
-            /* Propiedades de diseño del contenido del paso */
             box-sizing: border-box; 
             padding: 20px; 
             background-color: var(--ios-card-bg); 
@@ -75,36 +158,17 @@
             display: none; 
         }
         .step-content.active { 
-            /* Propiedades activas del paso (Transición finalizada) */
             opacity: 1; 
             transform: scale(1); 
-            position: relative; /* Vuelve a posición relativa para ocupar espacio */
+            position: relative; 
             display: block; 
             margin-bottom: 20px; 
         }
 
-        /* --- ESTILOS GENERALES Y LAYOUT --- */
-        .logo-container { padding: 10px 20px; margin: 0; display: flex; flex-direction: column; align-items: flex-start; }
-        .logo-main { display: flex; align-items: baseline; gap: 5px; }
-        .logo-code { font-family: 'Helvetica Neue', sans-serif; font-size: 28px; font-weight: 900; color: var(--dark-text); letter-spacing: -1px; }
-        .logo-xpo { font-family: 'Helvetica Neue', sans-serif; font-size: 16px; font-weight: 800; color: var(--ios-red); letter-spacing: 1px; margin-left: 5px; }
-        .app-title { font-size: 12px; font-weight: 400; color: var(--text-light-gray); margin-top: 2px; }
-        
-        /* La sección de reportes NO DEBE tener position: absolute para evitar el conflicto */
-        .card-section { 
-            background-color: var(--ios-card-bg); 
-            margin: 10px 0; 
-            padding: 20px; 
-            border-radius: 10px; 
-            box-shadow: var(--ios-shadow); 
-            position: relative; /* Asegura que no se superponga de forma extraña */
-        }
-        
+        /* Resto de estilos para formularios, botones y contadores (Mantenidos) */
         input[type="text"] { width: 100%; padding: 15px; margin-bottom: 20px; border: 1px solid var(--ios-separator); border-radius: 10px; box-sizing: border-box; font-size: 18px; background-color: #f9f9f9; transition: border-color 0.2s; -webkit-appearance: none; }
         button { width: 100%; background-color: var(--ios-blue); color: white; padding: 15px 20px; margin: 10px 0; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 600; transition: opacity 0.1s, transform 0.1s, background-color 0.1s; -webkit-appearance: none; }
         button:active { opacity: 0.8; transform: scale(0.99); }
-        
-        /* Botones de Confirmación (Animación) */
         .btn-confirm-cargada { background-color: var(--ios-green) !important; }
         .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
         .btn-confirm-averiada { background-color: var(--ios-red) !important; }
@@ -122,137 +186,54 @@
         #btnEliminar { background-color: #FF3B30; margin-top: 10px; }
         .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
         
-        /* --- ESTILOS DE RESUMEN COMPACTO (Minimalista) --- */
-        #contadores {
-            display: flex;
-            flex-wrap: wrap; 
-            gap: 8px; 
-            margin-top: 15px;
-            padding: 0;
-            justify-content: space-between;
-        }
-
+        /* Contadores */
+        #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
         .compact-summary {
-            flex: 1 1 48%; 
-            min-width: 150px;
-            
-            padding: 10px 12px;
-            border-radius: 12px;
-            background-color: var(--ios-card-bg);
-            box-shadow: var(--ios-shadow);
-            overflow: hidden; 
-            position: relative;
-            
-            /* TRANSICIÓN ESPECÍFICA DE TARJETAS (NO DEBE COLISIONAR CON .step-content) */
-            opacity: 0;
-            transform: scale(0.98);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            flex: 1 1 48%; min-width: 150px; padding: 10px 12px; border-radius: 12px; background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); overflow: hidden; position: relative;
+            opacity: 0; transform: scale(0.98); transition: opacity 0.3s ease-out, transform 0.3s ease-out;
         }
-        .compact-summary.visible { 
-            opacity: 1; 
-            transform: scale(1); 
-        }
-
-        .progress-bar-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            background-color: var(--ios-gray-bg);
-            opacity: 0.7;
-            z-index: 1;
-        }
-
-        .progress-fill {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 0; 
-            transition: width 0.7s ease-out;
-            opacity: 0.5;
-            z-index: 2;
-        }
-
-        .summary-content {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-            z-index: 3; 
-        }
-
-        .summary-content h4 {
-            margin: 0;
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-light-gray);
-        }
-
-        .count-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-        }
-
-        .count-group .count {
-            font-size: 22px;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-        
-        .count-group .percent {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--dark-text);
-        }
-        
-        /* Colores Específicos */
+        .compact-summary.visible { opacity: 1; transform: scale(1); }
+        .progress-bar-bg { position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: var(--ios-gray-bg); opacity: 0.7; z-index: 1; }
+        .progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0; transition: width 0.7s ease-out; opacity: 0.5; z-index: 2; }
+        .summary-content { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 100%; z-index: 3; }
+        .summary-content h4 { margin: 0; font-size: 11px; font-weight: 500; color: var(--text-light-gray); }
+        .count-group { display: flex; justify-content: space-between; align-items: baseline; }
+        .count-group .count { font-size: 22px; font-weight: 700; line-height: 1.1; }
+        .count-group .percent { font-size: 11px; font-weight: 600; color: var(--dark-text); }
         .card-total .count { color: var(--ios-blue); }
         .card-cargada .count { color: var(--ios-green); }
         .card-disponible .count { color: var(--ios-yellow); }
         .card-averiada .count { color: var(--ios-red); }
-        
         .card-total .progress-fill { background-color: var(--ios-blue); }
         .card-cargada .progress-fill { background-color: var(--ios-green); }
         .card-disponible .progress-fill { background-color: var(--ios-yellow); }
         .card-averiada .progress-fill { background-color: var(--ios-red); }
 
-
-        /* --- ESTILOS DE HISTORIAL RECIENTE --- */
+        /* Historial Reciente */
         #historialReciente { list-style: none; padding: 0; margin: 15px 0 0 0; padding-top: 15px; }
-        #historialReciente li { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 10px 0; 
-            border-bottom: 1px solid var(--ios-separator); 
-            font-size: 14px; 
-        }
+        #historialReciente li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--ios-separator); font-size: 14px; }
         #historialReciente li:last-child { border-bottom: none; }
-        
         .historial-matricula { flex-basis: 40%; font-weight: 500; }
         .historial-estado { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 12px; flex-basis: 30%; text-align: center; } 
         .historial-time { color: var(--text-light-gray); font-size: 11px; flex-basis: 30%; text-align: right; }
-
         .estado-Cargada { background-color: #d8f5e2; color: #1e8449; }
         .estado-Vacía { background-color: #fff9e0; color: #b38600; } 
         .estado-Averiada { background-color: #fce8e8; color: #c0392b; }
-        
         #advertenciaDuplicado { background-color: #fce8e8; color: #c0392b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; border: 1px solid #f9bdbd; }
         
     </style>
 </head>
 <body>
-<div style="max-width:450px; width:100%;">
-    <div id="logoHeader" class="logo-container">
+
+<div class="header-fixed" id="fixedHeader">
+    <div class="header-content">
         <div class="logo-main">
-            <div class="logo-code">CODE</div>
-            <div class="logo-xpo">XPO</div>
+            <span class="logo-xpo">XPO</span>
+            <span class="logo-logistics">Logistics</span>
         </div>
-        <div class="app-title">Registro Rápido de Matrículas</div> 
+        <div class="logo-code-effect">
+            CODE
+        </div>
     </div>
 </div>
 
@@ -361,7 +342,7 @@
     let matriculaActual = "";
     let registroDuplicado = null; 
 
-    // --- FUNCIONES DE UTILIDAD ---
+    // --- FUNCIONES DE UTILIDAD (Mantenidas) ---
     function guardarRegistros(registros) {
         localStorage.setItem('registrosMatriculas', JSON.stringify(registros));
         actualizarContadores();
@@ -373,11 +354,10 @@
     }
 
     function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
-        // Esta función se usaría para notificaciones en la interfaz (toasts, etc.)
         console.log(`[Notificación] ${mensaje}`); 
     }
 
-    // --- GESTIÓN DE PANTALLAS (TRANSICIÓN DE DESVANECIMIENTO CORREGIDA) ---
+    // --- GESTIÓN DE PANTALLAS (TRANSICIÓN DE DESVANECIMIENTO) (Mantenida) ---
     function mostrarPaso(pasoId) {
         const currentActive = document.querySelector('.step-content.active');
         const targetPaso = document.getElementById(pasoId);
@@ -386,21 +366,17 @@
 
         if (currentActive && currentActive.id !== targetPaso.id) {
             
-            // 1. Ocultar el paso actual con transición
             currentActive.classList.remove('active');
             currentActive.style.opacity = 0;
             currentActive.style.transform = 'scale(0.98)';
             
-            // Esperar a que la transición termine (0.35s) y luego hacer display: none y liberar el espacio (position: relative)
             setTimeout(() => { 
                 currentActive.style.display = 'none'; 
-                currentActive.style.position = 'absolute'; // Mantener en absolute hasta el final
+                currentActive.style.position = 'absolute'; 
 
-                // 2. Mostrar el nuevo paso
                 targetPaso.style.display = 'block';
-                targetPaso.style.position = 'relative'; // Ocupar espacio en la columna
+                targetPaso.style.position = 'relative'; 
 
-                // Le damos un pequeño retraso para asegurar que el display:block se ejecute antes de la transición
                 setTimeout(() => {
                     targetPaso.classList.add('active');
                     targetPaso.style.opacity = 1;
@@ -408,7 +384,6 @@
                 }, 50); 
             }, 350); 
         } else if (!currentActive) {
-            // Inicialización (si no hay paso activo)
             targetPaso.style.display = 'block';
             targetPaso.style.position = 'relative';
             setTimeout(() => {
@@ -429,7 +404,7 @@
         document.getElementById('matriculaInput').focus();
     }
 
-    // --- LÓGICA CLAVE: REGISTRO ---
+    // --- LÓGICA CLAVE: REGISTRO (Mantenida) ---
     function registrarMatricula() {
         matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
         if (!matriculaActual) {
@@ -454,7 +429,6 @@
             advertenciaDiv.style.display = 'block';
             
             if (existente.estado === 'Cargada') manejarEstado('cargada');
-            // Mapea el estado de persistencia 'Disponible' al control de 'vacia' en la UI
             else if (existente.estado === 'Disponible' || existente.estado === 'Vacía') manejarEstado('vacia');
             else if (existente.estado === 'Averiada') manejarEstado('averiada');
             
@@ -484,9 +458,6 @@
         }
     }
     
-    /**
-     * Animación de confirmación para los botones después de un registro exitoso.
-     */
     function microInteraccionBoton(buttonElement, estado) {
         const originalText = buttonElement.innerHTML;
         
@@ -560,7 +531,7 @@
         }
     }
 
-    // --- CONTADORES Y HISTORIAL ---
+    // --- CONTADORES Y HISTORIAL (Mantenidos) ---
     function actualizarHistorialReciente() {
         const registros = cargarRegistros().reverse();
         const ul = document.getElementById('historialReciente');
@@ -577,7 +548,6 @@
             const partesFecha = reg.fecha.split(', ');
             const hora = partesFecha.length > 1 ? partesFecha[1] : partesFecha[0];
 
-            // Usa 'Vacía' para el estado Vacía/Disponible en la interfaz
             const estadoDisplay = (reg.estado === 'Disponible' || reg.estado === 'Vacía') ? 'Vacía' : reg.estado;
             const estadoClass = `estado-${estadoDisplay}`;
             
@@ -593,7 +563,6 @@
 
     function actualizarContadores() {
         const registros = cargarRegistros();
-        // Contamos 'Disponible' y 'Vacía' juntos como 'Disponible' para la lógica de contadores
         let counts = { Cargada: 0, Disponible: 0, Averiada: 0, Total: registros.length };
 
         registros.forEach(reg => {
@@ -609,7 +578,6 @@
         document.getElementById('countDisponible').textContent = counts.Disponible; 
         document.getElementById('countAveriada').textContent = counts.Averiada;
 
-        // Función para actualizar barra y porcentaje
         const updateCompactCard = (state, count) => {
             const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
             const percentText = `${percentValue}%`;
@@ -625,11 +593,9 @@
         updateCompactCard('Disponible', counts.Disponible); 
         updateCompactCard('Averiada', counts.Averiada);
         
-        // Animación de aparición de tarjetas (Separada del flujo de pasos)
         const cardIds = ['cardTotal', 'cardCargada', 'cardDisponible', 'cardAveriada'];
         cardIds.forEach((id, index) => {
             const item = document.getElementById(id);
-            // Si ya está visible, no la animamos de nuevo.
             if (!item.classList.contains('visible')) {
                 setTimeout(() => {
                     item.classList.add('visible');
@@ -638,7 +604,19 @@
         });
     }
 
-    // --- LIMPIAR REGISTROS (Mantenidos) ---
+    // --- FUNCIÓN DE PARALLAX (Sombra Dinámica en Header) (Mantenida) ---
+    function handleScroll() {
+        const header = document.getElementById('fixedHeader');
+        const scrollPosition = window.scrollY;
+        
+        if (scrollPosition > 10) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    }
+
+    // --- Limpiar y Exportar PDF (Mantenidas) ---
     function confirmarLimpiarRegistros() {
         if (confirm("¿Estás seguro de que quieres ELIMINAR TODOS los registros? Esta acción no se puede deshacer.")) {
             limpiarRegistros();
@@ -652,7 +630,6 @@
         mostrarConfirmacion("Registros eliminados.", "fas fa-trash-alt");
     }
 
-    // --- EXPORTACIÓN A PDF (Mantenida) ---
     function exportarPDF() {
         const registros = cargarRegistros();
         if (registros.length === 0) {
@@ -685,11 +662,9 @@
             Total: registros.length
         };
         
-        // Colores y diseño del PDF
         const COLOR_TEXTO_OSCURO = [30, 30, 30];
         const COLOR_TEXTO_CLARO = [150, 150, 150];
 
-        // 1. Encabezado Ejecutivo (Moderno, Proporcionado)
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
@@ -710,13 +685,10 @@
         doc.text(`INFORME DE FLOTA | ${currentDay}, ${currentDate} | TOTAL: ${counts.Total} PLATAFORMAS`, margin, yPos);
         yPos += 12; 
 
-        // 2. TABLAS DE DETALLE (Doble Columna)
-        
         const tableMarginX = 5; 
         const halfWidth = (pageWidth - margin * 2 - tableMarginX) / 2;
         let startYDoubleColumn = yPos;
         
-        // ENCABEZADOS DE SECCIÓN DOBLE COLUMNA
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
@@ -728,14 +700,11 @@
         
         startYDoubleColumn += 5; 
         
-        
-        // Definición de estilos de tabla 
         const styles = { fontSize: 8, cellPadding: 2, valign: 'top', font: "helvetica", textColor: [51, 51, 51], lineColor: [240, 240, 240], lineWidth: 0.1, fontStyle: 'normal' };
         const headStyles = { fillColor: [249, 249, 249], textColor: [80, 80, 80], fontStyle: 'bold', lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 3 };
         const alternateRowStyles = { fillColor: [252, 252, 252] };
 
 
-        // TABLA CARGADAS (Izquierda) 
         doc.autoTable({
             head: [['MATRÍCULA', 'CONTENIDO']],
             body: registrosCargadas,
@@ -752,7 +721,6 @@
         });
         let finalYCargadas = doc.autoTable.previous.finalY;
 
-        // TABLA VACÍAS (Derecha) 
         doc.autoTable({
             head: [['MATRÍCULA']],
             body: registrosDisponibles,
@@ -770,8 +738,6 @@
 
         let finalY = Math.max(finalYCargadas, finalYDisponibles); 
         
-        
-        // 3. SECCIÓN AVERIADAS (Si las hay)
         
         if (registrosAveriadas.length > 0) {
             
@@ -802,7 +768,6 @@
             });
         }
 
-        // --- Pie de página (Minimalista) ---
         const pageCount = doc.internal.getNumberOfPages();
         for(let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
@@ -819,45 +784,18 @@
         mostrarConfirmacion("PDF exportado correctamente.", "fas fa-file-pdf");
     }
 
-    // --- LÓGICA DE ANIMACIÓN OPTIMIZADA (Mantenida) ---
-    function animarLogo() {
-        const logoCode = document.querySelector('.logo-code');
-        const logoXPO = document.querySelector('.logo-xpo');
-
-        logoCode.style.opacity = '0';
-        logoXPO.style.opacity = '0';
-        logoXPO.style.transform = 'translateY(10px)';
-
-        if (!localStorage.getItem('logoAnimado')) {
-             setTimeout(() => {
-                logoCode.style.opacity = '1';
-             }, 50);
-
-             setTimeout(() => {
-                logoXPO.style.opacity = '1';
-                logoXPO.style.transform = 'translateY(0)';
-             }, 350); 
-             
-             localStorage.setItem('logoAnimado', 'true');
-        } else {
-            logoCode.style.opacity = '1';
-            logoXPO.style.opacity = '1';
-            logoXPO.style.transform = 'translateY(0)';
-        }
-    }
-
-
-    // --- INICIALIZACIÓN (Mantenida) ---
+    // --- INICIALIZACIÓN ---
     document.addEventListener('DOMContentLoaded', () => {
-        animarLogo();
         actualizarContadores();
         actualizarHistorialReciente(); 
         
-        // Configuración inicial del paso 1
         document.getElementById('paso1').style.display = 'block';
-        document.getElementById('paso1').style.position = 'relative'; // Asegura que ocupe espacio desde el inicio
+        document.getElementById('paso1').style.position = 'relative'; 
         document.getElementById('paso1').classList.add('active');
         document.getElementById('matriculaInput').focus();
+        
+        window.addEventListener('scroll', handleScroll);
+        handleScroll(); 
     });
 </script>
 
