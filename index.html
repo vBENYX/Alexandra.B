@@ -47,10 +47,40 @@
             margin-top: 15px;
             background-color: transparent; 
             box-shadow: none;
-            position: relative;
+            position: relative; /* Clave para la posición de los pasos */
             height: auto;
             min-height: 600px;
             overflow: hidden;
+        }
+
+        /* --- ESTILOS DE TRANSICIÓN DE PASOS (CORREGIDO) --- */
+        .step-content { 
+            /* Propiedades iniciales para la transición de desvanecimiento */
+            opacity: 0; 
+            transform: scale(0.98); 
+            transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out; 
+            
+            /* Posicionamiento para que los pasos se superpongan */
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            
+            /* Propiedades de diseño del contenido del paso */
+            box-sizing: border-box; 
+            padding: 20px; 
+            background-color: var(--ios-card-bg); 
+            border-radius: 10px; 
+            box-shadow: var(--ios-shadow); 
+            display: none; 
+        }
+        .step-content.active { 
+            /* Propiedades activas del paso (Transición finalizada) */
+            opacity: 1; 
+            transform: scale(1); 
+            position: relative; /* Vuelve a posición relativa para ocupar espacio */
+            display: block; 
+            margin-bottom: 20px; 
         }
 
         /* --- ESTILOS GENERALES Y LAYOUT --- */
@@ -59,45 +89,69 @@
         .logo-code { font-family: 'Helvetica Neue', sans-serif; font-size: 28px; font-weight: 900; color: var(--dark-text); letter-spacing: -1px; }
         .logo-xpo { font-family: 'Helvetica Neue', sans-serif; font-size: 16px; font-weight: 800; color: var(--ios-red); letter-spacing: 1px; margin-left: 5px; }
         .app-title { font-size: 12px; font-weight: 400; color: var(--text-light-gray); margin-top: 2px; }
-        .card-section { background-color: var(--ios-card-bg); margin: 10px 0; padding: 20px; border-radius: 10px; box-shadow: var(--ios-shadow); }
-        .step-content { opacity: 0; transform: translateX(100%); transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; padding: 20px; background-color: var(--ios-card-bg); border-radius: 10px; box-shadow: var(--ios-shadow); display: none; }
-        .step-content.active { opacity: 1; transform: translateX(0); position: relative; display: block; margin-bottom: 20px; }
+        
+        /* La sección de reportes NO DEBE tener position: absolute para evitar el conflicto */
+        .card-section { 
+            background-color: var(--ios-card-bg); 
+            margin: 10px 0; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: var(--ios-shadow); 
+            position: relative; /* Asegura que no se superponga de forma extraña */
+        }
+        
         input[type="text"] { width: 100%; padding: 15px; margin-bottom: 20px; border: 1px solid var(--ios-separator); border-radius: 10px; box-sizing: border-box; font-size: 18px; background-color: #f9f9f9; transition: border-color 0.2s; -webkit-appearance: none; }
         button { width: 100%; background-color: var(--ios-blue); color: white; padding: 15px 20px; margin: 10px 0; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 600; transition: opacity 0.1s, transform 0.1s, background-color 0.1s; -webkit-appearance: none; }
         button:active { opacity: 0.8; transform: scale(0.99); }
+        
+        /* Botones de Confirmación (Animación) */
         .btn-confirm-cargada { background-color: var(--ios-green) !important; }
+        .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
         .btn-confirm-averiada { background-color: var(--ios-red) !important; }
+
         #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
-        #botonesEstado button { background-color: #e5e5ea; color: #3c3c43; font-weight: 500; flex-grow: 1; padding: 12px 10px; margin: 0; font-size: 16px; }
+        #botonesEstado button { 
+            background-color: #e5e5ea; 
+            color: #3c3c43; 
+            font-weight: 500; 
+            flex-grow: 1; 
+            padding: 12px 10px; 
+            margin: 0; 
+            font-size: 16px; 
+        }
         #btnEliminar { background-color: #FF3B30; margin-top: 10px; }
         .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
         
         /* --- ESTILOS DE RESUMEN COMPACTO (Minimalista) --- */
         #contadores {
             display: flex;
-            flex-wrap: wrap; /* Permite que envuelva en pantallas pequeñas */
-            gap: 8px; /* Espaciado entre las tarjetas pequeñas */
+            flex-wrap: wrap; 
+            gap: 8px; 
             margin-top: 15px;
             padding: 0;
             justify-content: space-between;
         }
 
         .compact-summary {
-            flex: 1 1 48%; /* Dos tarjetas por fila, con margen para el gap */
+            flex: 1 1 48%; 
             min-width: 150px;
             
             padding: 10px 12px;
             border-radius: 12px;
             background-color: var(--ios-card-bg);
             box-shadow: var(--ios-shadow);
-            overflow: hidden; /* Importante para la barra de progreso */
+            overflow: hidden; 
             position: relative;
             
+            /* TRANSICIÓN ESPECÍFICA DE TARJETAS (NO DEBE COLISIONAR CON .step-content) */
             opacity: 0;
             transform: scale(0.98);
             transition: opacity 0.3s ease-out, transform 0.3s ease-out;
         }
-        .compact-summary.visible { opacity: 1; transform: scale(1); }
+        .compact-summary.visible { 
+            opacity: 1; 
+            transform: scale(1); 
+        }
 
         .progress-bar-bg {
             position: absolute;
@@ -115,7 +169,7 @@
             top: 0;
             left: 0;
             height: 100%;
-            width: 0; /* Controlado por JS */
+            width: 0; 
             transition: width 0.7s ease-out;
             opacity: 0.5;
             z-index: 2;
@@ -127,7 +181,7 @@
             flex-direction: column;
             justify-content: space-between;
             height: 100%;
-            z-index: 3; /* Asegura que el texto esté encima de la barra */
+            z-index: 3; 
         }
 
         .summary-content h4 {
@@ -184,7 +238,7 @@
         .historial-time { color: var(--text-light-gray); font-size: 11px; flex-basis: 30%; text-align: right; }
 
         .estado-Cargada { background-color: #d8f5e2; color: #1e8449; }
-        .estado-Disponible { background-color: #fff9e0; color: #b38600; }
+        .estado-Vacía { background-color: #fff9e0; color: #b38600; } 
         .estado-Averiada { background-color: #fce8e8; color: #c0392b; }
         
         #advertenciaDuplicado { background-color: #fce8e8; color: #c0392b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; border: 1px solid #f9bdbd; }
@@ -219,7 +273,7 @@
         
         <div id="botonesEstado">
             <button id="btnCargada" onclick="manejarEstado('cargada')">Cargada</button>
-            <button id="btnDisponible" onclick="manejarEstado('disponible')">Disponible</button>
+            <button id="btnVacia" onclick="manejarEstado('vacia')">Vacía</button>
             <button id="btnAveriadaState" onclick="manejarEstado('averiada')">Averiada</button>
         </div>
 
@@ -236,7 +290,7 @@
         <button class="volver-button" onclick="mostrarPaso1(true)"><i class="fas fa-chevron-left"></i> Volver</button>
     </div>
     
-    <div id="reportes" class="card-section" style="margin-top: 0;">
+    <div id="reportes" class="card-section">
         <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
         
         <div id="contadores">
@@ -267,7 +321,7 @@
                 <div class="progress-bar-bg"></div>
                 <div class="progress-fill" id="fillDisponible"></div>
                 <div class="summary-content">
-                    <h4>DISPONIBLES</h4>
+                    <h4>VACÍAS</h4>
                     <div class="count-group">
                         <span class="count" id="countDisponible">0</span>
                         <span class="percent" id="percentDisponible">0%</span>
@@ -323,43 +377,50 @@
         console.log(`[Notificación] ${mensaje}`); 
     }
 
-    // --- GESTIÓN DE PANTALLAS ---
-    function mostrarPaso(pasoId, backward = false) {
+    // --- GESTIÓN DE PANTALLAS (TRANSICIÓN DE DESVANECIMIENTO CORREGIDA) ---
+    function mostrarPaso(pasoId) {
         const currentActive = document.querySelector('.step-content.active');
         const targetPaso = document.getElementById(pasoId);
         
         document.getElementById('advertenciaDuplicado').style.display = 'none';
 
-        if (currentActive) {
-             if (currentActive.id !== targetPaso.id) {
-                currentActive.classList.remove('active');
-                if (backward) {
-                    currentActive.style.transform = 'translateX(100%)';
-                } else {
-                    currentActive.style.transform = 'translateX(-100%)';
-                }
-                currentActive.style.opacity = 0;
-                setTimeout(() => { currentActive.style.display = 'none'; }, 350); 
-             }
+        if (currentActive && currentActive.id !== targetPaso.id) {
+            
+            // 1. Ocultar el paso actual con transición
+            currentActive.classList.remove('active');
+            currentActive.style.opacity = 0;
+            currentActive.style.transform = 'scale(0.98)';
+            
+            // Esperar a que la transición termine (0.35s) y luego hacer display: none y liberar el espacio (position: relative)
+            setTimeout(() => { 
+                currentActive.style.display = 'none'; 
+                currentActive.style.position = 'absolute'; // Mantener en absolute hasta el final
+
+                // 2. Mostrar el nuevo paso
+                targetPaso.style.display = 'block';
+                targetPaso.style.position = 'relative'; // Ocupar espacio en la columna
+
+                // Le damos un pequeño retraso para asegurar que el display:block se ejecute antes de la transición
+                setTimeout(() => {
+                    targetPaso.classList.add('active');
+                    targetPaso.style.opacity = 1;
+                    targetPaso.style.transform = 'scale(1)';
+                }, 50); 
+            }, 350); 
+        } else if (!currentActive) {
+            // Inicialización (si no hay paso activo)
+            targetPaso.style.display = 'block';
+            targetPaso.style.position = 'relative';
+            setTimeout(() => {
+                targetPaso.classList.add('active');
+                targetPaso.style.opacity = 1;
+                targetPaso.style.transform = 'scale(1)';
+            }, 50);
         }
-        
-        targetPaso.style.display = 'block';
-        if (backward) {
-            targetPaso.style.transform = 'translateX(-100%)';
-        } else {
-            targetPaso.style.transform = 'translateX(100%)';
-        }
-        targetPaso.style.opacity = 0;
-        
-        setTimeout(() => {
-            targetPaso.classList.add('active');
-            targetPaso.style.transform = 'translateX(0)';
-            targetPaso.style.opacity = 1;
-        }, 50); 
     }
 
     function mostrarPaso1(isBackward = false) {
-        mostrarPaso('paso1', isBackward);
+        mostrarPaso('paso1'); 
         matriculaActual = "";
         registroDuplicado = null;
         document.getElementById('matriculaInput').value = '';
@@ -381,7 +442,7 @@
         
         registroDuplicado = existente;
 
-        mostrarPaso('paso2', false); 
+        mostrarPaso('paso2'); 
         document.getElementById('mostrarMatricula').textContent = matriculaActual;
         document.getElementById('cargadaDetalles').style.display = 'none';
         document.getElementById('averiadaDetalles').style.display = 'none';
@@ -393,6 +454,8 @@
             advertenciaDiv.style.display = 'block';
             
             if (existente.estado === 'Cargada') manejarEstado('cargada');
+            // Mapea el estado de persistencia 'Disponible' al control de 'vacia' en la UI
+            else if (existente.estado === 'Disponible' || existente.estado === 'Vacía') manejarEstado('vacia');
             else if (existente.estado === 'Averiada') manejarEstado('averiada');
             
         } else {
@@ -416,13 +479,14 @@
             if (registroDuplicado && registroDuplicado.estado === 'Averiada') {
                  document.getElementById('descAveriada').value = registroDuplicado.descripcion;
             }
-        } else if (estado === 'disponible') {
-            guardarRegistro('disponible', 'Lista para cargar');
-            mostrarConfirmacion(`¡Disponible registrada!`);
-            mostrarPaso1(true);
+        } else if (estado === 'vacia') { 
+            guardarRegistro('vacia', 'Lista para cargar');
         }
     }
     
+    /**
+     * Animación de confirmación para los botones después de un registro exitoso.
+     */
     function microInteraccionBoton(buttonElement, estado) {
         const originalText = buttonElement.innerHTML;
         
@@ -432,6 +496,9 @@
         if (estado === 'Cargada') {
             confirmText = '<i class="fas fa-check"></i> ¡Cargada!';
             confirmClass = 'btn-confirm-cargada';
+        } else if (estado === 'Vacía') {
+            confirmText = '<i class="fas fa-check"></i> ¡Vacía!';
+            confirmClass = 'btn-confirm-vacia';
         } else if (estado === 'Averiada') {
             confirmText = '<i class="fas fa-times-circle"></i> ¡Avería!';
             confirmClass = 'btn-confirm-averiada';
@@ -459,21 +526,25 @@
         if (estado === 'cargada') {
             descripcion = document.getElementById('descCargada').value;
             btnElement = document.getElementById('btnGuardarCargada');
+            estado = 'Cargada'; 
         } else if (estado === 'averiada') {
             descripcion = document.getElementById('descAveriada').value;
             btnElement = document.getElementById('btnGuardarAveriada');
-        } else if (estado === 'disponible') {
-             btnElement = document.getElementById('btnDisponible');
+            estado = 'Averiada'; 
+        } else if (estado === 'vacia') {
+             descripcion = 'Lista para cargar';
+             btnElement = document.getElementById('btnVacia');
+             estado = 'Vacía'; 
         }
 
-        if ((estado === 'cargada' || estado === 'averiada') && !descripcion.trim()) {
+        if ((estado === 'Cargada' || estado === 'Averiada') && !descripcion.trim()) {
             mostrarConfirmacion(`Necesita descripción de ${estado}.`, "fas fa-exclamation-triangle");
             return;
         }
 
         const registro = {
             matricula: matriculaActual,
-            estado: estado.charAt(0).toUpperCase() + estado.slice(1),
+            estado: estado,
             descripcion: descripcion.trim() || 'N/A',
             fecha: new Date().toLocaleString()
         };
@@ -484,7 +555,7 @@
         registros.push(registro);
         guardarRegistros(registros);
 
-        if (estado === 'cargada' || estado === 'averiada') {
+        if (btnElement) {
             microInteraccionBoton(btnElement, registro.estado);
         }
     }
@@ -506,12 +577,14 @@
             const partesFecha = reg.fecha.split(', ');
             const hora = partesFecha.length > 1 ? partesFecha[1] : partesFecha[0];
 
-            const estadoClass = `estado-${reg.estado}`;
+            // Usa 'Vacía' para el estado Vacía/Disponible en la interfaz
+            const estadoDisplay = (reg.estado === 'Disponible' || reg.estado === 'Vacía') ? 'Vacía' : reg.estado;
+            const estadoClass = `estado-${estadoDisplay}`;
             
             const li = document.createElement('li');
             li.innerHTML = `
                 <span class="historial-matricula">${reg.matricula}</span>
-                <span class="historial-estado ${estadoClass}">${reg.estado}</span>
+                <span class="historial-estado ${estadoClass}">${estadoDisplay}</span>
                 <span class="historial-time">${hora}</span>
             `;
             ul.appendChild(li);
@@ -520,11 +593,12 @@
 
     function actualizarContadores() {
         const registros = cargarRegistros();
+        // Contamos 'Disponible' y 'Vacía' juntos como 'Disponible' para la lógica de contadores
         let counts = { Cargada: 0, Disponible: 0, Averiada: 0, Total: registros.length };
 
         registros.forEach(reg => {
             if (reg.estado === 'Cargada') counts.Cargada++;
-            else if (reg.estado === 'Disponible') counts.Disponible++; 
+            else if (reg.estado === 'Disponible' || reg.estado === 'Vacía') counts.Disponible++; 
             else if (reg.estado === 'Averiada') counts.Averiada++;
         });
 
@@ -540,27 +614,27 @@
             const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
             const percentText = `${percentValue}%`;
             
-            // Actualizar porcentaje
             const percentElement = document.getElementById(`percent${state}`);
             if(percentElement) percentElement.textContent = percentText;
             
-            // Actualizar barra de progreso (fill)
             const fillElement = document.getElementById(`fill${state}`);
             if(fillElement) fillElement.style.width = percentText;
         };
 
         updateCompactCard('Cargada', counts.Cargada);
-        updateCompactCard('Disponible', counts.Disponible);
+        updateCompactCard('Disponible', counts.Disponible); 
         updateCompactCard('Averiada', counts.Averiada);
         
-        // Animación de aparición
+        // Animación de aparición de tarjetas (Separada del flujo de pasos)
         const cardIds = ['cardTotal', 'cardCargada', 'cardDisponible', 'cardAveriada'];
         cardIds.forEach((id, index) => {
             const item = document.getElementById(id);
-            item.classList.remove('visible'); 
-            setTimeout(() => {
-                item.classList.add('visible');
-            }, 50 + index * 50); 
+            // Si ya está visible, no la animamos de nuevo.
+            if (!item.classList.contains('visible')) {
+                setTimeout(() => {
+                    item.classList.add('visible');
+                }, 50 + index * 50); 
+            }
         });
     }
 
@@ -578,7 +652,7 @@
         mostrarConfirmacion("Registros eliminados.", "fas fa-trash-alt");
     }
 
-    // --- EXPORTACIÓN A PDF (LIMPIO, SIN CONTADORES) ---
+    // --- EXPORTACIÓN A PDF (Mantenida) ---
     function exportarPDF() {
         const registros = cargarRegistros();
         if (registros.length === 0) {
@@ -597,7 +671,7 @@
             .map(reg => [reg.matricula, reg.descripcion]); 
         
         const registrosDisponibles = registros
-            .filter(reg => reg.estado === 'Disponible')
+            .filter(reg => reg.estado === 'Disponible' || reg.estado === 'Vacía')
             .map(reg => [reg.matricula]);
         
         const registrosAveriadas = registros
@@ -678,7 +752,7 @@
         });
         let finalYCargadas = doc.autoTable.previous.finalY;
 
-        // TABLA DISPONIBLES (Derecha) 
+        // TABLA VACÍAS (Derecha) 
         doc.autoTable({
             head: [['MATRÍCULA']],
             body: registrosDisponibles,
@@ -779,7 +853,9 @@
         actualizarContadores();
         actualizarHistorialReciente(); 
         
+        // Configuración inicial del paso 1
         document.getElementById('paso1').style.display = 'block';
+        document.getElementById('paso1').style.position = 'relative'; // Asegura que ocupe espacio desde el inicio
         document.getElementById('paso1').classList.add('active');
         document.getElementById('matriculaInput').focus();
     });
