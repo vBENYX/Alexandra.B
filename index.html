@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>XPO Logistics | CODE Registro Rápido</title>
+    <title>CODE XPO | Registro Táctil de Matrículas</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -22,12 +22,11 @@
             --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             --transition-duration: 0.35s;
             --text-light-gray: #6d6d71;
+            --light-gray-apple: #f9f9f9; 
             --dark-text: #1c1c1e;
         }
 
-        /* ----------------------------------------------- */
-        /* --- ESTILOS BASE Y RESPONSIVIDAD (NUEVO) --- */
-        /* ----------------------------------------------- */
+        /* Estilo Base: Fondo de iOS y Tipografía SF Pro */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
             background-color: var(--ios-gray-bg);
@@ -39,100 +38,88 @@
             min-height: 100vh;
             color: var(--dark-text);
             overflow-x: hidden;
-            /* Se ha ajustado el padding superior para el nuevo header */
-            padding-top: 55px; 
+            /* Añadimos padding superior para dejar espacio al encabezado fijo */
+            padding-top: 65px; 
         }
         
-        /* Contenedor Principal: Limita el ancho del contenido en grandes pantallas */
-        .container {
-            width: 100%;
-            max-width: 450px; /* Ancho máximo para el contenido principal (cards, steps) */
-            background-color: transparent; 
-            box-shadow: none;
-            position: relative; 
-            height: auto;
-            min-height: calc(100vh - 65px); 
-            overflow: hidden;
-            padding: 0 10px; 
-        }
-
         /* ----------------------------------------------- */
-        /* --- ENCABEZADO FIJO TIPO APPLE (MODIFICADO) --- */
+        /* --- ENCABEZADO FIJO TIPO IOS LARGE TITLE (NUEVO) --- */
         /* ----------------------------------------------- */
         .header-fixed {
             position: fixed;
             top: 0;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             width: 100%;
-            padding: 8px 15px; /* Padding más compacto */
+            max-width: 450px; /* Igual que el contenedor principal */
+            padding: 10px 20px;
             z-index: 1000;
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
-            background-color: transparent; 
-            box-sizing: border-box;
-            display: flex;
-            justify-content: center; /* Centra el contenido interior */
+            background-color: transparent; /* Inicialmente transparente */
         }
         
-        .header-content {
-            width: 100%;
-            max-width: 450px; /* El contenido interno se limita al ancho del .container */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         /* Clase añadida por JS cuando se hace scroll */
         .header-fixed.scrolled {
-            background-color: var(--ios-card-bg); 
+            background-color: var(--ios-card-bg); /* Fondo blanco al hacer scroll */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
+        .logo-container { 
+            padding: 0; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; 
+        }
+        
         .logo-main { 
             display: flex; 
-            align-items: center; 
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+            align-items: baseline; 
+            gap: 5px; 
+        }
+        
+        .logo-code { 
+            font-family: 'Helvetica Neue', sans-serif; 
+            font-size: 28px; 
+            font-weight: 900; 
+            color: var(--dark-text); 
+            letter-spacing: -1px; 
+            transition: font-size 0.3s ease;
         }
         
         .logo-xpo { 
-            color: var(--ios-red); 
-            font-weight: 800;
-            margin-right: 2px;
-        }
-        
-        .logo-logistics { 
-            color: var(--dark-text); 
-            font-weight: 700;
-        }
-        
-        /* --- Efecto Transluz en CODE --- */
-        @keyframes shine {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        .logo-code-effect {
+            font-family: 'Helvetica Neue', sans-serif; 
             font-size: 16px; 
-            font-weight: 900; 
-            letter-spacing: 1px;
-            color: var(--dark-text); /* Color de fallback */
-            text-transform: uppercase;
-            
-            /* Propiedades para el efecto de transluz */
-            background: linear-gradient(90deg, 
-                transparent 0%, 
-                rgba(255, 255, 255, 0.9) 50%, 
-                transparent 100%);
-            background-size: 200% 100%;
-            
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent; /* Oculta el texto por defecto */
-            
-            animation: shine 3s infinite linear;
+            font-weight: 800; 
+            color: var(--ios-red); 
+            letter-spacing: 1px; 
+            margin-left: 5px; 
+            transition: font-size 0.3s ease;
+        }
+        
+        .app-title { 
+            font-size: 12px; 
+            font-weight: 400; 
+            color: var(--text-light-gray); 
+            margin-top: 2px;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* --- Contenedor Principal --- */
+        .container {
+            width: 100%;
+            max-width: 450px;
+            /* Eliminado margin-top, ya que el header es fijo */
+            background-color: transparent; 
+            box-shadow: none;
+            position: relative; 
+            height: auto;
+            min-height: calc(100vh - 65px); /* Ajustado a la altura de la ventana menos el padding */
+            overflow: hidden;
+            padding: 0 10px; /* Padding para evitar que el contenido toque los bordes */
         }
 
-        /* --- Estilos de pasos y cards (Mantenidos) --- */
+        /* --- ESTILOS DE PASOS Y CARDS (Mantenidos) --- */
         .card-section { 
             background-color: var(--ios-card-bg); 
             margin: 10px 0; 
@@ -165,7 +152,7 @@
             margin-bottom: 20px; 
         }
 
-        /* Resto de estilos para formularios, botones y contadores (Mantenidos) */
+        /* Resto de estilos CSS (Botones, Contadores, Historial) se mantienen... */
         input[type="text"] { width: 100%; padding: 15px; margin-bottom: 20px; border: 1px solid var(--ios-separator); border-radius: 10px; box-sizing: border-box; font-size: 18px; background-color: #f9f9f9; transition: border-color 0.2s; -webkit-appearance: none; }
         button { width: 100%; background-color: var(--ios-blue); color: white; padding: 15px 20px; margin: 10px 0; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 600; transition: opacity 0.1s, transform 0.1s, background-color 0.1s; -webkit-appearance: none; }
         button:active { opacity: 0.8; transform: scale(0.99); }
@@ -226,14 +213,12 @@
 <body>
 
 <div class="header-fixed" id="fixedHeader">
-    <div class="header-content">
+    <div id="logoHeader" class="logo-container">
         <div class="logo-main">
-            <span class="logo-xpo">XPO</span>
-            <span class="logo-logistics">Logistics</span>
+            <div class="logo-code">CODE</div>
+            <div class="logo-xpo">XPO</div>
         </div>
-        <div class="logo-code-effect">
-            CODE
-        </div>
+        <div class="app-title">Registro Rápido de Matrículas</div> 
     </div>
 </div>
 
@@ -342,7 +327,7 @@
     let matriculaActual = "";
     let registroDuplicado = null; 
 
-    // --- FUNCIONES DE UTILIDAD (Mantenidas) ---
+    // --- FUNCIONES DE UTILIDAD ---
     function guardarRegistros(registros) {
         localStorage.setItem('registrosMatriculas', JSON.stringify(registros));
         actualizarContadores();
@@ -354,10 +339,10 @@
     }
 
     function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
-        console.log(`[Notificación] ${mensaje}`); 
+        console.log(`[Notificación] `); 
     }
 
-    // --- GESTIÓN DE PANTALLAS (TRANSICIÓN DE DESVANECIMIENTO) (Mantenida) ---
+    // --- GESTIÓN DE PANTALLAS (TRANSICIÓN DE DESVANECIMIENTO) ---
     function mostrarPaso(pasoId) {
         const currentActive = document.querySelector('.step-content.active');
         const targetPaso = document.getElementById(pasoId);
@@ -366,17 +351,21 @@
 
         if (currentActive && currentActive.id !== targetPaso.id) {
             
+            // 1. Ocultar el paso actual con transición
             currentActive.classList.remove('active');
             currentActive.style.opacity = 0;
             currentActive.style.transform = 'scale(0.98)';
             
+            // Esperar a que la transición termine (0.35s) y luego hacer display: none y liberar el espacio (position: relative)
             setTimeout(() => { 
                 currentActive.style.display = 'none'; 
                 currentActive.style.position = 'absolute'; 
 
+                // 2. Mostrar el nuevo paso
                 targetPaso.style.display = 'block';
                 targetPaso.style.position = 'relative'; 
 
+                // Le damos un pequeño retraso para asegurar que el display:block se ejecute antes de la transición
                 setTimeout(() => {
                     targetPaso.classList.add('active');
                     targetPaso.style.opacity = 1;
@@ -384,6 +373,7 @@
                 }, 50); 
             }, 350); 
         } else if (!currentActive) {
+            // Inicialización (si no hay paso activo)
             targetPaso.style.display = 'block';
             targetPaso.style.position = 'relative';
             setTimeout(() => {
@@ -404,7 +394,7 @@
         document.getElementById('matriculaInput').focus();
     }
 
-    // --- LÓGICA CLAVE: REGISTRO (Mantenida) ---
+    // --- LÓGICA CLAVE: REGISTRO ---
     function registrarMatricula() {
         matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
         if (!matriculaActual) {
@@ -484,7 +474,7 @@
             buttonElement.classList.remove(confirmClass);
             buttonElement.disabled = false; 
 
-            mostrarConfirmacion(`¡${estado} registrada!`);
+            mostrarConfirmacion(`¡ registrada!`);
             mostrarPaso1(true); 
         }, 500); 
     }
@@ -509,7 +499,7 @@
         }
 
         if ((estado === 'Cargada' || estado === 'Averiada') && !descripcion.trim()) {
-            mostrarConfirmacion(`Necesita descripción de ${estado}.`, "fas fa-exclamation-triangle");
+            mostrarConfirmacion(`Necesita descripción de .`, "fas fa-exclamation-triangle");
             return;
         }
 
@@ -604,11 +594,12 @@
         });
     }
 
-    // --- FUNCIÓN DE PARALLAX (Sombra Dinámica en Header) (Mantenida) ---
+    // --- FUNCIÓN DE PARALLAX (Sombra Dinámica en Header) ---
     function handleScroll() {
         const header = document.getElementById('fixedHeader');
         const scrollPosition = window.scrollY;
         
+        // Aplica la clase 'scrolled' si el scroll supera un umbral pequeño (por ejemplo, 10px)
         if (scrollPosition > 10) {
             header.classList.add('scrolled');
         } else {
@@ -616,7 +607,7 @@
         }
     }
 
-    // --- Limpiar y Exportar PDF (Mantenidas) ---
+    // --- LIMPIAR REGISTROS (Mantenidos) ---
     function confirmarLimpiarRegistros() {
         if (confirm("¿Estás seguro de que quieres ELIMINAR TODOS los registros? Esta acción no se puede deshacer.")) {
             limpiarRegistros();
@@ -630,6 +621,9 @@
         mostrarConfirmacion("Registros eliminados.", "fas fa-trash-alt");
     }
 
+    // -----------------------------------------------------
+    // --- FUNCIÓN EXPORTAR A PDF MODIFICADA ---
+    // -----------------------------------------------------
     function exportarPDF() {
         const registros = cargarRegistros();
         if (registros.length === 0) {
@@ -638,22 +632,22 @@
         }
 
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const margin = 10;
-        let yPos = 10;
+        const doc = new jsPDF('p', 'mm', 'a4'); 
+        const margin = 15; // Margen en mm
+        let yPos = 15;
         const pageWidth = doc.internal.pageSize.width; 
         
         const registrosCargadas = registros
             .filter(reg => reg.estado === 'Cargada')
-            .map(reg => [reg.matricula, reg.descripcion]); 
+            .map(reg => [reg.matricula.toUpperCase(), reg.descripcion.toUpperCase()]); 
         
         const registrosDisponibles = registros
             .filter(reg => reg.estado === 'Disponible' || reg.estado === 'Vacía')
-            .map(reg => [reg.matricula]);
+            .map(reg => [reg.matricula.toUpperCase()]);
         
         const registrosAveriadas = registros
             .filter(reg => reg.estado === 'Averiada')
-            .map(reg => [reg.matricula, reg.descripcion]);
+            .map(reg => [reg.matricula.toUpperCase(), reg.descripcion.toUpperCase()]);
             
         const counts = {
             Cargada: registrosCargadas.length,
@@ -662,83 +656,130 @@
             Total: registros.length
         };
         
+        // --- COLORES ---
         const COLOR_TEXTO_OSCURO = [30, 30, 30];
-        const COLOR_TEXTO_CLARO = [150, 150, 150];
+        const COLOR_TEXTO_MUTED = [75, 85, 99];
+        const COLOR_ACCENT = [239, 68, 68]; // Rojo XPO
+        const COLOR_CARD_BG = [255, 255, 255];
+        const COLOR_HEADER_BG = [248, 250, 252]; 
+        const COLOR_SEPARATOR = [243, 244, 246];
 
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-        doc.text("XPO LOGISTICS", margin, yPos); 
+        // --- CABECERA (Pulida y Sin Esquinas) ---
+        doc.setFillColor(COLOR_CARD_BG[0], COLOR_CARD_BG[1], COLOR_CARD_BG[2]);
+        // Usamos solo el rectángulo redondeado con relleno, sin bordes para un acabado más limpio
+        doc.roundedRect(margin - 1, yPos - 5, pageWidth - margin * 2 + 2, 30, 5, 5, 'F'); 
         
-        doc.setFontSize(16);
-        doc.setTextColor(255, 59, 48); 
-        doc.text("CODE", pageWidth - margin, yPos, { align: 'right' }); 
-        
-        yPos += 5;
-        
-        const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
-        const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-        
+        // Texto CODE
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(COLOR_TEXTO_CLARO[0], COLOR_TEXTO_CLARO[1], COLOR_TEXTO_CLARO[2]); 
-        doc.text(`INFORME DE FLOTA | ${currentDay}, ${currentDate} | TOTAL: ${counts.Total} PLATAFORMAS`, margin, yPos);
-        yPos += 12; 
+        doc.setTextColor(31, 41, 55); 
+        doc.text("CODE", pageWidth - margin - 2, yPos, { align: 'right' }); 
+        
+        // XPO LOGISTICS
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(COLOR_ACCENT[0], COLOR_ACCENT[1], COLOR_ACCENT[2]);
+        doc.text("XPO", pageWidth / 2, yPos + 2, { align: 'center' }); 
+        
+        doc.setFontSize(10);
+        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
+        doc.text("LOGISTICS", pageWidth / 2, yPos + 6.5, { align: 'center' });
+        
+        // Título Reporte
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
+        doc.text("REPORTE DIARIO DE PLATAFORMAS", pageWidth / 2, yPos + 14, { align: 'center' }); 
 
+        // Fecha
+        const currentDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(COLOR_TEXTO_MUTED[0], COLOR_TEXTO_MUTED[1], COLOR_TEXTO_MUTED[2]);
+        doc.text(currentDate, pageWidth / 2, yPos + 18, { align: 'center' });
+        
+        yPos += 30 + 10; // Salto después de la cabecera
+        
+        // --- TABLAS DE DOS COLUMNAS ---
         const tableMarginX = 5; 
         const halfWidth = (pageWidth - margin * 2 - tableMarginX) / 2;
         let startYDoubleColumn = yPos;
         
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-        
-        doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
-        
-        const xPosVacias = margin + halfWidth + tableMarginX;
-        doc.text(`PLATAFORMAS VACÍAS (${counts.Disponible})`, xPosVacias, startYDoubleColumn); 
-        
-        startYDoubleColumn += 5; 
-        
-        const styles = { fontSize: 8, cellPadding: 2, valign: 'top', font: "helvetica", textColor: [51, 51, 51], lineColor: [240, 240, 240], lineWidth: 0.1, fontStyle: 'normal' };
-        const headStyles = { fillColor: [249, 249, 249], textColor: [80, 80, 80], fontStyle: 'bold', lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 3 };
+        const styles = { 
+            fontSize: 9, 
+            cellPadding: 2, 
+            valign: 'middle', 
+            font: "helvetica", 
+            textColor: [51, 51, 51], 
+            lineColor: COLOR_SEPARATOR, 
+            lineWidth: { top: 0, right: 0, bottom: 0.1, left: 0 }, 
+            fontStyle: 'normal' 
+        };
+        const headStyles = { 
+            fillColor: COLOR_HEADER_BG, 
+            textColor: [55, 65, 81], 
+            fontStyle: 'bold', 
+            lineWidth: { top: 0.1, right: 0, bottom: 0.1, left: 0 }, 
+            cellPadding: 3 
+        };
         const alternateRowStyles = { fillColor: [252, 252, 252] };
 
-
+        // 1. Cargadas (Columna Izquierda)
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
+        doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
+        startYDoubleColumn += 2;
+        
         doc.autoTable({
-            head: [['MATRÍCULA', 'CONTENIDO']],
-            body: registrosCargadas,
-            startY: startYDoubleColumn,
+            head: [['MATRICULA', 'CONTENIDO']],
+            body: registrosCargadas.length > 0 ? registrosCargadas : [['', 'No hay plataformas cargadas']],
+            startY: startYDoubleColumn + 2,
             margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
             tableWidth: halfWidth,
             styles: styles,
             headStyles: headStyles,
             alternateRowStyles: alternateRowStyles, 
             columnStyles: {
-                0: { cellWidth: 20 }, 
-                1: { cellWidth: 'auto' }
-            }
+                // MATRICULA ajustada
+                0: { cellWidth: 25 }, 
+                // CONTENIDO con encabezado alineado a la derecha
+                1: { cellWidth: 'auto', headStyles: { halign: 'right' } } 
+            },
+            bodyStyles: { fontStyle: registrosCargadas.length === 0 ? 'italic' : 'normal', textColor: registrosCargadas.length === 0 ? COLOR_TEXTO_MUTED : [51, 51, 51] }
         });
         let finalYCargadas = doc.autoTable.previous.finalY;
 
+        // 2. Vacías (Columna Derecha)
+        const xPosVacias = margin + halfWidth + tableMarginX;
+        startYDoubleColumn = yPos; 
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
+        doc.text(`PLATAFORMAS VACIAS (${counts.Disponible})`, xPosVacias, startYDoubleColumn); 
+        startYDoubleColumn += 2;
+        
         doc.autoTable({
-            head: [['MATRÍCULA']],
-            body: registrosDisponibles,
-            startY: startYDoubleColumn, 
+            head: [['MATRICULA']],
+            body: registrosDisponibles.length > 0 ? registrosDisponibles : [['No hay plataformas vacías']],
+            startY: startYDoubleColumn + 2, 
             margin: { left: xPosVacias, right: margin }, 
             tableWidth: halfWidth,
             styles: styles,
             headStyles: headStyles,
             alternateRowStyles: alternateRowStyles, 
             columnStyles: {
+                // MATRICULA ajustada para usar todo el ancho disponible
                 0: { cellWidth: 'auto' } 
-            }
+            },
+            bodyStyles: { fontStyle: registrosDisponibles.length === 0 ? 'italic' : 'normal', textColor: registrosDisponibles.length === 0 ? COLOR_TEXTO_MUTED : [51, 51, 51] }
         });
         let finalYDisponibles = doc.autoTable.previous.finalY;
 
         let finalY = Math.max(finalYCargadas, finalYDisponibles); 
         
         
+        // 3. Averías (Sección completa)
         if (registrosAveriadas.length > 0) {
             
             if (finalY + 20 > doc.internal.pageSize.height - margin) {
@@ -748,13 +789,13 @@
                  finalY += 10; 
             }
 
-            doc.setFontSize(12);
+            doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
             doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
             
             doc.autoTable({
-                head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
+                head: [['MATRICULA', 'DESCRIPCION DE AVERÍA']],
                 body: registrosAveriadas,
                 startY: finalY + 10,
                 margin: { left: margin, right: margin },
@@ -762,30 +803,75 @@
                 headStyles: headStyles,
                 alternateRowStyles: alternateRowStyles, 
                 columnStyles: {
+                    // MATRICULA ajustada
                     0: { cellWidth: 30 }, 
                     1: { cellWidth: 'auto' }
                 }
             });
         }
 
+        // --- PIE DE PÁGINA ---
         const pageCount = doc.internal.getNumberOfPages();
         for(let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
+            
+            // Línea separadora
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.1);
+            doc.line(margin, doc.internal.pageSize.height - 10, pageWidth - margin, doc.internal.pageSize.height - 10);
+            
             doc.setFontSize(8);
-            doc.setTextColor(COLOR_TEXTO_CLARO[0], COLOR_TEXTO_CLARO[1], COLOR_TEXTO_CLARO[2]);
-            
+            doc.setTextColor(COLOR_TEXTO_MUTED[0], COLOR_TEXTO_MUTED[1], COLOR_TEXTO_MUTED[2]);
             doc.setFont("helvetica", "normal");
-            doc.text(`© 2025 XPO LOGISTICS - Informe interno`, margin, doc.internal.pageSize.height - 5);
+
+            // Izquierda
+            doc.text(`GENERADO POR XPO LOGISTICS`, margin, doc.internal.pageSize.height - 5);
             
-            doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, doc.internal.pageSize.height - 5, { align: 'right' });
+            // Centro (Link)
+            doc.setTextColor(37, 99, 235); // Color azul del link
+            doc.text(`AppCode.com`, pageWidth / 2, doc.internal.pageSize.height - 5, { align: 'center' });
+            
+            // Derecha (Paginación)
+            doc.setTextColor(COLOR_TEXTO_MUTED[0], COLOR_TEXTO_MUTED[1], COLOR_TEXTO_MUTED[2]);
+            doc.text(`PÁGINA ${i} DE ${pageCount}`, pageWidth - margin, doc.internal.pageSize.height - 5, { align: 'right' });
         }
 
-        doc.save("Reporte_XPO_Ejecutivo_Compacto.pdf");
+        doc.save("Reporte_XPO_Diario_Plataformas.pdf");
         mostrarConfirmacion("PDF exportado correctamente.", "fas fa-file-pdf");
     }
 
+    // --- LÓGICA DE ANIMACIÓN OPTIMIZADA (Mantenida) ---
+    function animarLogo() {
+        // Esta función podría ser usada para la animación inicial, pero ya no afecta el header-fixed de la misma manera.
+        const logoCode = document.querySelector('.logo-code');
+        const logoXPO = document.querySelector('.logo-xpo');
+
+        logoCode.style.opacity = '0';
+        logoXPO.style.opacity = '0';
+        logoXPO.style.transform = 'translateY(10px)';
+
+        if (!localStorage.getItem('logoAnimado')) {
+             setTimeout(() => {
+                logoCode.style.opacity = '1';
+             }, 50);
+
+             setTimeout(() => {
+                logoXPO.style.opacity = '1';
+                logoXPO.style.transform = 'translateY(0)';
+             }, 350); 
+             
+             localStorage.setItem('logoAnimado', 'true');
+        } else {
+            logoCode.style.opacity = '1';
+            logoXPO.style.opacity = '1';
+            logoXPO.style.transform = 'translateY(0)';
+        }
+    }
+
+
     // --- INICIALIZACIÓN ---
     document.addEventListener('DOMContentLoaded', () => {
+        animarLogo();
         actualizarContadores();
         actualizarHistorialReciente(); 
         
@@ -794,7 +880,9 @@
         document.getElementById('paso1').classList.add('active');
         document.getElementById('matriculaInput').focus();
         
+        // --- ACTIVAR EL MANEJO DE SCROLL PARA EL EFECTO DINÁMICO ---
         window.addEventListener('scroll', handleScroll);
+        // Llamar una vez al inicio para el caso de recargas con scroll ya aplicado
         handleScroll(); 
     });
 </script>
