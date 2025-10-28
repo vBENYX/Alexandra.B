@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Registro Táctil de Matrículas</title>
+    <title>CODE XPO | Registro Táctil de Matrículas</title>
     
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
@@ -23,6 +22,7 @@
             --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             --transition-duration: 0.35s;
             --text-light-gray: #6d6d71;
+            --light-gray-apple: #f9f9f9; 
         }
 
         /* Estilo Base: Fondo de iOS y Tipografía SF Pro */
@@ -39,7 +39,7 @@
             overflow-x: hidden;
         }
         
-        /* Contenedor Principal */
+        /* Contenedor Principal (Límite de Ancho para simular móvil) */
         .container {
             width: 100%;
             max-width: 450px;
@@ -52,276 +52,70 @@
             overflow: hidden;
         }
 
-        /* Encabezado Principal */
-        h1 {
-            font-size: 28px;
-            font-weight: 700;
-            padding: 15px 20px;
-            margin: 0;
-            color: #1c1c1e;
-        }
-
-        /* Estructura de Tarjetas */
-        .card-section {
-            background-color: var(--ios-card-bg);
-            margin: 10px 0;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: var(--ios-shadow);
-        }
+        /* --- ESTILOS GENERALES Y LAYOUT (Mantenidos) --- */
+        .logo-container { padding: 10px 20px; margin: 0; display: flex; flex-direction: column; align-items: flex-start; }
+        .logo-main { display: flex; align-items: baseline; gap: 5px; }
+        .logo-code { font-family: 'Helvetica Neue', sans-serif; font-size: 28px; font-weight: 900; color: #1c1c1e; letter-spacing: -1px; }
+        .logo-xpo { font-family: 'Helvetica Neue', sans-serif; font-size: 16px; font-weight: 800; color: var(--ios-red); letter-spacing: 1px; margin-left: 5px; }
+        .app-title { font-size: 12px; font-weight: 400; color: var(--text-light-gray); margin-top: 2px; }
+        .card-section { background-color: var(--ios-card-bg); margin: 10px 0; padding: 20px; border-radius: 10px; box-shadow: var(--ios-shadow); }
+        .step-content { opacity: 0; transform: translateX(100%); transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; padding: 20px; background-color: var(--ios-card-bg); border-radius: 10px; box-shadow: var(--ios-shadow); display: none; }
+        .step-content.active { opacity: 1; transform: translateX(0); position: relative; display: block; margin-bottom: 20px; }
+        input[type="text"] { width: 100%; padding: 15px; margin-bottom: 20px; border: 1px solid var(--ios-separator); border-radius: 10px; box-sizing: border-box; font-size: 18px; background-color: #f9f9f9; transition: border-color 0.2s; -webkit-appearance: none; }
+        button { width: 100%; background-color: var(--ios-blue); color: white; padding: 15px 20px; margin: 10px 0; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 600; transition: opacity 0.1s, transform 0.1s, background-color 0.1s; -webkit-appearance: none; }
+        button:active { opacity: 0.8; transform: scale(0.99); }
+        .btn-confirm-cargada { background-color: var(--ios-green) !important; }
+        .btn-confirm-averiada { background-color: var(--ios-red) !important; }
+        #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
+        #botonesEstado button { background-color: #e5e5ea; color: #3c3c43; font-weight: 500; flex-grow: 1; padding: 12px 10px; margin: 0; font-size: 16px; }
+        #btnEliminar { background-color: #FF3B30; margin-top: 10px; }
+        .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
+        /* Eliminamos la clase de la notificación negra */
+        /* .confirmation-message { display: none; ... } */ 
         
-        /* Transiciones de Pasos */
-        .step-content {
-            opacity: 0;
-            transform: translateX(100%); 
-            transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 20px;
-            background-color: var(--ios-card-bg);
-            border-radius: 10px;
-            box-shadow: var(--ios-shadow);
-            display: none;
-        }
-        
-        .step-content.active {
-            opacity: 1;
-            transform: translateX(0);
-            position: relative;
-            display: block;
-            margin-bottom: 20px;
-        }
-        
-        /* Inputs y Botones */
-        input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid var(--ios-separator);
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 18px;
-            background-color: #f9f9f9;
-            transition: border-color 0.2s;
-            -webkit-appearance: none;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--ios-blue);
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
-            outline: none;
-            background-color: var(--ios-card-bg);
-        }
-        
-        button {
-            width: 100%;
-            background-color: var(--ios-blue);
-            color: white;
-            padding: 15px 20px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: 600;
-            transition: opacity 0.1s, transform 0.1s;
-            -webkit-appearance: none;
-        }
-
-        button:active {
-            opacity: 0.8;
-            transform: scale(0.99);
-        }
-        
-        #botonesEstado {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-        }
-
-        #botonesEstado button {
-            background-color: #e5e5ea;
-            color: #3c3c43;
-            font-weight: 500;
-            flex-grow: 1;
-            padding: 12px 10px;
-            margin: 0;
-            font-size: 16px;
-        }
-        
-        /* Botón de Eliminación (Rojo) */
-        #btnEliminar {
-            background-color: #FF3B30;
-            margin-top: 10px;
-        }
-        
-        .volver-button {
-            background-color: transparent !important;
-            color: var(--ios-blue) !important;
-            font-weight: 400 !important;
-            text-align: left;
-            padding-left: 0 !important;
-            margin-top: 20px;
-            width: auto !important;
-        }
-        
-        /* --- Mensaje de Confirmación TOAST (Mejorado) --- */
-        .confirmation-message {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) scale(0.9);
-            background-color: #3c3c43;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: 500;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease-out;
-            z-index: 1000;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .confirmation-message.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) scale(1);
-        }
-
-        /* --- ESTILOS DE BARRA DE PROPORCIONES (APPLE STYLE) --- */
-        #contadores {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            margin-top: 15px;
-            gap: 10px;
-        }
-
-        .contador-item {
-            background-color: #f9f9fb;
-            padding: 12px 8px;
-            border-radius: 8px;
-            text-align: center;
-            min-width: 45%;
-            flex-grow: 1;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-            overflow: hidden; /* Oculta la barra de progreso */
-        }
-        
-        .contador-item.visible {
-             opacity: 1;
-             transform: translateY(0);
-        }
-
-        .contador-item h4 {
-            margin: 0 0 5px 0;
-            font-size: 0.9em;
-            color: var(--text-light-gray);
-            font-weight: 400;
-        }
-
-        .contador-item .count {
-            font-size: 1.8em;
-            font-weight: 600;
-            display: block;
-        }
-        
-        /* Contenedor de la barra de progreso */
-        .progress-bar-container {
-            height: 4px;
-            width: 100%;
-            background-color: #ebebf5; 
-            margin-top: 8px;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            transition: width 0.5s ease-out;
-        }
-
-        /* Colores Específicos para Barra */
+        /* --- ESTILOS DE BARRA DE PROPORCIONES (Web - Mantenido simple) --- */
+        #contadores { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 15px; gap: 10px; }
+        .contador-item { background-color: #f9f9fb; padding: 12px 8px; border-radius: 8px; text-align: center; min-width: 45%; flex-grow: 1; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; overflow: hidden; height: auto; position: relative; }
+        .contador-item.visible { opacity: 1; transform: translateY(0); }
+        .contador-item h4 { margin: 0 0 5px 0; font-size: 0.9em; color: var(--text-light-gray); font-weight: 400; }
+        .contador-item .count { font-size: 1.8em; font-weight: 600; display: block; }
+        .progress-bar-container { height: 4px; width: 100%; background-color: #ebebf5; margin-top: 8px; border-radius: 2px; overflow: hidden; }
+        .progress-bar { height: 100%; transition: width 0.5s ease-out; }
         .cargada .count { color: var(--ios-green); } 
         .cargada .progress-bar { background-color: var(--ios-green); }
-        
         .disponible .count { color: var(--ios-yellow); } 
         .disponible .progress-bar { background-color: var(--ios-yellow); } 
-        
         .averiada .count { color: var(--ios-red); } 
         .averiada .progress-bar { background-color: var(--ios-red); } 
-        
         .total .count { color: var(--ios-blue); }
         .total .progress-bar { background-color: var(--ios-blue); }
+        .contador-item .percentage, .contador-fill { display: none; }
         
-        /* --- ESTILOS DE HISTORIAL RECIENTE (Lista iOS) --- */
-        #historialReciente {
-            list-style: none;
-            padding: 0;
-            margin: 15px 0 0 0;
-            padding-top: 15px; /* Separación del título */
-        }
+        /* --- ESTILOS DE HISTORIAL RECIENTE --- */
+        #historialReciente { list-style: none; padding: 0; margin: 15px 0 0 0; padding-top: 15px; }
+        #historialReciente li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e5e5ea; font-size: 14px; }
+        #historialReciente li:last-child { border-bottom: none; }
         
-        #historialReciente li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            /* Solo separador inferior para el estilo de lista iOS */
-            border-bottom: 1px solid #e5e5ea; 
-            font-size: 14px;
-        }
-        
-        #historialReciente li:last-child {
-            border-bottom: none;
-        }
-        
-        .historial-estado {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 4px;
-            flex-basis: 30%;
-            text-align: center;
-        }
-        
-        .historial-time {
-            color: var(--text-light-gray);
-            font-size: 11px;
-            flex-basis: 30%;
-            text-align: right;
-        }
+        .historial-estado { font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; flex-basis: 30%; text-align: center; }
+        .historial-time { color: var(--text-light-gray); font-size: 11px; flex-basis: 30%; text-align: right; }
 
-        /* Colores de estado en historial */
-        .estado-Cargada { background-color: #d8f5e2; color: #1e8449; } /* Verde suave */
-        .estado-Disponible { background-color: #fff9e0; color: #b38600; } /* Amarillo suave */
-        .estado-Averiada { background-color: #fce8e8; color: #c0392b; } /* Rojo suave */
+        .estado-Cargada { background-color: #d8f5e2; color: #1e8449; }
+        .estado-Disponible { background-color: #fff9e0; color: #b38600; }
+        .estado-Averiada { background-color: #fce8e8; color: #c0392b; }
         
-        /* Contenedor de advertencia de Duplicado */
-        #advertenciaDuplicado {
-            background-color: #fce8e8;
-            color: #c0392b;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            display: none;
-            border: 1px solid #f9bdbd;
-        }
+        #advertenciaDuplicado { background-color: #fce8e8; color: #c0392b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; border: 1px solid #f9bdbd; }
         
     </style>
 </head>
 <body>
 <div style="max-width:450px; width:100%;">
-    <h1>Registro Rápido de Matrículas</h1>
+    <div id="logoHeader" class="logo-container">
+        <div class="logo-main">
+            <div class="logo-code">CODE</div>
+            <div class="logo-xpo">XPO</div>
+        </div>
+        <div class="app-title">Registro Rápido de Matrículas</div> 
+    </div>
 </div>
 
 <div class="container">
@@ -340,19 +134,19 @@
         </div>
         
         <div id="botonesEstado">
-            <button onclick="manejarEstado('cargada')">Cargada</button>
-            <button onclick="manejarEstado('disponible')">Disponible</button>
-            <button onclick="manejarEstado('averiada')">Averiada</button>
+            <button id="btnCargada" onclick="manejarEstado('cargada')">Cargada</button>
+            <button id="btnDisponible" onclick="manejarEstado('disponible')">Disponible</button>
+            <button id="btnAveriadaState" onclick="manejarEstado('averiada')">Averiada</button>
         </div>
 
         <div id="cargadaDetalles" style="display:none;">
             <input type="text" id="descCargada" placeholder="Descripción de la carga (Requerido)">
-            <button onclick="guardarRegistro('cargada')"><i class="fas fa-check-circle"></i> Registrar Carga</button>
+            <button id="btnGuardarCargada" onclick="guardarRegistro('cargada')"><i class="fas fa-check-circle"></i> Registrar Carga</button>
         </div>
 
         <div id="averiadaDetalles" style="display:none;">
             <input type="text" id="descAveriada" placeholder="Descripción de la avería (Requerido)">
-            <button onclick="guardarRegistro('averiada')"><i class="fas fa-check-circle"></i> Registrar Avería</button>
+            <button id="btnGuardarAveriada" onclick="guardarRegistro('averiada')"><i class="fas fa-check-circle"></i> Registrar Avería</button>
         </div>
 
         <button class="volver-button" onclick="mostrarPaso1(true)"><i class="fas fa-chevron-left"></i> Volver</button>
@@ -385,7 +179,7 @@
         </div>
         
         <button onclick="exportarPDF()" style="background-color:#34c759; margin-top: 25px;">
-            <i class="fas fa-file-pdf"></i> Exportar a PDF (Pages 2024 Pro)
+            <i class="fas fa-file-pdf"></i> Exportar a PDF (Estilo Ejecutivo XPO)
         </button>
         
         <h4><i class="fas fa-history"></i> Últimos 5 Movimientos</h4>
@@ -399,14 +193,9 @@
 
 </div>
 
-<div id="confirmationMessage" class="confirmation-message">
-    <i class="fas fa-check-circle"></i> Registrado con éxito
-</div>
-
-
 <script>
     let matriculaActual = "";
-    let registroDuplicado = null; // Para almacenar el registro si es duplicado
+    let registroDuplicado = null; 
 
     // --- FUNCIONES DE UTILIDAD ---
     function guardarRegistros(registros) {
@@ -419,21 +208,17 @@
         return JSON.parse(localStorage.getItem('registrosMatriculas') || '[]');
     }
 
-    function mostrarConfirmacion(mensaje = "Registrado con éxito", icono = "fas fa-check-circle") {
-        const confirmMsg = document.getElementById('confirmationMessage');
-        confirmMsg.innerHTML = `<i class="${icono}"></i> ${mensaje}`;
-        confirmMsg.classList.add('show');
-        setTimeout(() => {
-            confirmMsg.classList.remove('show');
-        }, 1500);
+    // FUNCIÓN DE NOTIFICACIÓN MODIFICADA PARA NO MOSTRAR LA 'ULULA' NOTIFICACIÓN NEGRA
+    function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
+        console.log(`[Notificación] `); // Usamos console.log como notificación simple
+        // Puedes añadir aquí una notificación temporal más simple (ej: cambiando el color de fondo de un elemento) si lo deseas, pero por ahora la quitamos.
     }
 
-    // --- GESTIÓN DE PANTALLAS (Transiciones) ---
+    // --- GESTIÓN DE PANTALLAS (Mantenidas) ---
     function mostrarPaso(pasoId, backward = false) {
         const currentActive = document.querySelector('.step-content.active');
         const targetPaso = document.getElementById(pasoId);
         
-        // Limpiar advertencia al cambiar de paso
         document.getElementById('advertenciaDuplicado').style.display = 'none';
 
         if (currentActive) {
@@ -474,7 +259,7 @@
         document.getElementById('matriculaInput').focus();
     }
 
-    // --- LÓGICA CLAVE: VALIDACIÓN DE DUPLICADOS (UX Mejorada) ---
+    // --- LÓGICA CLAVE: REGISTRO (Mantenida) ---
     function registrarMatricula() {
         matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
         if (!matriculaActual) {
@@ -493,7 +278,6 @@
         document.getElementById('averiadaDetalles').style.display = 'none';
         
         if (existente) {
-            // Mostrar el mensaje de advertencia discreto (Toast visual)
             const advertenciaDiv = document.getElementById('advertenciaDuplicado');
             document.getElementById('estadoAnterior').textContent = existente.estado;
             document.getElementById('descAnterior').textContent = existente.descripcion;
@@ -510,34 +294,67 @@
         if (estado === 'cargada') {
             document.getElementById('cargadaDetalles').style.display = 'block';
             document.getElementById('descCargada').focus();
-            // Si es duplicado y estaba cargada, precarga la descripción
             if (registroDuplicado && registroDuplicado.estado === 'Cargada') {
                  document.getElementById('descCargada').value = registroDuplicado.descripcion;
             }
         } else if (estado === 'averiada') {
             document.getElementById('averiadaDetalles').style.display = 'block';
             document.getElementById('descAveriada').focus();
-            // Si es duplicado y estaba averiada, precarga la descripción
             if (registroDuplicado && registroDuplicado.estado === 'Averiada') {
                  document.getElementById('descAveriada').value = registroDuplicado.descripcion;
             }
         } else if (estado === 'disponible') {
-            // Registro inmediato para Disponible (UX Rápida)
             guardarRegistro('disponible', 'Lista para cargar');
+            microInteraccionBoton(document.getElementById('btnDisponible'), 'Disponible');
         }
     }
+    
+    function microInteraccionBoton(buttonElement, estado) {
+        const originalText = buttonElement.innerHTML;
+        
+        let confirmText = '';
+        let confirmClass = '';
+        
+        if (estado === 'Cargada' || estado === 'Disponible') {
+            confirmText = '<i class="fas fa-check"></i> ¡Registrado!';
+            confirmClass = 'btn-confirm-cargada';
+        } else if (estado === 'Averiada') {
+            confirmText = '<i class="fas fa-times-circle"></i> ¡Avería!';
+            confirmClass = 'btn-confirm-averiada';
+        }
+
+        buttonElement.innerHTML = confirmText;
+        buttonElement.classList.add(confirmClass);
+        buttonElement.disabled = true;
+
+        setTimeout(() => {
+            buttonElement.innerHTML = originalText;
+            buttonElement.classList.remove(confirmClass);
+            buttonElement.disabled = false;
+            
+            mostrarConfirmacion(`¡ registrada!`);
+            
+            mostrarPaso1(true); 
+        }, 500); 
+    }
+
 
     function guardarRegistro(estado, descripcionManual = '') {
         let descripcion = descripcionManual;
+        let btnElement;
 
         if (estado === 'cargada') {
             descripcion = document.getElementById('descCargada').value;
+            btnElement = document.getElementById('btnGuardarCargada');
         } else if (estado === 'averiada') {
             descripcion = document.getElementById('descAveriada').value;
+            btnElement = document.getElementById('btnGuardarAveriada');
+        } else {
+            btnElement = document.getElementById('btnDisponible');
         }
 
         if ((estado === 'cargada' || estado === 'averiada') && !descripcion.trim()) {
-            mostrarConfirmacion(`Necesita descripción de ${estado}.`, "fas fa-exclamation-triangle");
+            mostrarConfirmacion(`Necesita descripción de .`, "fas fa-exclamation-triangle");
             return;
         }
 
@@ -550,18 +367,14 @@
 
         let registros = cargarRegistros();
         
-        // Sobreescribir: Eliminar si existe para que el nuevo registro sea el más reciente
         registros = registros.filter(reg => reg.matricula !== matriculaActual);
-        
         registros.push(registro);
         guardarRegistros(registros);
 
-        mostrarConfirmacion(`¡${registro.estado} registrada!`);
-        mostrarPaso1(true); 
+        microInteraccionBoton(btnElement, registro.estado);
     }
 
-    // --- CONTADORES Y HISTORIAL (Visualización Web Mejorada) ---
-
+    // --- CONTADORES Y HISTORIAL (Mantenidos) ---
     function actualizarHistorialReciente() {
         const registros = cargarRegistros().reverse();
         const ul = document.getElementById('historialReciente');
@@ -576,13 +389,13 @@
         
         ultimosRegistros.forEach(reg => {
             const hora = reg.fecha.split(', ')[1]; 
-            const estadoClass = `estado-${reg.estado}`;
+            const estadoClass = `estado-`;
             
             const li = document.createElement('li');
             li.innerHTML = `
-                <span class="historial-matricula">${reg.matricula}</span>
-                <span class="historial-estado ${estadoClass}">${reg.estado}</span>
-                <span class="historial-time">${hora}</span>
+                <span class="historial-matricula"></span>
+                <span class="historial-estado "></span>
+                <span class="historial-time"></span>
             `;
             ul.appendChild(li);
         });
@@ -603,8 +416,7 @@
         document.getElementById('countAveriada').textContent = counts.Averiada;
         document.getElementById('countTotal').textContent = counts.Total;
         
-        // Lógica de Barras de Progreso
-        const total = counts.Total > 0 ? counts.Total : 1; // Evitar división por cero
+        const total = counts.Total > 0 ? counts.Total : 1; 
         
         document.getElementById('barCargada').style.width = `${(counts.Cargada / total) * 100}%`;
         document.getElementById('barDisponible').style.width = `${(counts.Disponible / total) * 100}%`;
@@ -618,7 +430,7 @@
         });
     }
 
-    // --- LIMPIAR REGISTROS ---
+    // --- LIMPIAR REGISTROS (Mantenidos) ---
     function confirmarLimpiarRegistros() {
         if (confirm("¿Estás seguro de que quieres ELIMINAR TODOS los registros? Esta acción no se puede deshacer.")) {
             limpiarRegistros();
@@ -632,7 +444,7 @@
         mostrarConfirmacion("Registros eliminados.", "fas fa-trash-alt");
     }
 
-    // --- EXPORTACIÓN A PDF (Mismo estilo Pages 2024 Pro) ---
+    // --- EXPORTACIÓN A PDF (CORREGIDA Y SIMPLIFICADA) ---
     function exportarPDF() {
         const registros = cargarRegistros();
         if (registros.length === 0) {
@@ -645,8 +457,6 @@
         const margin = 10;
         let yPos = 10;
         const pageWidth = doc.internal.pageSize.width; 
-        const cardWidth = pageWidth - (margin * 2);
-        const cardHeight = 40; 
         
         const registrosCargadas = registros
             .filter(reg => reg.estado === 'Cargada')
@@ -666,151 +476,219 @@
         const countTotal = registros.length;
 
 
-        // 1. Tarjeta de Encabezado (Apple Pages Header Card)
-        doc.setFillColor(250, 250, 247);
-        doc.roundedRect(margin, yPos, cardWidth, cardHeight, 3, 3, 'F'); 
-
+        // 1. Encabezado de Logotipo
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
+        doc.setFontSize(16);
         doc.setTextColor(30, 30, 30);
-        doc.text("Reporte de Movimientos de Matrículas", margin + 3, yPos + 8); 
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100); 
-        doc.text("Detalle de flota y estado operativo.", margin + 3, yPos + 14);
+        doc.text("XPO LOGISTICS", margin, yPos); 
         
+        doc.setFontSize(16);
+        doc.setTextColor(255, 59, 48); 
+        doc.text("CODE", pageWidth - margin, yPos, { align: 'right' }); 
+        
+        yPos += 5;
+        
+        // Fecha
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150); 
-        doc.text(`Generado: ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}`, margin + 3, yPos + 18);
-        
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(80, 80, 80);
-        
-        const summary = [
-            `Total: ${countTotal}`,
-            `Cargadas: ${countCargada}`,
-            `Disponibles: ${countDisponible}`,
-            `Averiadas: ${countAveriada}`
-        ];
-        
-        const summaryX = [margin + 3, margin + 40, margin + 80, margin + 125];
-        
-        summary.forEach((text, index) => {
-            doc.text(text, summaryX[index], yPos + 33);
-        });
+        doc.text(`MARTES,  '2-digit', month: 'long', year: 'numeric' ).toUpperCase()}`, margin, yPos);
+        yPos += 7;
 
-        yPos += cardHeight + 10;
+        // 2. Barras de Estado (REEMPLAZANDO DEGRADADO POR COLOR SÓLIDO PASTELE SUAVE)
+        const barHeight = 8;
+        const barRadius = 2;
+        const totalWidth = pageWidth - (margin * 2);
+        
+        // Colores Base (Fondo suave) y Relleno (Color pastel sólido)
+        const colorBase = [245, 245, 245]; 
+        const colorCargada = [158, 204, 166]; // Verde Pastel
+        const colorDisponible = [255, 222, 128]; // Amarillo/Dorado Suave
+        const colorAvariada = [255, 175, 175]; // Rojo/Salmón Suave
 
+        const widthCargada = (countCargada / countTotal) * totalWidth;
+        const widthDisponible = (countDisponible / countTotal) * totalWidth;
+        const widthAvariada = (countAveriada / countTotal) * totalWidth;
 
-        // --- Estilos Base de Tabla Ultra-Compacta (Pages Moderno) ---
-        const tableWidth = (pageWidth / 2) - (margin * 1.5);
-        const styles = {
-            fontSize: 6,
-            cellPadding: 1,
-            valign: 'middle',
-            font: "helvetica",
-            textColor: [51, 51, 51],
-            lineColor: [240, 240, 240],
-            lineWidth: 0.1
-        };
-
-        const footStyles = {
-            fillColor: [240, 240, 235], 
-            textColor: [51, 51, 51],
-            fontStyle: 'bold',
-            lineWidth: { top: 0.2, right: 0, bottom: 0, left: 0 },
-            cellPadding: 2
+        // 2a. Dibujar barra base gris (el fondo suave)
+        doc.setFillColor(colorBase[0], colorBase[1], colorBase[2]);
+        doc.roundedRect(margin, yPos, totalWidth, barHeight, barRadius, barRadius, 'F');
+        
+        if (countTotal > 0) {
+             // 2b. Barra Cargada (Color Sólido)
+            doc.setFillColor(colorCargada[0], colorCargada[1], colorCargada[2]);
+            doc.roundedRect(margin, yPos, widthCargada, barHeight, barRadius, barRadius, 'F');
+            
+            // 2c. Barra Disponible (Color Sólido)
+            doc.setFillColor(colorDisponible[0], colorDisponible[1], colorDisponible[2]);
+            doc.roundedRect(margin + widthCargada, yPos, widthDisponible, barHeight, barRadius, barRadius, 'F');
+            
+            // 2d. Barra Averiada (Color Sólido)
+            doc.setFillColor(colorAvariada[0], colorAvariada[1], colorAvariada[2]);
+            doc.roundedRect(margin + widthCargada + widthDisponible, yPos, widthAvariada, barHeight, barRadius, barRadius, 'F');
         }
 
-        // --- ESTILOS DE ENCABEZADO PERSONALIZADOS (Colores Sutiles) ---
-        const headCargada = { fillColor: [240, 245, 235], textColor: [80, 80, 80], fontStyle: 'bold', lineColor: [200, 200, 200], lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 2 };
-        const headDisponible = { fillColor: [240, 240, 235], textColor: [80, 80, 80], fontStyle: 'bold', lineColor: [200, 200, 200], lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 2 };
-        const headAveriada = { fillColor: [245, 240, 240], textColor: [80, 80, 80], fontStyle: 'bold', lineColor: [200, 200, 200], lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 2 };
-        
-        const startYTables = yPos + 5; 
-
-        // --- Columna Izquierda: CARGADAS ---
-        doc.setFontSize(10);
+        // 2e. Contadores en Línea sobre las barras (Texto)
         doc.setFont("helvetica", "bold");
-        doc.text("Cargas Activas (Ok)", margin, startYTables); 
+        doc.setFontSize(8);
+        doc.setTextColor(30, 30, 30);
+        
+        if (countCargada > 0) {
+            doc.text(` CARGADAS`, margin + 3, yPos + 5.5, { align: 'left' });
+        }
 
+        if (countDisponible > 0) {
+            doc.text(` VACÍAS`, margin + widthCargada + 3, yPos + 5.5, { align: 'left' });
+        }
+        
+        if (countAveriada > 0) {
+             doc.text(` AVERIADAS`, margin + widthCargada + widthDisponible + 3, yPos + 5.5, { align: 'left' });
+        }
+        
+        yPos += barHeight + 10; 
+
+        // 3. TABLAS DE DETALLE (Doble Columna)
+        const tableMarginX = 5; 
+        const halfWidth = (pageWidth - margin * 2 - tableMarginX) / 2;
+        
+        const styles = {
+            fontSize: 8,
+            cellPadding: 2,
+            valign: 'top',
+            font: "helvetica", 
+            textColor: [51, 51, 51],
+            lineColor: [240, 240, 240], 
+            lineWidth: 0.1,
+            fontStyle: 'normal' 
+        };
+
+        const headStyles = {
+            fillColor: [249, 249, 249], 
+            textColor: [80, 80, 80],
+            fontStyle: 'bold', 
+            lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 },
+            cellPadding: 3
+        };
+        
+        const alternateRowStyles = { fillColor: [252, 252, 252] };
+
+
+        let startYDoubleColumn = yPos;
+        
+        // 3a. ENCABEZADOS DE SECCIÓN DOBLE COLUMNA
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(30, 30, 30);
+        
+        doc.text(`PLATAFORMAS CARGADAS `, margin, startYDoubleColumn); 
+        
+        const xPosVacías = margin + halfWidth + tableMarginX;
+        doc.text(`PLATAFORMAS VACÍAS `, xPosVacías, startYDoubleColumn); 
+        
+        startYDoubleColumn += 5; 
+        
+        
+        // 3b. TABLA CARGADAS (Izquierda)
         doc.autoTable({
-            head: [['Matrícula', 'Carga']],
+            head: [['MATRÍCULA', 'CONTENIDO']],
             body: registrosCargadas,
-            foot: [['Total:', countCargada.toString()]],
-            startY: startYTables + 3,
-            margin: { left: margin, right: pageWidth / 2 },
-            tableWidth: tableWidth,
+            startY: startYDoubleColumn,
+            margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
+            tableWidth: halfWidth,
             styles: styles,
-            headStyles: headCargada,
-            footStyles: footStyles,
-            alternateRowStyles: { fillColor: [255, 255, 255] }, 
+            headStyles: headStyles,
+            alternateRowStyles: alternateRowStyles, 
+            columnStyles: {
+                0: { cellWidth: 20 }, 
+                1: { cellWidth: 'auto' }
+            }
         });
         let finalYCargadas = doc.autoTable.previous.finalY;
 
-        // --- Columna Derecha: DISPONIBLES ---
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.text("Disponibles (Vacías)", pageWidth / 2 + margin / 2, startYTables); 
-        
+        // 3c. TABLA DISPONIBLES (Derecha)
         doc.autoTable({
-            head: [['Matrícula']],
+            head: [['MATRÍCULA']],
             body: registrosDisponibles,
-            startY: startYTables + 3,
-            margin: { left: pageWidth / 2 + margin / 2, right: margin },
-            tableWidth: tableWidth,
+            startY: startYDoubleColumn,
+            margin: { left: xPosVacías, right: margin }, 
+            tableWidth: halfWidth,
             styles: styles,
-            headStyles: headDisponible,
-            alternateRowStyles: { fillColor: [255, 255, 255] }, 
+            headStyles: headStyles,
+            alternateRowStyles: alternateRowStyles, 
+            columnStyles: {
+                0: { cellWidth: halfWidth } 
+            }
         });
         let finalYDisponibles = doc.autoTable.previous.finalY;
 
-        // --- Tabla Averiadas (Abajo) ---
         let finalY = Math.max(finalYCargadas, finalYDisponibles);
+        
+        
+        // 4. SECCIÓN AVERIADAS (Si las hay)
         
         if (registrosAveriadas.length > 0) {
             
-            if (finalY + 25 > doc.internal.pageSize.height - margin) {
+            if (finalY + 30 > doc.internal.pageSize.height - margin) {
                 doc.addPage();
-                finalY = margin + 10;
+                finalY = margin + 5;
             }
 
-            doc.setFontSize(10);
+            doc.setFontSize(12);
             doc.setFont("helvetica", "bold");
-            doc.text("Matrículas Averiadas (Fallo)", margin, finalY + 10); 
+            doc.setTextColor(30, 30, 30);
+            doc.text(`PLATAFORMAS AVERIADAS `, margin, finalY + 15); 
             
             doc.autoTable({
-                head: [['Matrícula', 'Avería']],
+                head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
                 body: registrosAveriadas,
-                foot: [['Total:', countAveriada.toString()]],
-                startY: finalY + 13,
+                startY: finalY + 20,
                 margin: { left: margin, right: margin },
                 styles: styles,
-                headStyles: headAveriada,
-                footStyles: footStyles,
-                alternateRowStyles: { fillColor: [255, 255, 255] }, 
+                headStyles: headStyles,
+                alternateRowStyles: alternateRowStyles, 
+                columnStyles: {
+                    0: { cellWidth: 30 }, 
+                    1: { cellWidth: 'auto' }
+                }
             });
         }
-        
+
         // --- Pie de página (Minimalista) ---
         const pageCount = doc.internal.getNumberOfPages();
         for(let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            doc.setFontSize(6);
+            doc.setFontSize(8);
             doc.setTextColor(150, 150, 150);
-            doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, doc.internal.pageSize.height - 5, { align: 'right' });
+            
+            doc.setFont("helvetica", "normal");
+            doc.text(`© 2025 XPO LOGISTICS - Informe interno`, margin, doc.internal.pageSize.height - 5);
+            
+            doc.text(`Página  de `, pageWidth - margin, doc.internal.pageSize.height - 5, { align: 'right' });
         }
 
-        // 4. Guardar el PDF
-        doc.save("Reporte_Pages_2024_Pro.pdf");
-        mostrarConfirmacion("PDF exportado con diseño Pages Pro.", "fas fa-file-pdf");
+        doc.save("Reporte_XPO_Ejecutivo_Final.pdf");
+        mostrarConfirmacion("PDF exportado correctamente.", "fas fa-file-pdf");
     }
 
-    // --- INICIALIZACIÓN ---
+    // --- LÓGICA DE ANIMACIÓN OPTIMIZADA (Mantenida) ---
+    function animarLogo() {
+        const logoHeader = document.getElementById('logoHeader');
+        if (!localStorage.getItem('logoAnimado')) {
+             logoHeader.classList.add('animated');
+             localStorage.setItem('logoAnimado', 'true');
+        } else {
+            const logoCode = document.querySelector('.logo-code');
+            const logoXPO = document.querySelector('.logo-xpo');
+            if (logoCode) logoCode.style.opacity = '1';
+            if (logoXPO) logoXPO.style.opacity = '1';
+            if (logoXPO) logoXPO.style.transform = 'translateY(0)';
+        }
+    }
+
+
+    // --- INICIALIZACIÓN (Mantenida) ---
     document.addEventListener('DOMContentLoaded', () => {
+        animarLogo();
         actualizarContadores();
         actualizarHistorialReciente(); 
         
@@ -821,4 +699,3 @@
 </script>
 
 </body>
-</html>
