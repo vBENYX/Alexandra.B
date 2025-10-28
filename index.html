@@ -22,6 +22,7 @@
             --ios-separator: #d1d1d6;
             --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             --transition-duration: 0.35s;
+            --text-light-gray: #6d6d71;
         }
 
         /* Estilo Base: Fondo de iOS y Tipografía SF Pro */
@@ -68,8 +69,8 @@
             border-radius: 10px;
             box-shadow: var(--ios-shadow);
         }
-
-        /* Transiciones de Pasos (Slide Horizontal) */
+        
+        /* Transiciones de Pasos */
         .step-content {
             opacity: 0;
             transform: translateX(100%); 
@@ -83,6 +84,7 @@
             background-color: var(--ios-card-bg);
             border-radius: 10px;
             box-shadow: var(--ios-shadow);
+            display: none;
         }
         
         .step-content.active {
@@ -93,11 +95,7 @@
             margin-bottom: 20px;
         }
         
-        .step-content.backward {
-            transform: translateX(-100%);
-        }
-
-        /* Campos de Entrada */
+        /* Inputs y Botones */
         input[type="text"] {
             width: 100%;
             padding: 15px;
@@ -118,7 +116,6 @@
             background-color: var(--ios-card-bg);
         }
         
-        /* Botones Principales */
         button {
             width: 100%;
             background-color: var(--ios-blue);
@@ -139,7 +136,6 @@
             transform: scale(0.99);
         }
         
-        /* Botones de Estado */
         #botonesEstado {
             display: flex;
             gap: 5px;
@@ -156,11 +152,48 @@
             font-size: 16px;
         }
         
-        #botonesEstado button:active {
-            transform: scale(1);
+        /* Botón de Eliminación (Rojo) */
+        #btnEliminar {
+            background-color: #FF3B30;
+            margin-top: 10px;
+        }
+        
+        .volver-button {
+            background-color: transparent !important;
+            color: var(--ios-blue) !important;
+            font-weight: 400 !important;
+            text-align: left;
+            padding-left: 0 !important;
+            margin-top: 20px;
+            width: auto !important;
+        }
+        
+        /* --- Mensaje de Confirmación TOAST (Mejorado) --- */
+        .confirmation-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background-color: #3c3c43;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 500;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-out;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Contadores (Micrográficos) */
+        .confirmation-message.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* --- ESTILOS DE BARRA DE PROPORCIONES (APPLE STYLE) --- */
         #contadores {
             display: flex;
             justify-content: space-between;
@@ -180,6 +213,7 @@
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            overflow: hidden; /* Oculta la barra de progreso */
         }
         
         .contador-item.visible {
@@ -197,21 +231,90 @@
         .contador-item .count {
             font-size: 1.8em;
             font-weight: 600;
+            display: block;
+        }
+        
+        /* Contenedor de la barra de progreso */
+        .progress-bar-container {
+            height: 4px;
+            width: 100%;
+            background-color: #ebebf5; 
+            margin-top: 8px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            transition: width 0.5s ease-out;
         }
 
-        /* Colores Específicos */
+        /* Colores Específicos para Barra */
         .cargada .count { color: var(--ios-green); } 
-        .disponible .count { color: var(--ios-yellow); } 
-        .averiada .count { color: var(--ios-red); } 
-        .total .count { color: var(--ios-blue); }
+        .cargada .progress-bar { background-color: var(--ios-green); }
         
-        /* Botón de Eliminación (Rojo) */
-        #btnEliminar {
-            background-color: #FF3B30;
-            margin-top: 10px;
+        .disponible .count { color: var(--ios-yellow); } 
+        .disponible .progress-bar { background-color: var(--ios-yellow); } 
+        
+        .averiada .count { color: var(--ios-red); } 
+        .averiada .progress-bar { background-color: var(--ios-red); } 
+        
+        .total .count { color: var(--ios-blue); }
+        .total .progress-bar { background-color: var(--ios-blue); }
+        
+        /* --- ESTILOS DE HISTORIAL RECIENTE (Lista iOS) --- */
+        #historialReciente {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+            padding-top: 15px; /* Separación del título */
         }
-        #btnEliminar:hover {
-            background-color: #cc2e26;
+        
+        #historialReciente li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            /* Solo separador inferior para el estilo de lista iOS */
+            border-bottom: 1px solid #e5e5ea; 
+            font-size: 14px;
+        }
+        
+        #historialReciente li:last-child {
+            border-bottom: none;
+        }
+        
+        .historial-estado {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-basis: 30%;
+            text-align: center;
+        }
+        
+        .historial-time {
+            color: var(--text-light-gray);
+            font-size: 11px;
+            flex-basis: 30%;
+            text-align: right;
+        }
+
+        /* Colores de estado en historial */
+        .estado-Cargada { background-color: #d8f5e2; color: #1e8449; } /* Verde suave */
+        .estado-Disponible { background-color: #fff9e0; color: #b38600; } /* Amarillo suave */
+        .estado-Averiada { background-color: #fce8e8; color: #c0392b; } /* Rojo suave */
+        
+        /* Contenedor de advertencia de Duplicado */
+        #advertenciaDuplicado {
+            background-color: #fce8e8;
+            color: #c0392b;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+            border: 1px solid #f9bdbd;
         }
         
     </style>
@@ -231,6 +334,10 @@
 
     <div id="paso2" class="step-content">
         <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula"></span></h3>
+        
+        <div id="advertenciaDuplicado" style="display:none;">
+            <i class="fas fa-exclamation-triangle"></i> Esta matrícula ya estaba registrada como **<span id="estadoAnterior"></span>** (<span id="descAnterior"></span>). Al continuar, se actualizará su estado.
+        </div>
         
         <div id="botonesEstado">
             <button onclick="manejarEstado('cargada')">Cargada</button>
@@ -252,30 +359,38 @@
     </div>
     
     <div id="reportes" class="card-section" style="margin-top: 0;">
-        <h3><i class="fas fa-chart-bar"></i> Resumen de Registros</h3>
+        <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
         
         <div id="contadores">
             <div class="contador-item cargada">
                 <h4>Cargadas</h4>
                 <div class="count" id="countCargada">0</div>
+                <div class="progress-bar-container"><div class="progress-bar" id="barCargada" style="width:0%"></div></div>
             </div>
             <div class="contador-item disponible">
                 <h4>Disponibles</h4>
                 <div class="count" id="countDisponible">0</div>
+                <div class="progress-bar-container"><div class="progress-bar" id="barDisponible" style="width:0%"></div></div>
             </div>
             <div class="contador-item averiada">
                 <h4>Averiadas</h4>
                 <div class="count" id="countAveriada">0</div>
+                <div class="progress-bar-container"><div class="progress-bar" id="barAveriada" style="width:0%"></div></div>
             </div>
             <div class="contador-item total">
                 <h4>TOTAL</h4>
                 <div class="count" id="countTotal">0</div>
+                <div class="progress-bar-container"><div class="progress-bar" id="barTotal" style="width:100%; background-color: var(--ios-blue);"></div></div>
             </div>
         </div>
         
         <button onclick="exportarPDF()" style="background-color:#34c759; margin-top: 25px;">
-            <i class="fas fa-file-pdf"></i> Exportar a PDF (Pages Moderno)
+            <i class="fas fa-file-pdf"></i> Exportar a PDF (Pages 2024 Pro)
         </button>
+        
+        <h4><i class="fas fa-history"></i> Últimos 5 Movimientos</h4>
+        <ul id="historialReciente">
+            </ul>
         
         <button id="btnEliminar" onclick="confirmarLimpiarRegistros()">
             <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
@@ -291,11 +406,13 @@
 
 <script>
     let matriculaActual = "";
+    let registroDuplicado = null; // Para almacenar el registro si es duplicado
 
     // --- FUNCIONES DE UTILIDAD ---
     function guardarRegistros(registros) {
         localStorage.setItem('registrosMatriculas', JSON.stringify(registros));
         actualizarContadores();
+        actualizarHistorialReciente();
     }
 
     function cargarRegistros() {
@@ -315,6 +432,9 @@
     function mostrarPaso(pasoId, backward = false) {
         const currentActive = document.querySelector('.step-content.active');
         const targetPaso = document.getElementById(pasoId);
+        
+        // Limpiar advertencia al cambiar de paso
+        document.getElementById('advertenciaDuplicado').style.display = 'none';
 
         if (currentActive) {
              if (currentActive.id !== targetPaso.id) {
@@ -347,21 +467,39 @@
     function mostrarPaso1(isBackward = false) {
         mostrarPaso('paso1', isBackward);
         matriculaActual = "";
+        registroDuplicado = null;
         document.getElementById('matriculaInput').value = '';
         document.getElementById('descCargada').value = '';
         document.getElementById('descAveriada').value = '';
         document.getElementById('matriculaInput').focus();
     }
 
+    // --- LÓGICA CLAVE: VALIDACIÓN DE DUPLICADOS (UX Mejorada) ---
     function registrarMatricula() {
         matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
-        if (matriculaActual) {
-            mostrarPaso('paso2', false); 
-            document.getElementById('mostrarMatricula').textContent = matriculaActual;
-            document.getElementById('cargadaDetalles').style.display = 'none';
-            document.getElementById('averiadaDetalles').style.display = 'none';
-        } else {
+        if (!matriculaActual) {
             mostrarConfirmacion("Ingrese la matrícula.", "fas fa-exclamation-triangle");
+            return;
+        }
+        
+        const registros = cargarRegistros();
+        const existente = registros.find(reg => reg.matricula === matriculaActual);
+        
+        registroDuplicado = existente;
+
+        mostrarPaso('paso2', false); 
+        document.getElementById('mostrarMatricula').textContent = matriculaActual;
+        document.getElementById('cargadaDetalles').style.display = 'none';
+        document.getElementById('averiadaDetalles').style.display = 'none';
+        
+        if (existente) {
+            // Mostrar el mensaje de advertencia discreto (Toast visual)
+            const advertenciaDiv = document.getElementById('advertenciaDuplicado');
+            document.getElementById('estadoAnterior').textContent = existente.estado;
+            document.getElementById('descAnterior').textContent = existente.descripcion;
+            advertenciaDiv.style.display = 'block';
+        } else {
+            document.getElementById('advertenciaDuplicado').style.display = 'none';
         }
     }
 
@@ -372,10 +510,19 @@
         if (estado === 'cargada') {
             document.getElementById('cargadaDetalles').style.display = 'block';
             document.getElementById('descCargada').focus();
+            // Si es duplicado y estaba cargada, precarga la descripción
+            if (registroDuplicado && registroDuplicado.estado === 'Cargada') {
+                 document.getElementById('descCargada').value = registroDuplicado.descripcion;
+            }
         } else if (estado === 'averiada') {
             document.getElementById('averiadaDetalles').style.display = 'block';
             document.getElementById('descAveriada').focus();
+            // Si es duplicado y estaba averiada, precarga la descripción
+            if (registroDuplicado && registroDuplicado.estado === 'Averiada') {
+                 document.getElementById('descAveriada').value = registroDuplicado.descripcion;
+            }
         } else if (estado === 'disponible') {
+            // Registro inmediato para Disponible (UX Rápida)
             guardarRegistro('disponible', 'Lista para cargar');
         }
     }
@@ -402,6 +549,10 @@
         };
 
         let registros = cargarRegistros();
+        
+        // Sobreescribir: Eliminar si existe para que el nuevo registro sea el más reciente
+        registros = registros.filter(reg => reg.matricula !== matriculaActual);
+        
         registros.push(registro);
         guardarRegistros(registros);
 
@@ -409,7 +560,34 @@
         mostrarPaso1(true); 
     }
 
-    // --- CONTADORES (Actualizado) ---
+    // --- CONTADORES Y HISTORIAL (Visualización Web Mejorada) ---
+
+    function actualizarHistorialReciente() {
+        const registros = cargarRegistros().reverse();
+        const ul = document.getElementById('historialReciente');
+        ul.innerHTML = ''; 
+        
+        if (registros.length === 0) {
+            ul.innerHTML = '<li style="justify-content:center; color: var(--text-light-gray); border-bottom: none;">Aún no hay movimientos registrados.</li>';
+            return;
+        }
+
+        const ultimosRegistros = registros.slice(0, 5);
+        
+        ultimosRegistros.forEach(reg => {
+            const hora = reg.fecha.split(', ')[1]; 
+            const estadoClass = `estado-${reg.estado}`;
+            
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="historial-matricula">${reg.matricula}</span>
+                <span class="historial-estado ${estadoClass}">${reg.estado}</span>
+                <span class="historial-time">${hora}</span>
+            `;
+            ul.appendChild(li);
+        });
+    }
+
     function actualizarContadores() {
         const registros = cargarRegistros();
         let counts = { Cargada: 0, Disponible: 0, Averiada: 0, Total: registros.length };
@@ -424,6 +602,13 @@
         document.getElementById('countDisponible').textContent = counts.Disponible; 
         document.getElementById('countAveriada').textContent = counts.Averiada;
         document.getElementById('countTotal').textContent = counts.Total;
+        
+        // Lógica de Barras de Progreso
+        const total = counts.Total > 0 ? counts.Total : 1; // Evitar división por cero
+        
+        document.getElementById('barCargada').style.width = `${(counts.Cargada / total) * 100}%`;
+        document.getElementById('barDisponible').style.width = `${(counts.Disponible / total) * 100}%`;
+        document.getElementById('barAveriada').style.width = `${(counts.Averiada / total) * 100}%`;
         
         document.querySelectorAll('.contador-item').forEach((item, index) => {
             item.classList.remove('visible'); 
@@ -443,10 +628,11 @@
     function limpiarRegistros() {
         localStorage.removeItem('registrosMatriculas');
         actualizarContadores();
+        actualizarHistorialReciente();
         mostrarConfirmacion("Registros eliminados.", "fas fa-trash-alt");
     }
 
-    // --- EXPORTACIÓN A PDF (Pages Moderno, Minimalista, 3D Sutil) ---
+    // --- EXPORTACIÓN A PDF (Mismo estilo Pages 2024 Pro) ---
     function exportarPDF() {
         const registros = cargarRegistros();
         if (registros.length === 0) {
@@ -457,9 +643,11 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const margin = 10;
-        let yPos = 20; 
+        let yPos = 10;
+        const pageWidth = doc.internal.pageSize.width; 
+        const cardWidth = pageWidth - (margin * 2);
+        const cardHeight = 40; 
         
-        // Cargar datos
         const registrosCargadas = registros
             .filter(reg => reg.estado === 'Cargada')
             .map(reg => [reg.matricula, reg.descripcion]); 
@@ -472,85 +660,110 @@
             .filter(reg => reg.estado === 'Averiada')
             .map(reg => [reg.matricula, reg.descripcion]);
             
-        // Contadores para el PDF
         const countCargada = registrosCargadas.length;
         const countDisponible = registrosDisponibles.length;
         const countAveriada = registrosAveriadas.length;
         const countTotal = registros.length;
 
 
-        // 2. Título Principal (iOS Bold)
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(24);
-        doc.text("Reporte de Movimientos", margin, yPos);
-        yPos += 10;
+        // 1. Tarjeta de Encabezado (Apple Pages Header Card)
+        doc.setFillColor(250, 250, 247);
+        doc.roundedRect(margin, yPos, cardWidth, cardHeight, 3, 3, 'F'); 
 
-        // 3. Contadores Sutiles y Compactos (Estilo Ficha)
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(30, 30, 30);
+        doc.text("Reporte de Movimientos de Matrículas", margin + 3, yPos + 8); 
+
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100); 
+        doc.text("Detalle de flota y estado operativo.", margin + 3, yPos + 14);
         
-        const summaryText = 
-            `Total: ${countTotal} | Cargadas: ${countCargada} | Disponibles: ${countDisponible} | Averiadas: ${countAveriada}`;
-            
-        doc.setTextColor(100, 100, 100); // Gris claro sutil
-        doc.text(summaryText, margin, yPos);
-        yPos += 10;
-        doc.setTextColor(51, 51, 51); // Volver a texto oscuro para las tablas
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150); 
+        doc.text(`Generado: ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}`, margin + 3, yPos + 18);
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(80, 80, 80);
+        
+        const summary = [
+            `Total: ${countTotal}`,
+            `Cargadas: ${countCargada}`,
+            `Disponibles: ${countDisponible}`,
+            `Averiadas: ${countAveriada}`
+        ];
+        
+        const summaryX = [margin + 3, margin + 40, margin + 80, margin + 125];
+        
+        summary.forEach((text, index) => {
+            doc.text(text, summaryX[index], yPos + 33);
+        });
 
-        // --- Estilos de Tabla Avanzados (Minimalista, 3D Sutil) ---
-        const tableWidth = (doc.internal.pageSize.width / 2) - (margin * 1.5);
+        yPos += cardHeight + 10;
+
+
+        // --- Estilos Base de Tabla Ultra-Compacta (Pages Moderno) ---
+        const tableWidth = (pageWidth / 2) - (margin * 1.5);
         const styles = {
-            fontSize: 7, 
-            cellPadding: 2, // Ligeramente más padding para que se vea limpio
+            fontSize: 6,
+            cellPadding: 1,
             valign: 'middle',
             font: "helvetica",
             textColor: [51, 51, 51],
-            lineColor: [240, 240, 240], // Líneas casi invisibles
+            lineColor: [240, 240, 240],
             lineWidth: 0.1
         };
 
-        // Estilos de Encabezado (Gris Muy Suave con Borde Fuerte para 3D)
-        const headStyles = {
-            fillColor: [247, 247, 247], // Fondo gris muy pálido
-            textColor: [51, 51, 51], // Texto oscuro sutil
+        const footStyles = {
+            fillColor: [240, 240, 235], 
+            textColor: [51, 51, 51],
             fontStyle: 'bold',
-            lineColor: [180, 180, 180], // Línea de separación sutil
-            lineWidth: { top: 0, right: 0, bottom: 0.5, left: 0 }, // Borde inferior más grueso (efecto 3D)
-            cellPadding: 3.5 // Más padding vertical en el header
-        };
+            lineWidth: { top: 0.2, right: 0, bottom: 0, left: 0 },
+            cellPadding: 2
+        }
+
+        // --- ESTILOS DE ENCABEZADO PERSONALIZADOS (Colores Sutiles) ---
+        const headCargada = { fillColor: [240, 245, 235], textColor: [80, 80, 80], fontStyle: 'bold', lineColor: [200, 200, 200], lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 2 };
+        const headDisponible = { fillColor: [240, 240, 235], textColor: [80, 80, 80], fontStyle: 'bold', lineColor: [200, 200, 200], lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 2 };
+        const headAveriada = { fillColor: [245, 240, 240], textColor: [80, 80, 80], fontStyle: 'bold', lineColor: [200, 200, 200], lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 2 };
         
-        const startYGeneral = yPos + 5; // Separación del texto del contador
+        const startYTables = yPos + 5; 
 
         // --- Columna Izquierda: CARGADAS ---
-        doc.setFontSize(12);
+        doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("Cargas Activas", margin, startYGeneral);
+        doc.text("Cargas Activas (Ok)", margin, startYTables); 
 
         doc.autoTable({
             head: [['Matrícula', 'Carga']],
             body: registrosCargadas,
-            startY: startYGeneral + 3,
-            margin: { left: margin, right: doc.internal.pageSize.width / 2 },
+            foot: [['Total:', countCargada.toString()]],
+            startY: startYTables + 3,
+            margin: { left: margin, right: pageWidth / 2 },
             tableWidth: tableWidth,
             styles: styles,
-            headStyles: headStyles,
-            alternateRowStyles: { fillColor: [255, 255, 255] }, // Fondo blanco para filas alternas (maximalista minimalista)
+            headStyles: headCargada,
+            footStyles: footStyles,
+            alternateRowStyles: { fillColor: [255, 255, 255] }, 
         });
         let finalYCargadas = doc.autoTable.previous.finalY;
 
         // --- Columna Derecha: DISPONIBLES ---
-        doc.setFontSize(12);
+        doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("Disponibles", doc.internal.pageSize.width / 2 + margin / 2, startYGeneral);
+        doc.text("Disponibles (Vacías)", pageWidth / 2 + margin / 2, startYTables); 
         
         doc.autoTable({
             head: [['Matrícula']],
             body: registrosDisponibles,
-            startY: startYGeneral + 3,
-            margin: { left: doc.internal.pageSize.width / 2 + margin / 2, right: margin },
+            startY: startYTables + 3,
+            margin: { left: pageWidth / 2 + margin / 2, right: margin },
             tableWidth: tableWidth,
             styles: styles,
-            headStyles: headStyles,
+            headStyles: headDisponible,
             alternateRowStyles: { fillColor: [255, 255, 255] }, 
         });
         let finalYDisponibles = doc.autoTable.previous.finalY;
@@ -560,53 +773,49 @@
         
         if (registrosAveriadas.length > 0) {
             
-            if (finalY + 30 > doc.internal.pageSize.height - margin) {
+            if (finalY + 25 > doc.internal.pageSize.height - margin) {
                 doc.addPage();
                 finalY = margin + 10;
             }
 
-            doc.setFontSize(12);
+            doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
-            doc.text("Matrículas Averiadas", margin, finalY + 10);
-            
-            // Estilo para averiadas (sutil tono gris/beige cálido)
-            const averiadaHeadStyles = JSON.parse(JSON.stringify(headStyles)); // Clonar
-            averiadaHeadStyles.fillColor = [252, 252, 252]; 
+            doc.text("Matrículas Averiadas (Fallo)", margin, finalY + 10); 
             
             doc.autoTable({
                 head: [['Matrícula', 'Avería']],
                 body: registrosAveriadas,
-                startY: finalY + 15,
+                foot: [['Total:', countAveriada.toString()]],
+                startY: finalY + 13,
                 margin: { left: margin, right: margin },
                 styles: styles,
-                headStyles: averiadaHeadStyles,
+                headStyles: headAveriada,
+                footStyles: footStyles,
                 alternateRowStyles: { fillColor: [255, 255, 255] }, 
             });
         }
         
-        // --- Pie de página (Número de página) ---
+        // --- Pie de página (Minimalista) ---
         const pageCount = doc.internal.getNumberOfPages();
         for(let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            doc.setFontSize(7);
-            doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - margin, doc.internal.pageSize.height - 5, { align: 'right' });
+            doc.setFontSize(6);
+            doc.setTextColor(150, 150, 150);
+            doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, doc.internal.pageSize.height - 5, { align: 'right' });
         }
 
         // 4. Guardar el PDF
-        doc.save("Reporte_Pages_Moderno.pdf");
-        mostrarConfirmacion("PDF exportado con estilo Pages Moderno.", "fas fa-file-pdf");
+        doc.save("Reporte_Pages_2024_Pro.pdf");
+        mostrarConfirmacion("PDF exportado con diseño Pages Pro.", "fas fa-file-pdf");
     }
 
     // --- INICIALIZACIÓN ---
     document.addEventListener('DOMContentLoaded', () => {
         actualizarContadores();
+        actualizarHistorialReciente(); 
         
         document.getElementById('paso1').style.display = 'block';
-        document.getElementById('paso2').style.display = 'none';
-        
-        document.getElementById('paso1').style.transform = 'translateX(0)';
-        document.getElementById('paso1').style.opacity = 1;
-        
+        document.getElementById('paso1').classList.add('active');
         document.getElementById('matriculaInput').focus();
     });
 </script>
