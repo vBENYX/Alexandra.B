@@ -2,9 +2,21 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- CRÍTICO: Configuración para evitar zoom accidental y asegurar adaptación total -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CODE XPO | Registro Táctil de Matrículas</title>
+    <title>CODE XPO | Registro Táctil de Matrículas (Firestore)</title>
     
+    <!-- Librerías de Firebase (Auth y Firestore) -->
+    <script type="module">
+        // Importamos solo lo necesario para que el entorno lo cargue en el scope de window
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, query, writeBatch, getDocs, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Las variables globales de Firebase se definen en el scope global de la ventana por el entorno de Canvas.
+        window.firebaseImports = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, query, writeBatch, getDocs, serverTimestamp, setLogLevel };
+    </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -22,7 +34,6 @@
             --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             --transition-duration: 0.35s;
             --text-light-gray: #6d6d71;
-            --light-gray-apple: #f9f9f9; 
             --dark-text: #1c1c1e;
         }
 
@@ -37,31 +48,36 @@
             align-items: center;
             min-height: 100vh;
             color: var(--dark-text);
+            /* CRÍTICO: ESCONDER SCROLL HORIZONTAL */
             overflow-x: hidden;
-            /* Añadimos padding superior para dejar espacio al encabezado fijo */
-            padding-top: 65px; 
+            padding-top: 75px; 
         }
         
-        /* ----------------------------------------------- */
-        /* --- ENCABEZADO FIJO TIPO IOS LARGE TITLE (NUEVO) --- */
-        /* ----------------------------------------------- */
+        /* --- ENCABEZADO MEJORADO con Efecto Translucidez (Blur) --- */
         .header-fixed {
             position: fixed;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
-            max-width: 450px; /* Igual que el contenedor principal */
-            padding: 10px 20px;
+            max-width: 450px;
+            padding: 15px 20px 10px 20px; 
             z-index: 1000;
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
-            background-color: transparent; /* Inicialmente transparente */
+            background-color: transparent; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box; /* Asegura que el padding no cause desbordamiento */
         }
         
-        /* Clase añadida por JS cuando se hace scroll */
+        /* Estado Scrolled: Color blanco semi-transparente y efecto blur */
         .header-fixed.scrolled {
-            background-color: var(--ios-card-bg); /* Fondo blanco al hacer scroll */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .logo-container { 
@@ -74,53 +90,69 @@
         
         .logo-main { 
             display: flex; 
-            align-items: baseline; 
+            align-items: center; 
             gap: 5px; 
         }
         
-        .logo-code { 
-            font-family: 'Helvetica Neue', sans-serif; 
-            font-size: 28px; 
-            font-weight: 900; 
-            color: var(--dark-text); 
-            letter-spacing: -1px; 
-            transition: font-size 0.3s ease;
+        .logo-icon {
+            color: var(--ios-blue);
+            font-size: 24px;
+            margin-right: 5px;
+            opacity: 0; 
+            transform: translateX(-10px);
+            transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
+        /* CODE a la izquierda */
+        .logo-code { 
+            font-family: 'Helvetica Neue', sans-serif; 
+            font-size: 24px; 
+            font-weight: 600; 
+            color: var(--dark-text); 
+            letter-spacing: -0.5px; 
+            opacity: 0; 
+            transform: translateX(-5px);
+            transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        /* XPO a la derecha, rojo fuerte */
         .logo-xpo { 
             font-family: 'Helvetica Neue', sans-serif; 
-            font-size: 16px; 
-            font-weight: 800; 
+            font-size: 24px; 
+            font-weight: 900; 
             color: var(--ios-red); 
             letter-spacing: 1px; 
-            margin-left: 5px; 
-            transition: font-size 0.3s ease;
+            margin-top: 2px;
+            text-shadow: 0 0 1px rgba(255, 59, 48, 0.3); 
+            opacity: 0; 
+            transform: translateY(10px);
+            transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .app-title { 
-            font-size: 12px; 
-            font-weight: 400; 
+            font-size: 11px; 
+            font-weight: 500; 
             color: var(--text-light-gray); 
             margin-top: 2px;
-            transition: opacity 0.3s ease;
+            opacity: 0.9;
         }
-        
-        /* --- Contenedor Principal --- */
+
+        /* --- Contenedor Principal (100% Responsive) --- */
         .container {
             width: 100%;
             max-width: 450px;
-            /* Eliminado margin-top, ya que el header es fijo */
             background-color: transparent; 
             box-shadow: none;
             position: relative; 
             height: auto;
-            min-height: calc(100vh - 65px); /* Ajustado a la altura de la ventana menos el padding */
-            overflow: hidden;
-            padding: 0 10px; /* Padding para evitar que el contenido toque los bordes */
+            min-height: calc(100vh - 75px);
+            overflow-x: hidden; /* CRÍTICO: Prevenir scroll horizontal */
+            padding: 0 10px;
+            box-sizing: border-box;
         }
 
-        /* --- ESTILOS DE PASOS Y CARDS (Mantenidos) --- */
-        .card-section { 
+        /* --- ESTILOS DE PASOS Y CARDS --- */
+        .card-section, .step-content { 
             background-color: var(--ios-card-bg); 
             margin: 10px 0; 
             padding: 20px; 
@@ -138,11 +170,12 @@
             left: 0; 
             width: 100%; 
             box-sizing: border-box; 
-            padding: 20px; 
-            background-color: var(--ios-card-bg); 
-            border-radius: 10px; 
-            box-shadow: var(--ios-shadow); 
             display: none; 
+            padding: 20px;
+            margin: 0;
+            box-shadow: none;
+            border-radius: 0;
+            background-color: transparent;
         }
         .step-content.active { 
             opacity: 1; 
@@ -150,36 +183,154 @@
             position: relative; 
             display: block; 
             margin-bottom: 20px; 
+            padding: 20px;
+            background-color: var(--ios-card-bg);
+            border-radius: 10px;
+            box-shadow: var(--ios-shadow);
         }
 
-        /* Resto de estilos CSS (Botones, Contadores, Historial) se mantienen... */
-        input[type="text"] { width: 100%; padding: 15px; margin-bottom: 20px; border: 1px solid var(--ios-separator); border-radius: 10px; box-sizing: border-box; font-size: 18px; background-color: #f9f9f9; transition: border-color 0.2s; -webkit-appearance: none; }
-        button { width: 100%; background-color: var(--ios-blue); color: white; padding: 15px 20px; margin: 10px 0; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 600; transition: opacity 0.1s, transform 0.1s, background-color 0.1s; -webkit-appearance: none; }
-        button:active { opacity: 0.8; transform: scale(0.99); }
-        .btn-confirm-cargada { background-color: var(--ios-green) !important; }
-        .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
-        .btn-confirm-averiada { background-color: var(--ios-red) !important; }
+        /* Loading Spinner */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--ios-gray-bg);
+            z-index: 1500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+        
+        #loadingSpinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
 
-        #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--ios-blue);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Resto de estilos CSS */
+        input[type="text"] { 
+            width: 100%; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border: 1px solid var(--ios-separator); 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 18px; 
+            background-color: #f9f9f9; 
+            transition: border-color 0.2s; 
+            -webkit-appearance: none; 
+            /* UX: Forzar Mayúsculas en input */
+            text-transform: uppercase; 
+        }
+        button { 
+            width: 100%; 
+            background-color: var(--ios-blue); 
+            color: white; 
+            padding: 15px 20px; 
+            margin: 10px 0; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 18px; 
+            font-weight: 600; 
+            transition: opacity 0.1s, transform 0.1s, background-color 0.1s; 
+            -webkit-appearance: none; 
+        }
+        /* RETROALIMENTACIÓN HÁPTICA SIMULADA: Transform y Opacidad Rápidos */
+        button:active { 
+            opacity: 0.95; 
+            transform: scale(0.98); 
+            transition: transform 0.05s ease-out, opacity 0.05s ease-out; /* Haptic feel */
+        }
+        
+        /* ESTADOS DE BOTONES DE ACCIÓN */
+        .btn-success { background-color: var(--ios-green) !important; }
+        .btn-warning { background-color: var(--ios-yellow) !important; color: #333 !important; } 
+        .btn-danger { background-color: var(--ios-red) !important; }
+
+
+        #botonesEstado { 
+            display: flex; 
+            gap: 5px; 
+            margin-bottom: 20px; 
+            /* UX: Grid para mejor adaptación táctil en 3 columnas */
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        /* CRÍTICO: Botones de estado necesitan ser visibles y compactos */
         #botonesEstado button { 
             background-color: #e5e5ea; 
             color: #3c3c43; 
             font-weight: 500; 
-            flex-grow: 1; 
-            padding: 12px 10px; 
+            padding: 12px 5px; /* Tamaño compacto restaurado */
             margin: 0; 
-            font-size: 16px; 
+            font-size: 14px; 
+            position: relative;
+            transition: background-color 0.2s, color 0.2s, transform 0.05s;
         }
+        
+        /* Estilo específico para el botón vacía (restaura el tamaño compacto) */
+        #btnVacia {
+            background-color: #e5e5ea !important; 
+            color: #3c3c43 !important;
+            font-weight: 500 !important;
+            margin: 0 !important; 
+            padding: 12px 5px !important; /* Mismo padding que los otros botones de estado */
+            font-size: 14px !important;
+            grid-column: span 1; 
+        }
+
+        /* Estado Activo para Botones de Selección */
+        #botonesEstado button.active {
+            background-color: var(--ios-blue);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #botonesEstado #btnCargada.active { background-color: var(--ios-green); }
+        #botonesEstado #btnVacia.active { background-color: var(--ios-yellow); color: #333; }
+        #botonesEstado #btnAveriadaState.active { background-color: var(--ios-red); }
+        
+        /* Separación de botones */
         #btnEliminar { background-color: #FF3B30; margin-top: 10px; }
         .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
         
-        /* Contadores */
+        /* Contadores y Reportes */
         #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
         .compact-summary {
             flex: 1 1 48%; min-width: 150px; padding: 10px 12px; border-radius: 12px; background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); overflow: hidden; position: relative;
-            opacity: 0; transform: scale(0.98); transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            /* Estos estilos hacen que estén ocultos hasta que se añade la clase .visible */
+            opacity: 0; 
+            transform: scale(0.98); 
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
         }
-        .compact-summary.visible { opacity: 1; transform: scale(1); }
+        /* Clase añadida para hacer visible el contador al inicio */
+        .compact-summary.visible { 
+            opacity: 1; 
+            transform: scale(1); 
+        }
         .progress-bar-bg { position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: var(--ios-gray-bg); opacity: 0.7; z-index: 1; }
         .progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0; transition: width 0.7s ease-out; opacity: 0.5; z-index: 2; }
         .summary-content { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 100%; z-index: 3; }
@@ -196,10 +347,54 @@
         .card-disponible .progress-fill { background-color: var(--ios-yellow); }
         .card-averiada .progress-fill { background-color: var(--ios-red); }
 
-        /* Historial Reciente */
-        #historialReciente { list-style: none; padding: 0; margin: 15px 0 0 0; padding-top: 15px; }
-        #historialReciente li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--ios-separator); font-size: 14px; }
+        /* Historial Reciente y Filtros */
+        .historial-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; margin-top: 15px; }
+        .historial-header h4 { margin: 0; }
+        
+        #filtroEstado {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--ios-separator);
+            background-color: var(--ios-card-bg);
+            font-size: 14px;
+            color: var(--dark-text);
+        }
+
+        #historialReciente { list-style: none; padding: 0; margin: 0; padding-top: 0; }
+        
+        /* ESTILO BASE DE ITEM DEL HISTORIAL */
+        #historialReciente li { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 0; 
+            border-bottom: 1px solid var(--ios-separator); 
+            font-size: 14px; 
+            /* MICRO-ANIMACIÓN: Inicio oculto */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Curva suave */
+        }
         #historialReciente li:last-child { border-bottom: none; }
+        /* Clases para animación escalonada */
+        #historialReciente li.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* --- NUEVO ESTILO DE ANIMACIÓN DE LIMPIEZA --- */
+        #historialReciente li.explode-out {
+            /* Transición rápida para el efecto dramático */
+            transition: all 0.25s cubic-bezier(0.5, -0.5, 0.25, 1.5);
+            /* Escala a 0, gira 45 grados y se desvanece */
+            transform: scale(0) rotate(45deg);
+            opacity: 0;
+            margin: 0;
+            padding: 0;
+            height: 0;
+            border-bottom: none;
+        }
+
         .historial-matricula { flex-basis: 40%; font-weight: 500; }
         .historial-estado { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 12px; flex-basis: 30%; text-align: center; } 
         .historial-time { color: var(--text-light-gray); font-size: 11px; flex-basis: 30%; text-align: right; }
@@ -208,15 +403,107 @@
         .estado-Averiada { background-color: #fce8e8; color: #c0392b; }
         #advertenciaDuplicado { background-color: #fce8e8; color: #c0392b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; border: 1px solid #f9bdbd; }
         
+        /* Modales */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: var(--ios-card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .modal-content h4 { margin-top: 0; }
+        .modal-content button { margin-top: 15px; width: 48%; display: inline-block; }
+        .modal-content .btn-cancel { background-color: #e5e5ea !important; color: #3c3c43 !important; }
+
+        .notification-bar {
+            position: fixed;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .notification-bar.show {
+            top: 20px;
+            opacity: 1;
+        }
+        
+        #btnMostrarMas {
+            background-color: #e5e5ea !important; 
+            color: var(--ios-blue) !important;
+            font-weight: 500 !important;
+            font-size: 16px !important;
+            margin-top: 10px;
+        }
+        
+        /* Contenedor de descripción dinámica (Paso 2) */
+        #detalleContainer {
+            margin-bottom: 20px;
+            min-height: 120px; /* Asegura espacio para la transición */
+            transition: all 0.3s ease-out;
+            position: relative;
+        }
+        
+        .detalle-content {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            position: absolute;
+            width: 100%;
+        }
+        
+        .detalle-content.active {
+            opacity: 1;
+            transform: translateY(0);
+            position: relative;
+        }
+
     </style>
 </head>
 <body>
 
+<!-- Pantalla de Carga (Loading Spinner) -->
+<div id="loadingOverlay">
+    <div id="loadingSpinner">
+        <div class="spinner"></div>
+        <p style="margin:0; font-size:14px; color:var(--text-light-gray);">Conectando a Firebase...</p>
+    </div>
+</div>
+
+<!-- Barra de Notificación (Reemplaza alert()) -->
+<div id="notificationBar" class="notification-bar"></div>
+
+<!-- Encabezado Fijo y Dinámico -->
 <div class="header-fixed" id="fixedHeader">
     <div id="logoHeader" class="logo-container">
         <div class="logo-main">
-            <div class="logo-code">CODE</div>
-            <div class="logo-xpo">XPO</div>
+            <!-- Icono de Engranajes/Logística -->
+            <i class="fas fa-cogs logo-icon" id="logoIcon"></i> 
+            <!-- CODE y XPO con estilos y animación -->
+            <div class="logo-code" id="logoCode">CODE</div>
+            <div class="logo-xpo" id="logoXPO">XPO</div>
         </div>
         <div class="app-title">Registro Rápido de Matrículas</div> 
     </div>
@@ -224,40 +511,49 @@
 
 <div class="container">
     
-    <div id="paso1" class="step-content active">
+    <div id="paso1" class="step-content">
         <h3><i class="fas fa-barcode"></i> 1. Ingresar Matrícula</h3>
-        <input type="text" id="matriculaInput" placeholder="Matrícula (Escanear o Tipear)" required>
+        <!-- CRÍTICO: inputmode='text' (para teclado completo) y text-transform: uppercase en CSS -->
+        <input type="text" id="matriculaInput" placeholder="Matrícula (Tipear)" required inputmode="text" autocomplete="off">
         <button onclick="registrarMatricula()"><i class="fas fa-arrow-right"></i> Continuar</button>
     </div>
 
     <div id="paso2" class="step-content">
-        <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula"></span></h3>
+        <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula" style="color:var(--ios-blue); font-weight: 600;"></span></h3>
         
         <div id="advertenciaDuplicado" style="display:none;">
             <i class="fas fa-exclamation-triangle"></i> Esta matrícula ya estaba registrada como **<span id="estadoAnterior"></span>** (<span id="descAnterior"></span>). Al continuar, se actualizará su estado.
         </div>
         
+        <!-- Botones de Selección de Estado (Toggle) -->
         <div id="botonesEstado">
-            <button id="btnCargada" onclick="manejarEstado('cargada')">Cargada</button>
-            <button id="btnVacia" onclick="manejarEstado('vacia')">Vacía</button>
-            <button id="btnAveriadaState" onclick="manejarEstado('averiada')">Averiada</button>
+            <button id="btnCargada" onclick="manejarEstado('cargada', this)"><i class="fas fa-box-open"></i> Cargada</button>
+            <!-- El botón Vacia ahora es un registro rápido (autoguardado) -->
+            <button id="btnVacia" onclick="manejarEstado('vacia', this)"><i class="fas fa-box"></i> Vacía</button>
+            <button id="btnAveriadaState" onclick="manejarEstado('averiada', this)"><i class="fas fa-wrench"></i> Averiada</button>
         </div>
+        
+        <!-- Contenedor Dinámico para Detalles (Cargada/Averiada) -->
+        <div id="detalleContainer">
+            
+            <div id="detalleCargada" class="detalle-content">
+                <input type="text" id="descCargada" placeholder="Descripción de la carga (Requerido)">
+                <button id="btnGuardarCargada" class="btn-success" onclick="guardarRegistroWrapper('cargada')"><i class="fas fa-check-circle"></i> Registrar Carga</button>
+            </div>
 
-        <div id="cargadaDetalles" style="display:none;">
-            <input type="text" id="descCargada" placeholder="Descripción de la carga (Requerido)">
-            <button id="btnGuardarCargada" onclick="guardarRegistro('cargada')"><i class="fas fa-check-circle"></i> Registrar Carga</button>
+            <div id="detalleAveriada" class="detalle-content">
+                <input type="text" id="descAveriada" placeholder="Descripción de la avería (Requerido)">
+                <button id="btnGuardarAveriada" class="btn-danger" onclick="guardarRegistroWrapper('averiada')"><i class="fas fa-check-circle"></i> Registrar Avería</button>
+            </div>
+            
         </div>
-
-        <div id="averiadaDetalles" style="display:none;">
-            <input type="text" id="descAveriada" placeholder="Descripción de la avería (Requerido)">
-            <button id="btnGuardarAveriada" onclick="guardarRegistro('averiada')"><i class="fas fa-check-circle"></i> Registrar Avería</button>
-        </div>
+        <!-- Fin de Contenedor Dinámico -->
 
         <button class="volver-button" onclick="mostrarPaso1(true)"><i class="fas fa-chevron-left"></i> Volver</button>
     </div>
     
-    <div id="reportes" class="card-section">
-        <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
+    <div id="reportes" class="card-section" style="margin-top: 20px;">
+        <h3><i class="fas fa-chart-bar"></i> Resumen de Flota (Tiempo Real)</h3>
         
         <div id="contadores">
             <div id="cardTotal" class="compact-summary card-total">
@@ -312,37 +608,218 @@
             <i class="fas fa-file-pdf"></i> Exportar a PDF (Informe Ejecutivo)
         </button>
         
-        <h4><i class="fas fa-history"></i> Últimos 5 Movimientos</h4>
+        <div class="historial-header">
+            <h4><i class="fas fa-history"></i> Historial de Movimientos</h4>
+            <select id="filtroEstado" onchange="actualizarHistorialReciente()">
+                <option value="Todos">Todos los Estados</option>
+                <option value="Cargada">Cargadas</option>
+                <option value="Vacía">Vacías</option>
+                <option value="Averiada">Averiadas</option>
+            </select>
+        </div>
+
         <ul id="historialReciente">
             </ul>
         
-        <button id="btnEliminar" onclick="confirmarLimpiarRegistros()">
+        <button id="btnMostrarMas" onclick="mostrarMasRegistros()" style="display:none;">
+            <i class="fas fa-plus-circle"></i> Mostrar más...
+        </button>
+
+        <button id="btnEliminar" onclick="mostrarConfirmarLimpiarRegistros()">
             <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
         </button>
     </div>
 
 </div>
 
-<script>
+<!-- Contenedor para Modal de Confirmación -->
+<div id="modalContainer"></div>
+
+<script type="module">
+    // Importaciones de Firebase se manejan a través de window.firebaseImports
+    const { 
+        initializeApp, getAuth, signInAnonymously, signInWithCustomToken, 
+        onAuthStateChanged, getFirestore, doc, setDoc, deleteDoc, 
+        onSnapshot, collection, query, writeBatch, getDocs, serverTimestamp, setLogLevel 
+    } = window.firebaseImports;
+    
+    // --- Configuración Global de Firebase y Constantes ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+    let db;
+    let auth;
+    let userId = null; // El userId es interno, no se muestra
+    let registrosCache = []; // Caché local para datos
+    let itemsMostrados = 5; // Estado para la paginación del historial
+    
     let matriculaActual = "";
     let registroDuplicado = null; 
+    let estadoSeleccionado = ''; 
+    
+    // Configura el nivel de log para depuración de Firestore
+    setLogLevel('error'); 
 
     // --- FUNCIONES DE UTILIDAD ---
-    function guardarRegistros(registros) {
-        localStorage.setItem('registrosMatriculas', JSON.stringify(registros));
-        actualizarContadores();
-        actualizarHistorialReciente();
-    }
 
-    function cargarRegistros() {
-        return JSON.parse(localStorage.getItem('registrosMatriculas') || '[]');
-    }
-
+    // **CRÍTICO: FUNCIÓN PARA CONSTRUIR LA RUTA DE LA COLECCIÓN (FALTANTE EN VERSIÓN ANTERIOR)**
+    const getCollectionPath = (uid) => `artifacts/${appId}/users/${uid}/matriculas`;
+    
+    // Reemplazo de window.alert/confirm
     function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
-        console.log(`[Notificación] `); 
+        const bar = document.getElementById('notificationBar');
+        bar.innerHTML = `<i class="${icono}"></i> ${mensaje}`;
+        bar.classList.add('show');
+
+        setTimeout(() => {
+            bar.classList.remove('show');
+        }, 3000);
     }
 
-    // --- GESTIÓN DE PANTALLAS (TRANSICIÓN DE DESVANECIMIENTO) ---
+    function mostrarModal(mensaje, onConfirm) {
+        const modalContainer = document.getElementById('modalContainer');
+        modalContainer.innerHTML = `
+            <div class="custom-modal" id="myModal">
+                <div class="modal-content">
+                    <h4><i class="fas fa-exclamation-triangle" style="color: var(--ios-red);"></i> Confirmar Acción</h4>
+                    <p>${mensaje}</p>
+                    <button class="btn-cancel" onclick="document.getElementById('myModal').remove()">Cancelar</button>
+                    <button id="modalConfirmBtn" onclick="confirmAction()">Confirmar</button>
+                </div>
+            </div>
+        `;
+        
+        window.confirmAction = () => {
+            onConfirm();
+            document.getElementById('myModal').remove();
+        };
+    }
+    
+    window.mostrarConfirmarLimpiarRegistros = () => {
+        mostrarModal("¿Estás seguro de que quieres ELIMINAR TODOS los registros? Esta acción no se puede deshacer.", animateExplosionAndClean);
+    };
+
+    // --- ANIMACIÓN DE LOGO (Estilo Apple/Suave) ---
+    function animarLogo() {
+        const logoIcon = document.getElementById('logoIcon');
+        const logoCode = document.getElementById('logoCode');
+        const logoXPO = document.getElementById('logoXPO');
+
+        // Reset de los estilos para permitir la re-ejecución de la animación si fuera necesario
+        logoIcon.style.opacity = '0'; 
+        logoIcon.style.transform = 'translateX(-10px)';
+        logoCode.style.opacity = '0';
+        logoCode.style.transform = 'translateX(-5px)';
+        logoXPO.style.opacity = '0';
+        logoXPO.style.transform = 'translateY(10px)';
+        
+        // Secuencia de animación tipo "fly-in" escalonada
+        setTimeout(() => {
+            logoIcon.style.opacity = '1';
+            logoIcon.style.transform = 'translateX(0)';
+        }, 100);
+
+        setTimeout(() => {
+            logoCode.style.opacity = '1';
+            logoCode.style.transform = 'translateX(0)';
+        }, 200);
+
+        setTimeout(() => {
+            logoXPO.style.opacity = '1';
+            logoXPO.style.transform = 'translateY(0)';
+        }, 400); 
+    }
+
+
+    // --- GESTIÓN DE FIREBASE/AUTH ---
+
+    async function initFirebase() {
+        if (firebaseConfig && !db) {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Autenticación
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Esperar a que la autenticación esté lista y obtener el ID
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid; // ID para la ruta privada de la colección
+                        
+                        loadAndListenToRegistros(); // Iniciar la escucha después de la autenticación
+                        
+                        // Ocultar overlay inmediatamente
+                        document.getElementById('loadingOverlay').style.opacity = '0';
+                        setTimeout(() => {
+                             document.getElementById('loadingOverlay').style.display = 'none';
+                             mostrarPaso1(false); // Mostrar la interfaz principal
+                             animarLogo(); 
+                        }, 500);
+
+                    } else {
+                        console.error("Fallo de autenticación o usuario deslogueado. Mostrando UI de todas formas.");
+                        // Si falla la auth, mostramos la UI (para evitar pantalla en blanco) pero sin datos.
+                        document.getElementById('loadingOverlay').style.opacity = '0';
+                        setTimeout(() => {
+                             document.getElementById('loadingOverlay').style.display = 'none';
+                             mostrarPaso1(false); 
+                             animarLogo(); 
+                        }, 500);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                document.getElementById('loadingOverlay').innerHTML = `<p style="color:var(--ios-red);">Error de conexión: ${error.message}</p>`;
+            }
+        }
+    }
+    
+    // --- LECTURA DE DATOS EN TIEMPO REAL (onSnapshot) ---
+
+    function loadAndListenToRegistros() {
+        if (!db || !userId) return;
+
+        // Se usa la ruta privada
+        const q = query(collection(db, getCollectionPath(userId)));
+        
+        onSnapshot(q, (snapshot) => {
+            const tempRegistros = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                tempRegistros.push({
+                    id: doc.id,
+                    matricula: doc.id, 
+                    estado: data.estado,
+                    descripcion: data.descripcion,
+                    fecha: data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'N/A',
+                    timestamp: data.timestamp
+                });
+            });
+            
+            // Comprobación para evitar re-renderizados innecesarios.
+            if (JSON.stringify(registrosCache) !== JSON.stringify(tempRegistros)) {
+                registrosCache = tempRegistros;
+                actualizarContadores();
+                actualizarHistorialReciente(); // Llama a la función principal de renderizado
+                console.log(`[Firestore] ${registrosCache.length} registros actualizados.`);
+            }
+
+        }, (error) => {
+            console.error("Error al escuchar los cambios en Firestore:", error);
+            mostrarConfirmacion("Error de conexión con la base de datos.", "fas fa-database");
+        });
+    }
+
+
+    // --- GESTIÓN DE PANTALLAS (Transición) ---
     function mostrarPaso(pasoId) {
         const currentActive = document.querySelector('.step-content.active');
         const targetPaso = document.getElementById(pasoId);
@@ -350,67 +827,81 @@
         document.getElementById('advertenciaDuplicado').style.display = 'none';
 
         if (currentActive && currentActive.id !== targetPaso.id) {
-            
-            // 1. Ocultar el paso actual con transición
             currentActive.classList.remove('active');
             currentActive.style.opacity = 0;
             currentActive.style.transform = 'scale(0.98)';
             
-            // Esperar a que la transición termine (0.35s) y luego hacer display: none y liberar el espacio (position: relative)
+            // Permitimos la transición visual antes de cambiar el display
             setTimeout(() => { 
                 currentActive.style.display = 'none'; 
                 currentActive.style.position = 'absolute'; 
 
-                // 2. Mostrar el nuevo paso
                 targetPaso.style.display = 'block';
                 targetPaso.style.position = 'relative'; 
 
-                // Le damos un pequeño retraso para asegurar que el display:block se ejecute antes de la transición
                 setTimeout(() => {
                     targetPaso.classList.add('active');
                     targetPaso.style.opacity = 1;
                     targetPaso.style.transform = 'scale(1)';
-                }, 50); 
+                }, 350); 
             }, 350); 
-        } else if (!currentActive) {
-            // Inicialización (si no hay paso activo)
-            targetPaso.style.display = 'block';
-            targetPaso.style.position = 'relative';
-            setTimeout(() => {
-                targetPaso.classList.add('active');
-                targetPaso.style.opacity = 1;
-                targetPaso.style.transform = 'scale(1)';
-            }, 50);
+        } else if (targetPaso.id === 'paso1' && !currentActive) {
+             // Caso de inicialización
+             targetPaso.style.display = 'block';
+             targetPaso.style.position = 'relative';
+             targetPaso.classList.add('active');
+             targetPaso.style.opacity = 1;
+             targetPaso.style.transform = 'scale(1)';
         }
     }
 
-    function mostrarPaso1(isBackward = false) {
+    window.mostrarPaso1 = (isBackward = false) => {
         mostrarPaso('paso1'); 
         matriculaActual = "";
         registroDuplicado = null;
+        estadoSeleccionado = '';
         document.getElementById('matriculaInput').value = '';
         document.getElementById('descCargada').value = '';
         document.getElementById('descAveriada').value = '';
-        document.getElementById('matriculaInput').focus();
+        
+        // Limpiar estilos de botones de estado y detalles
+        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('#detalleContainer .detalle-content').forEach(det => det.classList.remove('active'));
+
+        // CRÍTICO: Enfocar el input después de volver a la pantalla principal
+        if (document.getElementById('matriculaInput')) {
+            document.getElementById('matriculaInput').focus();
+        }
     }
 
     // --- LÓGICA CLAVE: REGISTRO ---
-    function registrarMatricula() {
+    window.registrarMatricula = () => {
+        // HAPTIC FEEDBACK SIMULADO
+        const btnContinuar = document.querySelector('#paso1 button');
+        btnContinuar.style.backgroundColor = 'var(--ios-blue)'; 
+        btnContinuar.style.transform = 'scale(0.98)';
+        
+        setTimeout(() => {
+             btnContinuar.style.transform = 'scale(1)';
+        }, 50);
+
         matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
         if (!matriculaActual) {
             mostrarConfirmacion("Ingrese la matrícula.", "fas fa-exclamation-triangle");
             return;
         }
         
-        const registros = cargarRegistros();
-        const existente = registros.find(reg => reg.matricula === matriculaActual);
+        const existente = registrosCache.find(reg => reg.matricula === matriculaActual);
         
         registroDuplicado = existente;
 
         mostrarPaso('paso2'); 
         document.getElementById('mostrarMatricula').textContent = matriculaActual;
-        document.getElementById('cargadaDetalles').style.display = 'none';
-        document.getElementById('averiadaDetalles').style.display = 'none';
+        
+        // Limpiar estilos de botones de estado y detalles al entrar en paso 2
+        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('#detalleContainer .detalle-content').forEach(det => det.classList.remove('active'));
+        estadoSeleccionado = '';
         
         if (existente) {
             const advertenciaDiv = document.getElementById('advertenciaDuplicado');
@@ -418,175 +909,254 @@
             document.getElementById('descAnterior').textContent = existente.descripcion;
             advertenciaDiv.style.display = 'block';
             
-            if (existente.estado === 'Cargada') manejarEstado('cargada');
-            else if (existente.estado === 'Disponible' || existente.estado === 'Vacía') manejarEstado('vacia');
-            else if (existente.estado === 'Averiada') manejarEstado('averiada');
+            // Precargar el estado anterior si existe, usando la función principal
+            if (existente.estado === 'Cargada') {
+                manejarEstado('cargada', document.getElementById('btnCargada'), true, existente.descripcion);
+            } else if (existente.estado === 'Averiada') {
+                manejarEstado('averiada', document.getElementById('btnAveriadaState'), true, existente.descripcion);
+            }
             
         } else {
             document.getElementById('advertenciaDuplicado').style.display = 'none';
         }
     }
 
-    function manejarEstado(estado) {
-        document.getElementById('cargadaDetalles').style.display = 'none';
-        document.getElementById('averiadaDetalles').style.display = 'none';
+    window.manejarEstado = (estadoKey, buttonElement, isPreload = false, descripcionExistente = '') => {
+        
+        // HAPTIC FEEDBACK SIMULADO en botones de estado
+        buttonElement.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+             buttonElement.style.transform = 'scale(1)';
+        }, 50);
 
-        if (estado === 'cargada') {
-            document.getElementById('cargadaDetalles').style.display = 'block';
+        // 1. Manejo del Caso Rápido: VACÍA (Registro Rápido)
+        if (estadoKey === 'vacia') {
+            // Activar botón para la micro-animación de registro
+            buttonElement.classList.add('active');
+            guardarRegistroWrapper('vacia', buttonElement);
+            return; 
+        }
+        
+        // 2. Flujo normal para Cargada/Averiada
+        
+        // Remover 'active' de todos los botones
+        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('active'));
+        
+        // Agregar 'active' al botón clickeado
+        buttonElement.classList.add('active');
+        
+        // 3. Ocultar todos los detalles y limpiar valores
+        document.querySelectorAll('#detalleContainer .detalle-content').forEach(det => det.classList.remove('active'));
+        document.getElementById('descCargada').value = '';
+        document.getElementById('descAveriada').value = '';
+        
+        estadoSeleccionado = estadoKey; 
+        
+        // 4. Mostrar el detalle correcto
+        if (estadoKey === 'cargada') {
+            const detalle = document.getElementById('detalleCargada');
+            detalle.classList.add('active');
+            
+            if (isPreload) {
+                 document.getElementById('descCargada').value = descripcionExistente;
+            }
             document.getElementById('descCargada').focus();
-            if (registroDuplicado && registroDuplicado.estado === 'Cargada') {
-                 document.getElementById('descCargada').value = registroDuplicado.descripcion;
+            
+        } else if (estadoKey === 'averiada') {
+            const detalle = document.getElementById('detalleAveriada');
+            detalle.classList.add('active');
+            
+            if (isPreload) {
+                 document.getElementById('descAveriada').value = descripcionExistente;
             }
-        } else if (estado === 'averiada') {
-            document.getElementById('averiadaDetalles').style.display = 'block';
             document.getElementById('descAveriada').focus();
-            if (registroDuplicado && registroDuplicado.estado === 'Averiada') {
-                 document.getElementById('descAveriada').value = registroDuplicado.descripcion;
-            }
-        } else if (estado === 'vacia') { 
-            guardarRegistro('vacia', 'Lista para cargar');
         }
     }
     
-    function microInteraccionBoton(buttonElement, estado) {
-        const originalText = buttonElement.innerHTML;
+    // Nueva función para micro-interacción de éxito en el botón de guardar
+    function microInteraccionBoton(buttonElement, estadoDisplay) {
+        // HAPTIC FEEDBACK SIMULADO
+        buttonElement.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+             buttonElement.style.transform = 'scale(1)';
+        }, 50);
+
+        const isQuickAction = estadoDisplay === 'Vacía';
+        
+        // Capturar estado original solo si no es la acción rápida (Vacía)
+        const originalText = isQuickAction ? '<i class="fas fa-box"></i> Vacía' : buttonElement.innerHTML;
+        const originalClass = isQuickAction ? '' : buttonElement.className;
+        const originalBg = isQuickAction ? '#e5e5ea' : getComputedStyle(buttonElement).backgroundColor;
+        const originalColor = isQuickAction ? '#3c3c43' : getComputedStyle(buttonElement).color;
+        
         
         let confirmText = '';
         let confirmClass = '';
         
-        if (estado === 'Cargada') {
-            confirmText = '<i class="fas fa-check"></i> ¡Cargada!';
-            confirmClass = 'btn-confirm-cargada';
-        } else if (estado === 'Vacía') {
-            confirmText = '<i class="fas fa-check"></i> ¡Vacía!';
-            confirmClass = 'btn-confirm-vacia';
-        } else if (estado === 'Averiada') {
-            confirmText = '<i class="fas fa-times-circle"></i> ¡Avería!';
-            confirmClass = 'btn-confirm-averiada';
+        if (estadoDisplay === 'Cargada') {
+            confirmText = '<i class="fas fa-check"></i> ¡Cargada Registrada!';
+            confirmClass = 'btn-success';
+        } else if (estadoDisplay === 'Vacía') {
+            // El botón 'Vacía' ya está activo y es amarillo
+            confirmText = '<i class="fas fa-check"></i> ¡Vacía Registrada!';
+            confirmClass = 'btn-warning active'; 
+        } else if (estadoDisplay === 'Averiada') {
+            confirmText = '<i class="fas fa-times-circle"></i> ¡Avería Registrada!';
+            confirmClass = 'btn-danger';
         }
 
         buttonElement.innerHTML = confirmText;
-        buttonElement.classList.add(confirmClass);
+        buttonElement.className = confirmClass; 
         buttonElement.disabled = true; 
 
         setTimeout(() => {
+            // Restaurar a la clase original después del registro
             buttonElement.innerHTML = originalText;
-            buttonElement.classList.remove(confirmClass);
-            buttonElement.disabled = false; 
-
-            mostrarConfirmacion(`¡ registrada!`);
+            buttonElement.disabled = false;
+            
+            if (isQuickAction) {
+                // Para Vacía, restauramos las propiedades CSS de botón de selección inactivo
+                buttonElement.className = '';
+                buttonElement.style.backgroundColor = originalBg; 
+                buttonElement.style.color = originalColor;
+            } else {
+                 // Para Cargada/Averiada, restauramos la clase de botón de guardar.
+                 buttonElement.className = originalClass; 
+            }
+            
+            mostrarConfirmacion(`¡${matriculaActual} registrada como ${estadoDisplay}!`);
+            // CRÍTICO: Auto-regreso al Paso 1 después del registro
             mostrarPaso1(true); 
-        }, 500); 
+        }, 800); 
     }
 
 
-    function guardarRegistro(estado, descripcionManual = '') {
-        let descripcion = descripcionManual;
-        let btnElement = null;
+    // --- CRÍTICO: FUNCIÓN CON WRAPPER DE REINTENTO (EXPONENTIAL BACKOFF) ---
+    
+    // Función central de guardado en Firestore
+    async function guardarRegistro(estadoKey, btnElement, retryCount = 0) {
+        if (!db || !userId) {
+            throw new Error("Base de datos no conectada.");
+        }
+        
+        const MAX_RETRIES = 5;
+        const BASE_DELAY_MS = 1000;
+        
+        let descripcion = '';
+        let estadoDisplay = '';
 
-        if (estado === 'cargada') {
+        if (estadoKey === 'cargada') {
             descripcion = document.getElementById('descCargada').value;
-            btnElement = document.getElementById('btnGuardarCargada');
-            estado = 'Cargada'; 
-        } else if (estado === 'averiada') {
+            estadoDisplay = 'Cargada'; 
+        } else if (estadoKey === 'averiada') {
             descripcion = document.getElementById('descAveriada').value;
-            btnElement = document.getElementById('btnGuardarAveriada');
-            estado = 'Averiada'; 
-        } else if (estado === 'vacia') {
+            estadoDisplay = 'Averiada'; 
+        } else if (estadoKey === 'vacia') {
              descripcion = 'Lista para cargar';
-             btnElement = document.getElementById('btnVacia');
-             estado = 'Vacía'; 
+             estadoDisplay = 'Vacía'; 
         }
-
-        if ((estado === 'Cargada' || estado === 'Averiada') && !descripcion.trim()) {
-            mostrarConfirmacion(`Necesita descripción de .`, "fas fa-exclamation-triangle");
-            return;
+        
+        // Validación de descripción
+        if (retryCount === 0) {
+            if ((estadoDisplay === 'Cargada' || estadoDisplay === 'Averiada') && !descripcion.trim()) {
+                throw new Error(`Necesita descripción de ${estadoDisplay}.`);
+            }
         }
-
-        const registro = {
-            matricula: matriculaActual,
-            estado: estado,
+        
+        const registroData = {
+            estado: estadoDisplay, 
             descripcion: descripcion.trim() || 'N/A',
-            fecha: new Date().toLocaleString()
+            timestamp: serverTimestamp(), 
         };
 
-        let registros = cargarRegistros();
-        
-        registros = registros.filter(reg => reg.matricula !== matriculaActual);
-        registros.push(registro);
-        guardarRegistros(registros);
+        try {
+            const docRef = doc(db, getCollectionPath(userId), matriculaActual);
+            await setDoc(docRef, registroData, { merge: true });
+            
+            // Éxito:
+            if (btnElement) {
+                microInteraccionBoton(btnElement, estadoDisplay);
+            }
+            return true; 
+            
+        } catch (e) {
+            
+            if (e.message.includes("Necesita descripción")) {
+                 throw e;
+            }
 
-        if (btnElement) {
-            microInteraccionBoton(btnElement, registro.estado);
+            // Fallo: Aplicar Reintento Exponencial
+            if (retryCount < MAX_RETRIES) {
+                const delay = BASE_DELAY_MS * (2 ** retryCount) + (Math.random() * 500); 
+                
+                // Mostrar un mensaje temporal de reintento si el botón existe
+                if (btnElement) {
+                    btnElement.innerHTML = `<i class="fas fa-redo-alt fa-spin"></i> Reintentando (${retryCount + 1}/${MAX_RETRIES})...`;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+                return guardarRegistro(estadoKey, btnElement, retryCount + 1);
+            } else {
+                throw new Error("Fallo de conexión persistente. Verifique su red.");
+            }
         }
     }
+    
+    // Wrapper que maneja el inicio del guardado y errores finales
+    window.guardarRegistroWrapper = async (estadoKey, buttonElement = null) => {
+        let btnElement = buttonElement; 
 
-    // --- CONTADORES Y HISTORIAL (Mantenidos) ---
-    function actualizarHistorialReciente() {
-        const registros = cargarRegistros().reverse();
-        const ul = document.getElementById('historialReciente');
-        ul.innerHTML = ''; 
-        
-        if (registros.length === 0) {
-            ul.innerHTML = '<li style="justify-content:center; color: var(--text-light-gray); border-bottom: none;">Aún no hay movimientos registrados.</li>';
-            return;
+        // Si no se pasó, asumimos que viene de los botones Cargada/Averiada
+        if (!btnElement) {
+            if (estadoKey === 'cargada') {
+                btnElement = document.getElementById('btnGuardarCargada');
+            } else if (estadoKey === 'averiada') {
+                btnElement = document.getElementById('btnGuardarAveriada');
+            }
         }
-
-        const ultimosRegistros = registros.slice(0, 5);
         
-        ultimosRegistros.forEach(reg => {
-            const partesFecha = reg.fecha.split(', ');
-            const hora = partesFecha.length > 1 ? partesFecha[1] : partesFecha[0];
+        if (btnElement) btnElement.disabled = true;
 
-            const estadoDisplay = (reg.estado === 'Disponible' || reg.estado === 'Vacía') ? 'Vacía' : reg.estado;
-            const estadoClass = `estado-${estadoDisplay}`;
+        try {
+            await guardarRegistro(estadoKey, btnElement, 0); 
+        } catch (error) {
+            console.error("Error final de guardado:", error);
+            mostrarConfirmacion(error.message, "fas fa-bug");
             
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="historial-matricula">${reg.matricula}</span>
-                <span class="historial-estado ${estadoClass}">${estadoDisplay}</span>
-                <span class="historial-time">${hora}</span>
-            `;
-            ul.appendChild(li);
-        });
-    }
+            // Re-habilitar botón y restaurar texto original en caso de fallo final
+            if (btnElement) {
+                 btnElement.disabled = false;
+                 if (error.message.includes("Fallo de conexión")) {
+                    btnElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Reintento Fallido`;
+                    setTimeout(() => {
+                         if (estadoKey === 'cargada') { btnElement.innerHTML = '<i class="fas fa-check-circle"></i> Registrar Carga'; }
+                         else if (estadoKey === 'averiada') { btnElement.innerHTML = '<i class="fas fa-check-circle"></i> Registrar Avería'; }
+                         else if (estadoKey === 'vacia') { 
+                            // Restaurar el botón vacía a su estado original (inactivo)
+                            btnElement.innerHTML = '<i class="fas fa-box"></i> Vacía';
+                            btnElement.classList.remove('active'); 
+                         }
+                    }, 2000);
+                 } else if (error.message.includes("Necesita descripción") && estadoKey === 'vacia') {
+                      // Si falla una acción rápida, solo desactiva y restaura el botón.
+                      btnElement.classList.remove('active');
+                      btnElement.innerHTML = '<i class="fas fa-box"></i> Vacía';
+                 }
+            }
+        }
+    };
 
-    function actualizarContadores() {
-        const registros = cargarRegistros();
-        let counts = { Cargada: 0, Disponible: 0, Averiada: 0, Total: registros.length };
 
-        registros.forEach(reg => {
-            if (reg.estado === 'Cargada') counts.Cargada++;
-            else if (reg.estado === 'Disponible' || reg.estado === 'Vacía') counts.Disponible++; 
-            else if (reg.estado === 'Averiada') counts.Averiada++;
-        });
-
-        const totalFlota = counts.Total;
-        
-        document.getElementById('countTotal').textContent = counts.Total;
-        document.getElementById('countCargada').textContent = counts.Cargada;
-        document.getElementById('countDisponible').textContent = counts.Disponible; 
-        document.getElementById('countAveriada').textContent = counts.Averiada;
-
-        const updateCompactCard = (state, count) => {
-            const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
-            const percentText = `${percentValue}%`;
-            
-            const percentElement = document.getElementById(`percent${state}`);
-            if(percentElement) percentElement.textContent = percentText;
-            
-            const fillElement = document.getElementById(`fill${state}`);
-            if(fillElement) fillElement.style.width = percentText;
-        };
-
-        updateCompactCard('Cargada', counts.Cargada);
-        updateCompactCard('Disponible', counts.Disponible); 
-        updateCompactCard('Averiada', counts.Averiada);
-        
+    // --- CONTADORES Y HISTORIAL ---
+    
+    // Función para garantizar que las tarjetas de contador sean visibles con una animación escalonada
+    function animateCounterCardsIn() {
         const cardIds = ['cardTotal', 'cardCargada', 'cardDisponible', 'cardAveriada'];
         cardIds.forEach((id, index) => {
             const item = document.getElementById(id);
-            if (!item.classList.contains('visible')) {
+            if (item && !item.classList.contains('visible')) {
+                // Animación escalonada para visibilidad inicial
                 setTimeout(() => {
                     item.classList.add('visible');
                 }, 50 + index * 50); 
@@ -594,192 +1164,285 @@
         });
     }
 
-    // --- FUNCIÓN DE PARALLAX (Sombra Dinámica en Header) ---
+    window.mostrarMasRegistros = () => {
+        itemsMostrados = itemsMostrados * 2; 
+        actualizarHistorialReciente();
+    }
+
+    function actualizarHistorialReciente() {
+        const filtro = document.getElementById('filtroEstado').value;
+
+        // 1. Ordenar registros por timestamp de forma descendente (más reciente primero)
+        const registrosOrdenados = [...registrosCache].sort((a, b) => {
+            const timeA = a.timestamp ? a.timestamp.seconds * 1e9 + a.timestamp.nanoseconds : 0;
+            const timeB = b.timestamp ? b.timestamp.seconds * 1e9 + b.timestamp.nanoseconds : 0;
+            return timeB - timeA;
+        });
+        
+        // 2. Aplicar Filtro
+        const registrosFiltrados = filtro === 'Todos' 
+            ? registrosOrdenados 
+            : registrosOrdenados.filter(reg => reg.estado === filtro);
+
+
+        const ul = document.getElementById('historialReciente');
+        const btnMostrarMas = document.getElementById('btnMostrarMas');
+        
+        ul.innerHTML = ''; 
+        
+        if (registrosFiltrados.length === 0) {
+            ul.innerHTML = '<li style="justify-content:center; color: var(--text-light-gray); border-bottom: none; opacity:1; transform:translateY(0);">No hay movimientos registrados para este filtro.</li>';
+            btnMostrarMas.style.display = 'none';
+            return;
+        }
+
+        // 3. Aplicar Paginación (Mostrar solo N elementos)
+        const registrosAmostrar = registrosFiltrados.slice(0, itemsMostrados);
+        
+        // 4. Actualizar botón Mostrar Más
+        if (registrosFiltrados.length > itemsMostrados) {
+            btnMostrarMas.textContent = `Mostrar más (${registrosAmostrar.length} de ${registrosFiltrados.length})`;
+            btnMostrarMas.style.display = 'block';
+        } else {
+            btnMostrarMas.style.display = 'none';
+        }
+        
+        // 5. Renderizar lista con animación escalonada (Staggered Fade-In)
+        registrosAmostrar.forEach((reg, index) => {
+            const partesFecha = reg.fecha.split(', ');
+            const hora = partesFecha.length > 1 ? partesFecha[1] : partesFecha[0];
+
+            const estadoDisplay = reg.estado; 
+            const estadoClass = `estado-${estadoDisplay}`;
+            
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="historial-matricula">${reg.matricula}</span>
+                <span class="historial-estado ${estadoClass}" title="${reg.descripcion}">${estadoDisplay}</span>
+                <span class="historial-time">${hora}</span>
+            `;
+            ul.appendChild(li);
+            
+            // Aplicar la animación con un retraso basado en el índice
+            setTimeout(() => {
+                li.classList.add('animated');
+            }, 50 * index); 
+        });
+    }
+
+    function actualizarContadores() {
+        let counts = { Cargada: 0, Vacía: 0, Averiada: 0, Total: registrosCache.length };
+
+        registrosCache.forEach(reg => {
+            if (reg.estado === 'Cargada') counts.Cargada++;
+            else if (reg.estado === 'Vacía') counts.Vacía++; 
+            else if (reg.estado === 'Averiada') counts.Averiada++;
+        });
+
+        const totalFlota = counts.Total;
+        
+        document.getElementById('countTotal').textContent = counts.Total;
+        document.getElementById('countCargada').textContent = counts.Cargada;
+        document.getElementById('countDisponible').textContent = counts.Vacía; 
+        document.getElementById('countAveriada').textContent = counts.Averiada;
+
+        const updateCompactCard = (stateKey, count) => {
+            const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
+            const percentText = `${percentValue}%`;
+            
+            const percentElement = document.getElementById(`percent${stateKey}`);
+            if(percentElement) percentElement.textContent = percentText;
+            
+            const fillElement = document.getElementById(`fill${stateKey}`);
+            if(fillElement) fillElement.style.width = percentText;
+        };
+
+        updateCompactCard('Cargada', counts.Cargada);
+        updateCompactCard('Disponible', counts.Vacía); 
+        updateCompactCard('Averiada', counts.Averiada);
+        
+        // La animación de visibilidad se llama ahora en DOMContentLoaded
+    }
+
+    // --- Animación de "Eclosión" antes de la Limpieza ---
+    window.animateExplosionAndClean = () => {
+        const ul = document.getElementById('historialReciente');
+        const items = ul.querySelectorAll('li.animated'); 
+        
+        if (items.length === 0) {
+            limpiarRegistros();
+            return;
+        }
+
+        // 1. Aplicar la animación de explosión a todos los elementos visibles.
+        items.forEach((item, index) => {
+            setTimeout(() => {
+                item.classList.remove('animated'); 
+                item.classList.add('explode-out');
+            }, 50 * index); 
+        });
+
+        // 2. Esperar a que la animación termine (250ms es la duración en CSS)
+        setTimeout(() => {
+            // 3. Ejecutar la función de limpieza de Firestore real
+            limpiarRegistros();
+        }, 350); 
+    }
+
+
+    // --- LIMPIAR REGISTROS (Firestore) ---
+    window.limpiarRegistros = async () => {
+        if (!db || !userId) {
+            mostrarConfirmacion("Base de datos no disponible.", "fas fa-bug");
+            return;
+        }
+
+        try {
+            const q = collection(db, getCollectionPath(userId));
+            const snapshot = await getDocs(q);
+            
+            if (snapshot.empty) {
+                mostrarConfirmacion("No hay registros para eliminar.", "fas fa-info-circle");
+                return;
+            }
+            
+            const batch = writeBatch(db);
+            snapshot.docs.forEach((d) => {
+                batch.delete(d.ref);
+            });
+            
+            await batch.commit();
+            mostrarConfirmacion("Todos los registros han sido eliminados.", "fas fa-trash-alt");
+            itemsMostrados = 5; // Resetear paginación
+        } catch (e) {
+            console.error("Error al limpiar registros:", e);
+            mostrarConfirmacion("Error al eliminar registros. Intente de nuevo.", "fas fa-bug");
+        }
+    }
+
+    // --- FUNCIÓN DE SCROLL DINÁMICO (Efecto Blur) ---
     function handleScroll() {
         const header = document.getElementById('fixedHeader');
         const scrollPosition = window.scrollY;
         
-        // Aplica la clase 'scrolled' si el scroll supera un umbral pequeño (por ejemplo, 10px)
+        // Aplica el estilo 'scrolled' con el fondo blanco y blur si el scroll supera 10px
         if (scrollPosition > 10) {
             header.classList.add('scrolled');
         } else {
             header.classList.remove('scrolled');
         }
     }
-
-    // --- LIMPIAR REGISTROS (Mantenidos) ---
-    function confirmarLimpiarRegistros() {
-        if (confirm("¿Estás seguro de que quieres ELIMINAR TODOS los registros? Esta acción no se puede deshacer.")) {
-            limpiarRegistros();
-        }
-    }
-
-    function limpiarRegistros() {
-        localStorage.removeItem('registrosMatriculas');
-        actualizarContadores();
-        actualizarHistorialReciente();
-        mostrarConfirmacion("Registros eliminados.", "fas fa-trash-alt");
-    }
-
-    // -----------------------------------------------------
-    // --- FUNCIÓN EXPORTAR A PDF MODIFICADA ---
-    // -----------------------------------------------------
-    function exportarPDF() {
-        const registros = cargarRegistros();
+    
+    // --- EXPORTACIÓN A PDF (Mantenida) ---
+    window.exportarPDF = () => {
+        const registros = [...registrosCache]; // Usar la caché local
         if (registros.length === 0) {
             mostrarConfirmacion("No hay registros para exportar.", "fas fa-info-circle");
             return;
         }
 
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4'); 
-        const margin = 15; // Margen en mm
-        let yPos = 15;
+        const doc = new jsPDF();
+        const margin = 10;
+        let yPos = 10;
         const pageWidth = doc.internal.pageSize.width; 
         
         const registrosCargadas = registros
             .filter(reg => reg.estado === 'Cargada')
-            .map(reg => [reg.matricula.toUpperCase(), reg.descripcion.toUpperCase()]); 
+            .map(reg => [reg.matricula, reg.descripcion]); 
         
-        const registrosDisponibles = registros
-            .filter(reg => reg.estado === 'Disponible' || reg.estado === 'Vacía')
-            .map(reg => [reg.matricula.toUpperCase()]);
+        const registrosVacías = registros
+            .filter(reg => reg.estado === 'Vacía')
+            .map(reg => [reg.matricula]);
         
         const registrosAveriadas = registros
             .filter(reg => reg.estado === 'Averiada')
-            .map(reg => [reg.matricula.toUpperCase(), reg.descripcion.toUpperCase()]);
+            .map(reg => [reg.matricula, reg.descripcion]);
             
         const counts = {
             Cargada: registrosCargadas.length,
-            Disponible: registrosDisponibles.length,
+            Vacía: registrosVacías.length,
             Averiada: registrosAveriadas.length,
             Total: registros.length
         };
         
-        // --- COLORES ---
         const COLOR_TEXTO_OSCURO = [30, 30, 30];
-        const COLOR_TEXTO_MUTED = [75, 85, 99];
-        const COLOR_ACCENT = [239, 68, 68]; // Rojo XPO
-        const COLOR_CARD_BG = [255, 255, 255];
-        const COLOR_HEADER_BG = [248, 250, 252]; 
-        const COLOR_SEPARATOR = [243, 244, 246];
+        const COLOR_TEXTO_CLARO = [150, 150, 150];
 
-        // --- CABECERA (Pulida y Sin Esquinas) ---
-        doc.setFillColor(COLOR_CARD_BG[0], COLOR_CARD_BG[1], COLOR_CARD_BG[2]);
-        // Usamos solo el rectángulo redondeado con relleno, sin bordes para un acabado más limpio
-        doc.roundedRect(margin - 1, yPos - 5, pageWidth - margin * 2 + 2, 30, 5, 5, 'F'); 
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
+        doc.text("XPO LOGISTICS", margin, yPos); 
         
-        // Texto CODE
+        doc.setFontSize(16);
+        doc.setTextColor(255, 59, 48); 
+        doc.text("CODE", pageWidth - margin, yPos, { align: 'right' }); 
+        
+        yPos += 5;
+        
+        const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+        const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+        
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(31, 41, 55); 
-        doc.text("CODE", pageWidth - margin - 2, yPos, { align: 'right' }); 
-        
-        // XPO LOGISTICS
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(COLOR_ACCENT[0], COLOR_ACCENT[1], COLOR_ACCENT[2]);
-        doc.text("XPO", pageWidth / 2, yPos + 2, { align: 'center' }); 
-        
-        doc.setFontSize(10);
-        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-        doc.text("LOGISTICS", pageWidth / 2, yPos + 6.5, { align: 'center' });
-        
-        // Título Reporte
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-        doc.text("REPORTE DIARIO DE PLATAFORMAS", pageWidth / 2, yPos + 14, { align: 'center' }); 
+        doc.setTextColor(COLOR_TEXTO_CLARO[0], COLOR_TEXTO_CLARO[1], COLOR_TEXTO_CLARO[2]); 
+        doc.text(`INFORME DE FLOTA | ${currentDay}, ${currentDate} | TOTAL: ${counts.Total} PLATAFORMAS`, margin, yPos);
+        yPos += 12; 
 
-        // Fecha
-        const currentDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(COLOR_TEXTO_MUTED[0], COLOR_TEXTO_MUTED[1], COLOR_TEXTO_MUTED[2]);
-        doc.text(currentDate, pageWidth / 2, yPos + 18, { align: 'center' });
-        
-        yPos += 30 + 10; // Salto después de la cabecera
-        
-        // --- TABLAS DE DOS COLUMNAS ---
         const tableMarginX = 5; 
         const halfWidth = (pageWidth - margin * 2 - tableMarginX) / 2;
         let startYDoubleColumn = yPos;
         
-        const styles = { 
-            fontSize: 9, 
-            cellPadding: 2, 
-            valign: 'middle', 
-            font: "helvetica", 
-            textColor: [51, 51, 51], 
-            lineColor: COLOR_SEPARATOR, 
-            lineWidth: { top: 0, right: 0, bottom: 0.1, left: 0 }, 
-            fontStyle: 'normal' 
-        };
-        const headStyles = { 
-            fillColor: COLOR_HEADER_BG, 
-            textColor: [55, 65, 81], 
-            fontStyle: 'bold', 
-            lineWidth: { top: 0.1, right: 0, bottom: 0.1, left: 0 }, 
-            cellPadding: 3 
-        };
-        const alternateRowStyles = { fillColor: [252, 252, 252] };
-
-        // 1. Cargadas (Columna Izquierda)
-        doc.setFontSize(10);
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-        doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
-        startYDoubleColumn += 2;
         
+        doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
+        
+        const xPosVacias = margin + halfWidth + tableMarginX;
+        doc.text(`PLATAFORMAS VACÍAS (${counts.Vacía})`, xPosVacias, startYDoubleColumn); 
+        
+        startYDoubleColumn += 5; 
+        
+        const styles = { fontSize: 8, cellPadding: 2, valign: 'top', font: "helvetica", textColor: [51, 51, 51], lineColor: [240, 240, 240], lineWidth: 0.1, fontStyle: 'normal' };
+        const headStyles = { fillColor: [249, 249, 249], textColor: [80, 80, 80], fontStyle: 'bold', lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 3 };
+        const alternateRowStyles = { fillColor: [252, 252, 252] };
+
+
         doc.autoTable({
-            head: [['MATRICULA', 'CONTENIDO']],
-            body: registrosCargadas.length > 0 ? registrosCargadas : [['', 'No hay plataformas cargadas']],
-            startY: startYDoubleColumn + 2,
+            head: [['MATRÍCULA', 'CONTENIDO']],
+            body: registrosCargadas,
+            startY: startYDoubleColumn,
             margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
             tableWidth: halfWidth,
             styles: styles,
             headStyles: headStyles,
             alternateRowStyles: alternateRowStyles, 
             columnStyles: {
-                // MATRICULA ajustada
-                0: { cellWidth: 25 }, 
-                // CONTENIDO con encabezado alineado a la derecha
-                1: { cellWidth: 'auto', headStyles: { halign: 'right' } } 
-            },
-            bodyStyles: { fontStyle: registrosCargadas.length === 0 ? 'italic' : 'normal', textColor: registrosCargadas.length === 0 ? COLOR_TEXTO_MUTED : [51, 51, 51] }
+                0: { cellWidth: 20 }, 
+                1: { cellWidth: 'auto' }
+            }
         });
         let finalYCargadas = doc.autoTable.previous.finalY;
 
-        // 2. Vacías (Columna Derecha)
-        const xPosVacias = margin + halfWidth + tableMarginX;
-        startYDoubleColumn = yPos; 
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-        doc.text(`PLATAFORMAS VACIAS (${counts.Disponible})`, xPosVacias, startYDoubleColumn); 
-        startYDoubleColumn += 2;
-        
         doc.autoTable({
-            head: [['MATRICULA']],
-            body: registrosDisponibles.length > 0 ? registrosDisponibles : [['No hay plataformas vacías']],
-            startY: startYDoubleColumn + 2, 
+            head: [['MATRÍCULA']],
+            body: registrosVacías,
+            startY: startYDoubleColumn, 
             margin: { left: xPosVacias, right: margin }, 
             tableWidth: halfWidth,
             styles: styles,
             headStyles: headStyles,
             alternateRowStyles: alternateRowStyles, 
             columnStyles: {
-                // MATRICULA ajustada para usar todo el ancho disponible
                 0: { cellWidth: 'auto' } 
-            },
-            bodyStyles: { fontStyle: registrosDisponibles.length === 0 ? 'italic' : 'normal', textColor: registrosDisponibles.length === 0 ? COLOR_TEXTO_MUTED : [51, 51, 51] }
+            }
         });
         let finalYDisponibles = doc.autoTable.previous.finalY;
 
         let finalY = Math.max(finalYCargadas, finalYDisponibles); 
         
         
-        // 3. Averías (Sección completa)
         if (registrosAveriadas.length > 0) {
             
             if (finalY + 20 > doc.internal.pageSize.height - margin) {
@@ -789,13 +1452,13 @@
                  finalY += 10; 
             }
 
-            doc.setFontSize(10);
+            doc.setFontSize(12);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
             doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
             
             doc.autoTable({
-                head: [['MATRICULA', 'DESCRIPCION DE AVERÍA']],
+                head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
                 body: registrosAveriadas,
                 startY: finalY + 10,
                 margin: { left: margin, right: margin },
@@ -803,89 +1466,50 @@
                 headStyles: headStyles,
                 alternateRowStyles: alternateRowStyles, 
                 columnStyles: {
-                    // MATRICULA ajustada
                     0: { cellWidth: 30 }, 
                     1: { cellWidth: 'auto' }
                 }
             });
         }
 
-        // --- PIE DE PÁGINA ---
         const pageCount = doc.internal.getNumberOfPages();
         for(let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            
-            // Línea separadora
-            doc.setDrawColor(200, 200, 200);
-            doc.setLineWidth(0.1);
-            doc.line(margin, doc.internal.pageSize.height - 10, pageWidth - margin, doc.internal.pageSize.height - 10);
-            
             doc.setFontSize(8);
-            doc.setTextColor(COLOR_TEXTO_MUTED[0], COLOR_TEXTO_MUTED[1], COLOR_TEXTO_MUTED[2]);
+            doc.setTextColor(COLOR_TEXTO_CLARO[0], COLOR_TEXTO_CLARO[1], COLOR_TEXTO_CLARO[2]);
+            
             doc.setFont("helvetica", "normal");
-
-            // Izquierda
-            doc.text(`GENERADO POR XPO LOGISTICS`, margin, doc.internal.pageSize.height - 5);
+            doc.text(`© 2025 XPO LOGISTICS - Informe interno`, margin, doc.internal.pageSize.height - 5);
             
-            // Centro (Link)
-            doc.setTextColor(37, 99, 235); // Color azul del link
-            doc.text(`AppCode.com`, pageWidth / 2, doc.internal.pageSize.height - 5, { align: 'center' });
-            
-            // Derecha (Paginación)
-            doc.setTextColor(COLOR_TEXTO_MUTED[0], COLOR_TEXTO_MUTED[1], COLOR_TEXTO_MUTED[2]);
-            doc.text(`PÁGINA ${i} DE ${pageCount}`, pageWidth - margin, doc.internal.pageSize.height - 5, { align: 'right' });
+            doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, doc.internal.pageSize.height - 5, { align: 'right' });
         }
 
-        doc.save("Reporte_XPO_Diario_Plataformas.pdf");
+        doc.save("Reporte_XPO_Ejecutivo_Compacto.pdf");
         mostrarConfirmacion("PDF exportado correctamente.", "fas fa-file-pdf");
     }
 
-    // --- LÓGICA DE ANIMACIÓN OPTIMIZADA (Mantenida) ---
-    function animarLogo() {
-        // Esta función podría ser usada para la animación inicial, pero ya no afecta el header-fixed de la misma manera.
-        const logoCode = document.querySelector('.logo-code');
-        const logoXPO = document.querySelector('.logo-xpo');
-
-        logoCode.style.opacity = '0';
-        logoXPO.style.opacity = '0';
-        logoXPO.style.transform = 'translateY(10px)';
-
-        if (!localStorage.getItem('logoAnimado')) {
-             setTimeout(() => {
-                logoCode.style.opacity = '1';
-             }, 50);
-
-             setTimeout(() => {
-                logoXPO.style.opacity = '1';
-                logoXPO.style.transform = 'translateY(0)';
-             }, 350); 
-             
-             localStorage.setItem('logoAnimado', 'true');
-        } else {
-            logoCode.style.opacity = '1';
-            logoXPO.style.opacity = '1';
-            logoXPO.style.transform = 'translateY(0)';
-        }
-    }
-
-
     // --- INICIALIZACIÓN ---
     document.addEventListener('DOMContentLoaded', () => {
-        animarLogo();
-        actualizarContadores();
-        actualizarHistorialReciente(); 
-        
-        document.getElementById('paso1').style.display = 'block';
-        document.getElementById('paso1').style.position = 'relative'; 
-        document.getElementById('paso1').classList.add('active');
-        document.getElementById('matriculaInput').focus();
-        
-        // --- ACTIVAR EL MANEJO DE SCROLL PARA EL EFECTO DINÁMICO ---
+        // La inicialización de Firebase llama a animarLogo y mostrarPaso1
+        initFirebase();
         window.addEventListener('scroll', handleScroll);
-        // Llamar una vez al inicio para el caso de recargas con scroll ya aplicado
         handleScroll(); 
+        
+        // **CORRECCIÓN CLAVE:** Mostramos las tarjetas de contador inmediatamente al cargar el DOM, 
+        // sin esperar a la conexión de Firebase.
+        animateCounterCardsIn(); 
+
+        // CRÍTICO: Añadir event listener para la tecla Enter en el input de matrícula (Paso 1)
+        const matriculaInput = document.getElementById('matriculaInput');
+        matriculaInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                registrarMatricula();
+            }
+        });
     });
 </script>
 
 </body>
 </html>
+
