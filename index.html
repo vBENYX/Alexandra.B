@@ -2,522 +2,614 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manicura Exclusive - Reserva Tu Estilo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Registro Táctil de Matrículas</title>
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
-        /* Variables y Estilos Base - Estilo Apple/Alegre (Cheerful Coral) */
+        /* Variables y Reset para Móviles (iOS Theme) */
         :root {
-            --color-fondo: #f9f9fb; /* Blanco muy suave para frescura */
-            --color-texto: #1d1d1f; 
-            --color-acento-secundario: #007aff; /* Azul clásico para CTA fijo */
-            --color-acento-principal: #ff6961; /* Coral Alegre y Vibrante */
-            --color-claro: #ffffff;
-            --color-gris-suave: #e8e8ed;
-            --tipografia-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-yellow: #FFCC00;
+            --ios-gray-bg: #f2f2f7;
+            --ios-card-bg: #ffffff;
+            --ios-separator: #d1d1d6;
+            --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --transition-duration: 0.35s;
         }
 
+        /* Estilo Base: Fondo de iOS y Tipografía SF Pro */
         body {
-            font-family: var(--tipografia-principal);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+            background-color: var(--ios-gray-bg);
             margin: 0;
             padding: 0;
-            background-color: var(--color-fondo);
-            color: var(--color-texto);
-            line-height: 1.6;
-            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: #1c1c1e;
             overflow-x: hidden;
         }
+        
+        /* Contenedor Principal */
+        .container {
+            width: 100%;
+            max-width: 450px;
+            margin-top: 15px;
+            background-color: transparent; 
+            box-shadow: none;
+            position: relative;
+            height: auto;
+            min-height: 600px;
+            overflow: hidden;
+        }
 
-        /* --- Encabezado con Glassmorphism Sutil --- */
-        .header {
-            position: fixed;
+        /* Encabezado Principal */
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            padding: 15px 20px;
+            margin: 0;
+            color: #1c1c1e;
+        }
+
+        /* Estructura de Tarjetas */
+        .card-section {
+            background-color: var(--ios-card-bg);
+            margin: 10px 0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--ios-shadow);
+        }
+
+        /* Transiciones de Pasos (Slide Horizontal) */
+        .step-content {
+            opacity: 0;
+            transform: translateX(100%); 
+            transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            background-color: rgba(255, 255, 255, 0.9); 
-            backdrop-filter: blur(12px); 
-            padding: 15px 0;
-            text-align: center;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05); 
-            z-index: 1000;
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            box-sizing: border-box;
+            padding: 20px;
+            background-color: var(--ios-card-bg);
+            border-radius: 10px;
+            box-shadow: var(--ios-shadow);
         }
-
-        .header.hidden {
-            transform: translateY(-100%);
-            opacity: 0;
-        }
-
-        .logo {
-            font-size: 1.4rem;
-            font-weight: 700;
-            letter-spacing: -0.04em; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px; 
-        }
-
-        .logo-main {
-            color: var(--color-texto);
-        }
-
-        /* Degradado de Coral en el logo */
-        .logo-with-alexandra {
-            font-size: 1.4rem;
-            font-weight: 700;
-            letter-spacing: -0.04em;
-            background: linear-gradient(90deg, #ff8c88 0%, var(--color-acento-principal) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-fill-color: transparent;
+        
+        .step-content.active {
+            opacity: 1;
+            transform: translateX(0);
             position: relative;
-            overflow: hidden;
-            opacity: 1; 
-        }
-        
-        .logo-with-alexandra::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.5);
-            transform: skewX(-20deg);
-            animation: shine 3s infinite linear; 
-        }
-
-        @keyframes shine {
-            0% { left: -100%; }
-            50% { left: 150%; }
-            100% { left: -100%; }
-        }
-
-        /* --- Botón de Reserva Fijo y CTA (Vibrante) --- */
-
-        .cta-fixed {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1001;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        .cta-fixed a {
-            background-color: var(--color-acento-secundario);
-            box-shadow: 0 6px 15px rgba(0, 122, 255, 0.25);
-            border-radius: 999px; 
-        }
-        
-        .btn-reserva {
             display: block;
-            background-color: var(--color-acento-principal); 
-            color: var(--color-claro);
-            padding: 14px 30px; 
-            text-decoration: none;
-            border-radius: 999px; 
-            font-size: 1.05rem;
-            font-weight: 600; 
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .step-content.backward {
+            transform: translateX(-100%);
+        }
+
+        /* Campos de Entrada */
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--ios-separator);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 18px;
+            background-color: #f9f9f9;
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+            outline: none;
+            background-color: var(--ios-card-bg);
+        }
+        
+        /* Botones Principales */
+        button {
+            width: 100%;
+            background-color: var(--ios-blue);
+            color: white;
+            padding: 15px 20px;
+            margin: 10px 0;
             border: none;
+            border-radius: 10px;
             cursor: pointer;
-            text-align: center;
-            box-shadow: 0 6px 15px rgba(255, 105, 97, 0.3); 
+            font-size: 18px;
+            font-weight: 600;
+            transition: opacity 0.1s, transform 0.1s;
+            -webkit-appearance: none;
         }
 
-        .btn-reserva:active { 
-            background-color: #ff4a42; 
-            transform: translateY(0); 
-            box-shadow: 0 4px 10px rgba(255, 105, 97, 0.4);
+        button:active {
+            opacity: 0.8;
+            transform: scale(0.99);
         }
         
-        .btn-reserva:hover { 
-            background-color: #ff4a42; 
-            transform: translateY(-3px); 
-            box-shadow: 0 8px 20px rgba(255, 105, 97, 0.4);
-        }
-
-        /* --- Estilos de Contenido General --- */
-        .seccion {
-            min-height: auto; /* Optimizado para móvil */
-            padding: 100px 5% 80px;
-            text-align: center;
-            max-width: 1050px; 
-            margin: 0 auto;
-            position: relative;
-        }
-        
-        .servicios-container {
-            background-color: var(--color-claro);
-            padding: 50px 40px;
-            border-radius: 20px; 
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); 
-            margin-top: 50px;
-            border: 1px solid var(--color-gris-suave); 
-        }
-
-        .servicios-grid {
+        /* Botones de Estado */
+        #botonesEstado {
             display: flex;
-            gap: 30px;
-            margin-top: 30px;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        #botonesEstado button {
+            background-color: #e5e5ea;
+            color: #3c3c43;
+            font-weight: 500;
+            flex-grow: 1;
+            padding: 12px 10px;
+            margin: 0;
+            font-size: 16px;
+        }
+        
+        #botonesEstado button:active {
+            transform: scale(1);
+        }
+
+        /* Contadores (Micrográficos) */
+        #contadores {
+            display: flex;
+            justify-content: space-between;
             flex-wrap: wrap;
-            justify-content: center;
+            margin-top: 15px;
+            gap: 10px;
         }
 
-        /* Estilo base de la tarjeta */
-        .servicio-card {
-            flex: 1;
-            min-width: 300px;
-            max-width: 450px;
-            background-color: var(--color-fondo); 
-            padding: 35px;
-            border-radius: 16px;
-            text-align: left;
-            /* Sombra inicial suave tipo Apple */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-            border: 1px solid transparent; /* Para evitar salto al cambiar de borde */
-            border-top: 4px solid var(--color-acento-principal); 
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease; 
-            position: relative; 
-            overflow: hidden; 
-        }
-
-        /* ESTILO VIVO Y DIFUSO AL SER VISIBLE (APLICADO POR LA CLASE JS) */
-        .servicio-card.animated-text.visible {
-            /* Sombra profunda y toque de color difuso (Depth Card) */
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), /* Sombra de profundidad */
-                        inset 0 0 10px rgba(255, 105, 97, 0.08); /* Brillo interior difuso */
-            border: 1px solid rgba(255, 105, 97, 0.3); /* Borde sutilmente coloreado */
-            /* La animación de entrada la define .animated-text.visible */
-        }
-        
-        /* Pequeño feedback visual en móvil */
-        .servicio-card:active { 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
-        }
-        /* Mantenemos el :hover solo para desktop */
-        .servicio-card:hover {
-            transform: translateY(-4px); 
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        }
-
-        .servicio-card h3 {
-            font-size: 1.8rem;
-            font-weight: 600; 
-            color: var(--color-texto); 
-            margin-top: 0;
-            margin-bottom: 15px;
-            letter-spacing: -0.03em;
-            display: flex;
-            align-items: center;
-        }
-
-        /* DETALLE VISUAL para MÓVIL: Ícono de Uña Pulida (Media Luna) */
-        .servicio-card h3::before {
-            content: '';
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border-radius: 0 0 50% 50%; 
-            background: linear-gradient(to right, #ff8c88, var(--color-acento-principal)); 
-            margin-right: 10px;
-            transform: scale(1.2); 
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1); 
-        }
-        
-        /* Tipografía Limpia (Apple) */
-        h1 {
-            font-size: 4rem; 
-            font-weight: 700; 
-            letter-spacing: -0.05em;
-            line-height: 1.1;
-            margin-bottom: 25px;
-        }
-
-        h2 {
-            font-size: 2.5rem; 
-            font-weight: 700;
-            letter-spacing: -0.04em;
-            margin-top: 20px;
-            margin-bottom: 30px;
-        }
-
-        p {
-            font-size: 1.2rem;
-            color: #424245;
-            margin-bottom: 25px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* --- Animación de Contenido (MÁS PRONUNCIADA) --- */
-        .animated-reveal-text {
-            display: block;
-            transform: translateY(100%);
-            transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .animated-text {
-            opacity: 0;
-            /* Animación de entrada con más profundidad: Mover y escalar */
-            transform: translateY(40px) scale(0.95); 
-            transition: opacity 1.0s cubic-bezier(0.25, 0.1, 0.25, 1), 
-                        transform 1.0s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-
-        .animated-text.visible {
-            opacity: 1;
-            /* La tarjeta toma vida */
-            transform: translateY(0) scale(1);
-        }
-        
-        .animated-reveal-text.visible {
-            transform: translateY(0);
-        }
-        
-        /* Parallax - Degradado Alegre y Sutil */
-        .parallax-bg {
-            height: 50vh; 
-            background: linear-gradient(180deg, var(--color-claro) 0%, #fff3f2 100%); 
-            background-attachment: fixed;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02); 
-        }
-        
-        .parallax-text {
-            color: var(--color-texto); 
-            font-size: 3rem; 
-            font-weight: 700;
-            letter-spacing: -0.04em;
-            text-shadow: 0 2px 3px rgba(0, 0, 0, 0.1); 
-            opacity: 0;
-            transform: translateY(20px); 
-            transition: opacity 1.2s ease-out, transform 1.2s ease-out;
-        }
-        
-        .parallax-text.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Media Queries para optimizar tipografía en móvil */
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2.8rem; 
-                letter-spacing: -0.04em;
-            }
-            h2 {
-                font-size: 2rem;
-            }
-            p {
-                font-size: 1.1rem;
-            }
-            .servicio-card h3 {
-                font-size: 1.5rem;
-            }
-            .parallax-text {
-                font-size: 2.2rem;
-            }
-            .btn-reserva {
-                padding: 12px 25px;
-                font-size: 1rem;
-            }
-        }
-
-        /* --- Pie de Página --- */
-        .footer {
-            background-color: var(--color-texto); 
-            color: var(--color-gris-suave);
-            padding: 40px 5%;
-            font-size: 0.9rem;
+        .contador-item {
+            background-color: #f9f9fb;
+            padding: 12px 8px;
+            border-radius: 8px;
             text-align: center;
+            min-width: 45%;
+            flex-grow: 1;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
         }
         
-        .footer-content p {
-            color: var(--color-gris-suave);
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-        
-        .footer-content a {
-            color: var(--color-acento-principal);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        .footer-content a:hover {
-            color: var(--color-claro);
+        .contador-item.visible {
+             opacity: 1;
+             transform: translateY(0);
         }
 
+        .contador-item h4 {
+            margin: 0 0 5px 0;
+            font-size: 0.9em;
+            color: var(--text-light-gray);
+            font-weight: 400;
+        }
+
+        .contador-item .count {
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        /* Colores Específicos */
+        .cargada .count { color: var(--ios-green); } 
+        .disponible .count { color: var(--ios-yellow); } 
+        .averiada .count { color: var(--ios-red); } 
+        .total .count { color: var(--ios-blue); }
+        
+        /* Botón de Eliminación (Rojo) */
+        #btnEliminar {
+            background-color: #FF3B30;
+            margin-top: 10px;
+        }
+        #btnEliminar:hover {
+            background-color: #cc2e26;
+        }
+        
     </style>
 </head>
 <body>
+<div style="max-width:450px; width:100%;">
+    <h1>Registro Rápido de Matrículas</h1>
+</div>
 
-    <header class="header">
-        <div class="logo">
-            <span class="logo-main">Manicura Exclusive</span>
-            <span class="logo-with-alexandra">With Alexandra</span>
-        </div>
-    </header>
-
-    <div class="cta-fixed" id="ctaFixed">
-        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20reservar%20una%20cita%20de%20manicura." target="_blank" class="btn-reserva">
-            Reservar por WhatsApp
-        </a>
+<div class="container">
+    
+    <div id="paso1" class="step-content active">
+        <h3><i class="fas fa-barcode"></i> 1. Ingresar Matrícula</h3>
+        <input type="text" id="matriculaInput" placeholder="Matrícula (Escanear o Tipear)" required>
+        <button onclick="registrarMatricula()"><i class="fas fa-arrow-right"></i> Continuar</button>
     </div>
 
-    <section class="seccion hero">
+    <div id="paso2" class="step-content">
+        <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula"></span></h3>
         
-        <h1>
-            <span class="animated-reveal-text">La belleza empieza</span>
-            <span class="animated-reveal-text" style="transition-delay: 0.1s;">en tus manos.</span>
-        </h1>
-        
-        <p class="animated-text" style="transition-delay: 0.3s;">
-            Una experiencia de manicura que fusiona la **excelencia** con el **diseño minimalista**. Redefine tu estilo.
-        </p>
-        
-        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20reservar%20una%20cita%20de%20manicura." target="_blank" class="btn-reserva animated-text" style="margin-top: 30px; display: inline-block; transition-delay: 0.5s;">
-            Reservar Cita Ahora
-        </a>
-
-        <div style="margin-top: 60px;">
-            <p class="animated-text" style="font-size: 1rem; transition-delay: 0.7s; color: #888;">
-                Diseño atemporal, calidad duradera. Tu cita con la perfección.
-            </p>
+        <div id="botonesEstado">
+            <button onclick="manejarEstado('cargada')">Cargada</button>
+            <button onclick="manejarEstado('disponible')">Disponible</button>
+            <button onclick="manejarEstado('averiada')">Averiada</button>
         </div>
 
-    </section>
+        <div id="cargadaDetalles" style="display:none;">
+            <input type="text" id="descCargada" placeholder="Descripción de la carga (Requerido)">
+            <button onclick="guardarRegistro('cargada')"><i class="fas fa-check-circle"></i> Registrar Carga</button>
+        </div>
 
-    <section class="seccion">
-        <div class="servicios-container animated-text" style="transition-delay: 0.1s;">
-            <h2 class="animated-text" style="margin-top: 0; transition-delay: 0.3s;">Servicios a tu Medida.</h2>
+        <div id="averiadaDetalles" style="display:none;">
+            <input type="text" id="descAveriada" placeholder="Descripción de la avería (Requerido)">
+            <button onclick="guardarRegistro('averiada')"><i class="fas fa-check-circle"></i> Registrar Avería</button>
+        </div>
 
-            <div class="servicios-grid">
-                
-                <div class="servicio-card animated-text" style="transition-delay: 0.5s;">
-                    <h3>Manicura Signature Pro</h3>
-                    <p>
-                        **Precisión y Duración.** Un proceso meticuloso que garantiza un esmaltado perfecto y duradero. 
-                        Utilizamos fórmulas de vanguardia para proteger la salud de tu uña y mantener el brillo intacto por semanas. 
-                        *Diseñada para la mujer moderna que valora el tiempo y la calidad.*
-                    </p>
-                </div>
-
-                <div class="servicio-card animated-text" style="transition-delay: 0.7s;">
-                    <h3>Tratamiento Wellness Integral</h3>
-                    <p>
-                        **Nutrición Profunda.** Más que un esmalte, es un tratamiento. Incluye exfoliación y una mascarilla 
-                        reparadora con ingredientes botánicos avanzados para hidratar y revitalizar la piel y las uñas.
-                        *El secreto para unas manos visiblemente más jóvenes y cuidadas.*
-                    </p>
-                </div>
+        <button class="volver-button" onclick="mostrarPaso1(true)"><i class="fas fa-chevron-left"></i> Volver</button>
+    </div>
+    
+    <div id="reportes" class="card-section" style="margin-top: 0;">
+        <h3><i class="fas fa-chart-bar"></i> Resumen de Registros</h3>
+        
+        <div id="contadores">
+            <div class="contador-item cargada">
+                <h4>Cargadas</h4>
+                <div class="count" id="countCargada">0</div>
+            </div>
+            <div class="contador-item disponible">
+                <h4>Disponibles</h4>
+                <div class="count" id="countDisponible">0</div>
+            </div>
+            <div class="contador-item averiada">
+                <h4>Averiadas</h4>
+                <div class="count" id="countAveriada">0</div>
+            </div>
+            <div class="contador-item total">
+                <h4>TOTAL</h4>
+                <div class="count" id="countTotal">0</div>
             </div>
         </div>
-    </section>
-
-    <div class="parallax-bg" id="parallaxBg">
-        <p class="parallax-text" id="parallaxText">La calidad se siente en el detalle.</p>
+        
+        <button onclick="exportarPDF()" style="background-color:#34c759; margin-top: 25px;">
+            <i class="fas fa-file-pdf"></i> Exportar a PDF (Pages Moderno)
+        </button>
+        
+        <button id="btnEliminar" onclick="confirmarLimpiarRegistros()">
+            <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
+        </button>
     </div>
 
-    <section class="seccion">
-        <h2 class="animated-text">Reserva con Confianza.</h2>
-        <p class="animated-text" style="transition-delay: 0.2s;">
-            Nuestra agenda es limitada para asegurar que cada cliente reciba el tiempo y la **atención exclusiva** que merece. 
-            El proceso es simple, directo y sin esperas.
-        </p>
-        <p class="animated-text" style="transition-delay: 0.4s;">
-            **Te esperamos.** Usa el botón de reserva principal (fijo en pantalla) para obtener tu confirmación inmediata.
-        </p>
-        <a href="https://wa.me/34641916779?text=Hola,%20me%20gustaría%20reservar%20una%20cita%20de%20manicura." target="_blank" class="btn-reserva animated-text" style="margin-top: 30px; display: inline-block; transition-delay: 0.6s;">
-            ¡Quiero Reservar Mi Cita Exclusiva!
-        </a>
-    </section>
-    
-    <footer class="footer">
-        <div class="footer-content">
-            <p>&copy; 2025 Manicura Exclusive With Alexandra. Todos los derechos reservados.</p>
-            <p>
-                <a href="#hero">Inicio</a> | 
-                <a href="mailto:contacto@manicuraalexandra.com">Contacto</a>
-            </p>
-        </div>
-    </footer>
+</div>
 
-    <script>
-        const header = document.querySelector('.header');
-        const ctaFixed = document.getElementById('ctaFixed');
-        let lastScrollTop = 0;
-        const scrollThreshold = 100;
+<div id="confirmationMessage" class="confirmation-message">
+    <i class="fas fa-check-circle"></i> Registrado con éxito
+</div>
 
-        window.addEventListener('scroll', () => {
-            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-            // 1. Ocultar/Mostrar Header
-            if (scrollTop > lastScrollTop && scrollTop > scrollThreshold) {
-                header.classList.add('hidden');
-            } else {
-                header.classList.remove('hidden');
-            }
-            
-            // 2. Mostrar/Ocultar CTA fijo
-            if (scrollTop > window.innerHeight * 0.9) { 
-                ctaFixed.style.opacity = 1;
-            } else {
-                ctaFixed.style.opacity = 0;
-            }
+<script>
+    let matriculaActual = "";
 
-            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-            
-            checkTextVisibility();
-        });
+    // --- FUNCIONES DE UTILIDAD ---
+    function guardarRegistros(registros) {
+        localStorage.setItem('registrosMatriculas', JSON.stringify(registros));
+        actualizarContadores();
+    }
 
-        // Animación de aparición de texto (Usando Intersection Observer)
-        const animatedTexts = document.querySelectorAll('.animated-text');
-        const animatedRevealText = document.querySelectorAll('.animated-reveal-text');
-        const parallaxText = document.getElementById('parallaxText');
+    function cargarRegistros() {
+        return JSON.parse(localStorage.getItem('registrosMatriculas') || '[]');
+    }
+
+    function mostrarConfirmacion(mensaje = "Registrado con éxito", icono = "fas fa-check-circle") {
+        const confirmMsg = document.getElementById('confirmationMessage');
+        confirmMsg.innerHTML = `<i class="${icono}"></i> ${mensaje}`;
+        confirmMsg.classList.add('show');
+        setTimeout(() => {
+            confirmMsg.classList.remove('show');
+        }, 1500);
+    }
+
+    // --- GESTIÓN DE PANTALLAS (Transiciones) ---
+    function mostrarPaso(pasoId, backward = false) {
+        const currentActive = document.querySelector('.step-content.active');
+        const targetPaso = document.getElementById(pasoId);
+
+        if (currentActive) {
+             if (currentActive.id !== targetPaso.id) {
+                currentActive.classList.remove('active');
+                if (backward) {
+                    currentActive.style.transform = 'translateX(100%)';
+                } else {
+                    currentActive.style.transform = 'translateX(-100%)';
+                }
+                currentActive.style.opacity = 0;
+                setTimeout(() => { currentActive.style.display = 'none'; }, 350); 
+             }
+        }
         
-        // Agregamos todos los elementos animados
-        const allAnimatedElements = [...animatedTexts, ...animatedRevealText, parallaxText]; 
+        targetPaso.style.display = 'block';
+        if (backward) {
+            targetPaso.style.transform = 'translateX(-100%)';
+        } else {
+            targetPaso.style.transform = 'translateX(100%)';
+        }
+        targetPaso.style.opacity = 0;
+        
+        setTimeout(() => {
+            targetPaso.classList.add('active');
+            targetPaso.style.transform = 'translateX(0)';
+            targetPaso.style.opacity = 1;
+        }, 50); 
+    }
 
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target); 
-                }
-            });
-        }, {
-            rootMargin: '0px',
-            threshold: 0.1 
+    function mostrarPaso1(isBackward = false) {
+        mostrarPaso('paso1', isBackward);
+        matriculaActual = "";
+        document.getElementById('matriculaInput').value = '';
+        document.getElementById('descCargada').value = '';
+        document.getElementById('descAveriada').value = '';
+        document.getElementById('matriculaInput').focus();
+    }
+
+    function registrarMatricula() {
+        matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
+        if (matriculaActual) {
+            mostrarPaso('paso2', false); 
+            document.getElementById('mostrarMatricula').textContent = matriculaActual;
+            document.getElementById('cargadaDetalles').style.display = 'none';
+            document.getElementById('averiadaDetalles').style.display = 'none';
+        } else {
+            mostrarConfirmacion("Ingrese la matrícula.", "fas fa-exclamation-triangle");
+        }
+    }
+
+    function manejarEstado(estado) {
+        document.getElementById('cargadaDetalles').style.display = 'none';
+        document.getElementById('averiadaDetalles').style.display = 'none';
+
+        if (estado === 'cargada') {
+            document.getElementById('cargadaDetalles').style.display = 'block';
+            document.getElementById('descCargada').focus();
+        } else if (estado === 'averiada') {
+            document.getElementById('averiadaDetalles').style.display = 'block';
+            document.getElementById('descAveriada').focus();
+        } else if (estado === 'disponible') {
+            guardarRegistro('disponible', 'Lista para cargar');
+        }
+    }
+
+    function guardarRegistro(estado, descripcionManual = '') {
+        let descripcion = descripcionManual;
+
+        if (estado === 'cargada') {
+            descripcion = document.getElementById('descCargada').value;
+        } else if (estado === 'averiada') {
+            descripcion = document.getElementById('descAveriada').value;
+        }
+
+        if ((estado === 'cargada' || estado === 'averiada') && !descripcion.trim()) {
+            mostrarConfirmacion(`Necesita descripción de ${estado}.`, "fas fa-exclamation-triangle");
+            return;
+        }
+
+        const registro = {
+            matricula: matriculaActual,
+            estado: estado.charAt(0).toUpperCase() + estado.slice(1),
+            descripcion: descripcion.trim() || 'N/A',
+            fecha: new Date().toLocaleString()
+        };
+
+        let registros = cargarRegistros();
+        registros.push(registro);
+        guardarRegistros(registros);
+
+        mostrarConfirmacion(`¡${registro.estado} registrada!`);
+        mostrarPaso1(true); 
+    }
+
+    // --- CONTADORES (Actualizado) ---
+    function actualizarContadores() {
+        const registros = cargarRegistros();
+        let counts = { Cargada: 0, Disponible: 0, Averiada: 0, Total: registros.length };
+
+        registros.forEach(reg => {
+            if (reg.estado === 'Cargada') counts.Cargada++;
+            else if (reg.estado === 'Disponible') counts.Disponible++; 
+            else if (reg.estado === 'Averiada') counts.Averiada++;
         });
 
-        // Inicializar el observador para todos los textos
-        allAnimatedElements.forEach(element => {
-            observer.observe(element);
+        document.getElementById('countCargada').textContent = counts.Cargada;
+        document.getElementById('countDisponible').textContent = counts.Disponible; 
+        document.getElementById('countAveriada').textContent = counts.Averiada;
+        document.getElementById('countTotal').textContent = counts.Total;
+        
+        document.querySelectorAll('.contador-item').forEach((item, index) => {
+            item.classList.remove('visible'); 
+            setTimeout(() => {
+                item.classList.add('visible');
+            }, 50 + index * 50); 
         });
+    }
 
-        // Función para check inicial
-        function checkTextVisibility() {
-             allAnimatedElements.forEach(element => {
-                if (element.getBoundingClientRect().top < window.innerHeight - 50 && !element.classList.contains('visible')) {
-                    element.classList.add('visible');
-                }
+    // --- LIMPIAR REGISTROS ---
+    function confirmarLimpiarRegistros() {
+        if (confirm("¿Estás seguro de que quieres ELIMINAR TODOS los registros? Esta acción no se puede deshacer.")) {
+            limpiarRegistros();
+        }
+    }
+
+    function limpiarRegistros() {
+        localStorage.removeItem('registrosMatriculas');
+        actualizarContadores();
+        mostrarConfirmacion("Registros eliminados.", "fas fa-trash-alt");
+    }
+
+    // --- EXPORTACIÓN A PDF (Pages Moderno, Minimalista, 3D Sutil) ---
+    function exportarPDF() {
+        const registros = cargarRegistros();
+        if (registros.length === 0) {
+            mostrarConfirmacion("No hay registros para exportar.", "fas fa-info-circle");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const margin = 10;
+        let yPos = 20; 
+        
+        // Cargar datos
+        const registrosCargadas = registros
+            .filter(reg => reg.estado === 'Cargada')
+            .map(reg => [reg.matricula, reg.descripcion]); 
+        
+        const registrosDisponibles = registros
+            .filter(reg => reg.estado === 'Disponible')
+            .map(reg => [reg.matricula]);
+        
+        const registrosAveriadas = registros
+            .filter(reg => reg.estado === 'Averiada')
+            .map(reg => [reg.matricula, reg.descripcion]);
+            
+        // Contadores para el PDF
+        const countCargada = registrosCargadas.length;
+        const countDisponible = registrosDisponibles.length;
+        const countAveriada = registrosAveriadas.length;
+        const countTotal = registros.length;
+
+
+        // 2. Título Principal (iOS Bold)
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(24);
+        doc.text("Reporte de Movimientos", margin, yPos);
+        yPos += 10;
+
+        // 3. Contadores Sutiles y Compactos (Estilo Ficha)
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        
+        const summaryText = 
+            `Total: ${countTotal} | Cargadas: ${countCargada} | Disponibles: ${countDisponible} | Averiadas: ${countAveriada}`;
+            
+        doc.setTextColor(100, 100, 100); // Gris claro sutil
+        doc.text(summaryText, margin, yPos);
+        yPos += 10;
+        doc.setTextColor(51, 51, 51); // Volver a texto oscuro para las tablas
+
+        // --- Estilos de Tabla Avanzados (Minimalista, 3D Sutil) ---
+        const tableWidth = (doc.internal.pageSize.width / 2) - (margin * 1.5);
+        const styles = {
+            fontSize: 7, 
+            cellPadding: 2, // Ligeramente más padding para que se vea limpio
+            valign: 'middle',
+            font: "helvetica",
+            textColor: [51, 51, 51],
+            lineColor: [240, 240, 240], // Líneas casi invisibles
+            lineWidth: 0.1
+        };
+
+        // Estilos de Encabezado (Gris Muy Suave con Borde Fuerte para 3D)
+        const headStyles = {
+            fillColor: [247, 247, 247], // Fondo gris muy pálido
+            textColor: [51, 51, 51], // Texto oscuro sutil
+            fontStyle: 'bold',
+            lineColor: [180, 180, 180], // Línea de separación sutil
+            lineWidth: { top: 0, right: 0, bottom: 0.5, left: 0 }, // Borde inferior más grueso (efecto 3D)
+            cellPadding: 3.5 // Más padding vertical en el header
+        };
+        
+        const startYGeneral = yPos + 5; // Separación del texto del contador
+
+        // --- Columna Izquierda: CARGADAS ---
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Cargas Activas", margin, startYGeneral);
+
+        doc.autoTable({
+            head: [['Matrícula', 'Carga']],
+            body: registrosCargadas,
+            startY: startYGeneral + 3,
+            margin: { left: margin, right: doc.internal.pageSize.width / 2 },
+            tableWidth: tableWidth,
+            styles: styles,
+            headStyles: headStyles,
+            alternateRowStyles: { fillColor: [255, 255, 255] }, // Fondo blanco para filas alternas (maximalista minimalista)
+        });
+        let finalYCargadas = doc.autoTable.previous.finalY;
+
+        // --- Columna Derecha: DISPONIBLES ---
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Disponibles", doc.internal.pageSize.width / 2 + margin / 2, startYGeneral);
+        
+        doc.autoTable({
+            head: [['Matrícula']],
+            body: registrosDisponibles,
+            startY: startYGeneral + 3,
+            margin: { left: doc.internal.pageSize.width / 2 + margin / 2, right: margin },
+            tableWidth: tableWidth,
+            styles: styles,
+            headStyles: headStyles,
+            alternateRowStyles: { fillColor: [255, 255, 255] }, 
+        });
+        let finalYDisponibles = doc.autoTable.previous.finalY;
+
+        // --- Tabla Averiadas (Abajo) ---
+        let finalY = Math.max(finalYCargadas, finalYDisponibles);
+        
+        if (registrosAveriadas.length > 0) {
+            
+            if (finalY + 30 > doc.internal.pageSize.height - margin) {
+                doc.addPage();
+                finalY = margin + 10;
+            }
+
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("Matrículas Averiadas", margin, finalY + 10);
+            
+            // Estilo para averiadas (sutil tono gris/beige cálido)
+            const averiadaHeadStyles = JSON.parse(JSON.stringify(headStyles)); // Clonar
+            averiadaHeadStyles.fillColor = [252, 252, 252]; 
+            
+            doc.autoTable({
+                head: [['Matrícula', 'Avería']],
+                body: registrosAveriadas,
+                startY: finalY + 15,
+                margin: { left: margin, right: margin },
+                styles: styles,
+                headStyles: averiadaHeadStyles,
+                alternateRowStyles: { fillColor: [255, 255, 255] }, 
             });
         }
         
-        // Ejecutar al cargar la página
-        document.addEventListener('DOMContentLoaded', checkTextVisibility);
-    </script>
+        // --- Pie de página (Número de página) ---
+        const pageCount = doc.internal.getNumberOfPages();
+        for(let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(7);
+            doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - margin, doc.internal.pageSize.height - 5, { align: 'right' });
+        }
+
+        // 4. Guardar el PDF
+        doc.save("Reporte_Pages_Moderno.pdf");
+        mostrarConfirmacion("PDF exportado con estilo Pages Moderno.", "fas fa-file-pdf");
+    }
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+        actualizarContadores();
+        
+        document.getElementById('paso1').style.display = 'block';
+        document.getElementById('paso2').style.display = 'none';
+        
+        document.getElementById('paso1').style.transform = 'translateX(0)';
+        document.getElementById('paso1').style.opacity = 1;
+        
+        document.getElementById('matriculaInput').focus();
+    });
+</script>
+
 </body>
+</html>
