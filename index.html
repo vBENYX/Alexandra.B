@@ -433,7 +433,7 @@
             </div>
         </div>
         
-        <button onclick="exportarPDF()" style="background-color:#34c759; margin-top: 25px;">
+        <button id="btnExportar" style="background-color:#34c759; margin-top: 25px;">
             <i class="fas fa-file-pdf"></i> Exportar a PDF (Informe Ejecutivo)
         </button>
         
@@ -1222,6 +1222,7 @@
         actualizarHistorialReciente(); 
         
         // El botón de paso 1 ya tiene un ID en el HTML.
+        document.getElementById('btnExportar').addEventListener('click', exportarPDF);
         
         document.getElementById('paso1').style.display = 'block';
         document.getElementById('paso1').style.position = 'relative'; 
