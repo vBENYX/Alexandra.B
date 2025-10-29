@@ -894,7 +894,7 @@
         }
 
         try {
-           const jsPDF = window.jspdf.jsPDF;
+           const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const margin = 10;
             let yPos = margin;
@@ -938,9 +938,9 @@
             
             doc.setFillColor(APPLE_COLORS.HEADER_FILL[0], APPLE_COLORS.HEADER_FILL[1], APPLE_COLORS.HEADER_FILL[2]);
             doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
-            doc.setGState(new jsPDF.GState({ opacity: 0.9 })); 
+            doc.setGState(new doc.GState({ opacity: 0.9 })); 
             doc.roundedRect(headerCardX, headerCardY, headerCardWidth, headerCardHeight, 3, 3, 'FD'); 
-            doc.setGState(new jsPDF.GState({ opacity: 1 })); 
+            doc.setGState(new doc.GState({ opacity: 1 })); 
             
             const logoY = headerCardY + headerCardHeight / 2;
             doc.setFont("helvetica", "bold");
@@ -989,14 +989,14 @@
                 
                 doc.setFillColor(255, 255, 255);
                 doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
-                doc.setGState(new jsPDF.GState({ opacity: 0.9 }));
+                doc.setGState(new doc.GState({ opacity: 0.9 }));
                 doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD'); 
-                doc.setGState(new jsPDF.GState({ opacity: 1 }));
+                doc.setGState(new doc.GState({ opacity: 1 }));
                 
                 doc.setFillColor(badge.color[0], badge.color[1], badge.color[2]);
-                doc.setGState(new jsPDF.GState({ opacity: 0.2 }));
+                doc.setGState(new doc.GState({ opacity: 0.2 }));
                 doc.roundedRect(badge.x, badgeY, fillWidth, badgeHeight, 1.5, 1.5, 'F'); 
-                doc.setGState(new jsPDF.GState({ opacity: 1 }));
+                doc.setGState(new doc.GState({ opacity: 1 }));
                 
                 doc.setFontSize(6);
                 doc.setFont("helvetica", "normal");
