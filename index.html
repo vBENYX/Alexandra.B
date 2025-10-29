@@ -894,7 +894,7 @@
         }
 
         try {
-            const { jsPDF } = window.jspdf.jsPDF;
+           const jsPDF = window.jspdf.jsPDF;
             const doc = new jsPDF('p', 'mm', 'a4');
             const margin = 10;
             let yPos = margin;
