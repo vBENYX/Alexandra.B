@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- CRÍTICO: Configuración para evitar zoom accidental y asegurar adaptación total -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CODE XPO | Registro Táctil de Matrículas (Offline)</title>
+    <title>CODE XPO | Registro Táctil de Matrículas</title>
     
-    <!-- Librerías de CSS y PDF (No se requiere Firebase) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Librerías de PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -24,7 +24,30 @@
             --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             --transition-duration: 0.35s;
             --text-light-gray: #6d6d71;
+            --light-gray-apple: #f9f9f9; 
             --dark-text: #1c1c1e;
+            --vibrant-gradient: linear-gradient(90deg, #007AFF 0%, #34D8A4 100%); 
+            --logo-red: #FF3B30;
+            
+            /* Colores para el relleno de tarjetas */
+            --fill-green: rgba(52, 199, 89, 0.1); 
+            --fill-yellow: rgba(255, 204, 0, 0.1); 
+            --fill-red: rgba(255, 59, 48, 0.1); 
+            
+            /* NUEVO: Colores para el efecto de Onda Inteligente (Siri/Apple) */
+            --siri-blue: #007AFF;
+            --siri-cyan: #34D8A4; 
+            --siri-violet: #8e44ad; 
+            
+            /* Gradiente base que se animará */
+            --siri-gradient: linear-gradient(
+                135deg, /* Ángulo diagonal para una mejor sensación de movimiento */
+                var(--siri-violet) 0%, 
+                var(--siri-blue) 25%, 
+                var(--siri-cyan) 50%, 
+                var(--siri-blue) 75%,
+                var(--siri-violet) 100%
+            );
         }
 
         /* Estilo Base: Fondo de iOS y Tipografía SF Pro */
@@ -38,149 +61,36 @@
             align-items: center;
             min-height: 100vh;
             color: var(--dark-text);
-            /* CRÍTICO: ESCONDER SCROLL HORIZONTAL */
             overflow-x: hidden;
             padding-top: 75px; 
         }
         
-        /* --- ENCABEZADO MEJORADO con Efecto Translucidez (Blur) --- */
+        /* ----------------------------------------------- */
+        /* --- ENCABEZADO FIJO --- */
+        /* ----------------------------------------------- */
         .header-fixed {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 450px;
+            position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; 
             padding: 15px 20px 10px 20px; 
             z-index: 1000;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-            background-color: transparent; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-sizing: border-box; /* Asegura que el padding no cause desbordamiento */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.95); 
+            -webkit-backdrop-filter: blur(15px); 
+            backdrop-filter: blur(15px); 
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05); 
         }
-        
-        /* Estado Scrolled: Color blanco semi-transparente y efecto blur */
-        .header-fixed.scrolled {
-            background-color: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .logo-container { 
-            padding: 0; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-start; 
-        }
-        
-        .logo-main { 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
-        }
-        
-        /* Elementos del logo: Opacidad 0 al inicio para el staggered animation */
-        .logo-icon {
-            color: var(--ios-blue);
-            font-size: 24px;
-            margin-right: 5px;
-            opacity: 0; 
-            transform: translateX(-10px);
-            transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        /* CODE a la izquierda */
-        .logo-code { 
-            font-family: 'Helvetica Neue', sans-serif; 
-            font-size: 24px; 
-            font-weight: 600; 
-            color: var(--dark-text); 
-            letter-spacing: -0.5px; 
-            opacity: 0; 
-            transform: translateX(-5px);
-            transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        /* XPO a la derecha, rojo fuerte */
-        .logo-xpo { 
-            font-family: 'Helvetica Neue', sans-serif; 
-            font-size: 24px; 
-            font-weight: 900; 
-            color: var(--ios-red); 
-            letter-spacing: 1px; 
-            margin-top: 2px;
-            text-shadow: 0 0 1px rgba(255, 59, 48, 0.3); 
-            opacity: 0; 
-            transform: translateY(10px);
-            transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        .app-title { 
-            font-size: 11px; 
-            font-weight: 500; 
-            color: var(--text-light-gray); 
-            margin-top: 2px;
-            opacity: 0.9;
-        }
-
-        /* --- Contenedor Principal (100% Responsive) --- */
-        .container {
-            width: 100%;
-            max-width: 450px;
-            background-color: transparent; 
-            box-shadow: none;
-            position: relative; 
-            height: auto;
-            min-height: calc(100vh - 75px);
-            overflow-x: hidden; /* CRÍTICO: Prevenir scroll horizontal */
-            padding: 0 10px;
-            box-sizing: border-box;
-        }
+        .header-fixed.scrolled { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+        .logo-container { display: flex; align-items: baseline; gap: 5px; overflow: hidden; }
+        .logo-code { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; background: var(--vibrant-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; transition-delay: 0.1s; }
+        .logo-xpo { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--logo-red); line-height: 1; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; transition-delay: 0.25s; }
+        .logo-code.animate-in, .logo-xpo.animate-in { opacity: 1; transform: translateY(0); } 
+        .container { width: 100%; max-width: 450px; background-color: transparent; box-shadow: none; position: relative; height: auto; min-height: calc(100vh - 75px); overflow: hidden; padding: 0 10px; }
 
         /* --- ESTILOS DE PASOS Y CARDS --- */
-        .card-section, .step-content { 
-            background-color: var(--ios-card-bg); 
-            margin: 10px 0; 
-            padding: 20px; 
-            border-radius: 10px; 
-            box-shadow: var(--ios-shadow); 
-            position: relative; 
-        }
-        
-        .step-content { 
-            opacity: 0; 
-            transform: scale(0.98); 
-            transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            box-sizing: border-box; 
-            display: none; 
-            padding: 20px;
-            margin: 0;
-            box-shadow: none;
-            border-radius: 0;
-            background-color: transparent;
-        }
-        .step-content.active { 
-            opacity: 1; 
-            transform: scale(1); 
-            position: relative; 
-            display: block; 
-            margin-bottom: 20px; 
-            padding: 20px;
-            background-color: var(--ios-card-bg);
-            border-radius: 10px;
-            box-shadow: var(--ios-shadow);
-        }
+        .card-section { background-color: var(--ios-card-bg); margin: 10px 0; padding: 20px; border-radius: 10px; box-shadow: var(--ios-shadow); position: relative; }
+        .step-content { opacity: 0; transform: scale(0.98); transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; padding: 20px; background-color: var(--ios-card-bg); border-radius: 10px; box-shadow: var(--ios-shadow); display: none; }
+        .step-content.active { opacity: 1; transform: scale(1); position: relative; display: block; margin-bottom: 20px; }
 
-        /* Resto de estilos CSS */
+        /* INPUTS */
         input[type="text"] { 
             width: 100%; 
             padding: 15px; 
@@ -192,9 +102,9 @@
             background-color: #f9f9f9; 
             transition: border-color 0.2s; 
             -webkit-appearance: none; 
-            /* UX: Forzar Mayúsculas en input */
-            text-transform: uppercase; 
         }
+        
+        /* BOTONES BASE */
         button { 
             width: 100%; 
             background-color: var(--ios-blue); 
@@ -206,349 +116,319 @@
             cursor: pointer; 
             font-size: 18px; 
             font-weight: 600; 
-            transition: opacity 0.1s, transform 0.1s, background-color 0.1s; 
+            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s; /* Aseguramos que box-shadow transicione suavemente */
             -webkit-appearance: none; 
+            position: relative; 
+            overflow: hidden; 
+            z-index: 1;
         }
-        /* RETROALIMENTACIÓN HÁPTICA SIMULADA: Transform y Opacidad Rápidos */
+
+        /* Efecto Activo Base */
         button:active { 
-            opacity: 0.95; 
+            opacity: 1; 
+            transform: scale(0.99); 
+            /* La sombra se controlará por el estilo Siri/Inteligente */
+        }
+        
+        /* Aseguramos que el contenido del botón esté en el nivel superior (z-index: 2) */
+        button i, button span, button strong {
+            position: relative;
+            z-index: 2;
+            pointer-events: none; /* Asegura que el click pase al botón */
+        }
+
+
+        /* --- NUEVO: ANIMACIÓN ESTILO ONDA INTELIGENTE (SIRI WAVE) --- */
+        
+        /* 1. Animación de Desplazamiento del Gradiente */
+        @keyframes siri-wave {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; } /* Desplaza el gradiente de izquierda a derecha */
+        }
+
+        #paso1 button {
+            /* Aplicar el gradiente dinámico */
+            background: var(--siri-gradient);
+            background-size: 300% 300%; /* Hacemos el gradiente 3 veces más grande para un desplazamiento sutil */
+            
+            /* Aplicar la animación lenta de desplazamiento */
+            animation: siri-wave 12s ease-in-out infinite alternate; /* Onda lenta y suave */
+            
+            /* Sombra sutil y más limpia, con color basado en Siri Blue */
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.5);
+            transition: all 0.3s ease; 
+        }
+        
+        /* El pseudo-elemento ya no es necesario, lo limpiamos */
+        #paso1 button::before { content: none; } 
+
+        /* Feedback al click: Mantener la fluidez de la animación y añadir un feedback visual rápido */
+        #paso1 button:active { 
             transform: scale(0.98); 
-            transition: transform 0.05s ease-out, opacity 0.05s ease-out; /* Haptic feel */
+            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); /* Sombra más intensa al tocar */
+            animation-duration: 5s; /* Acelerar la onda un poco al presionar para un feedback más vivo */
         }
         
-        /* ESTADOS DE BOTONES DE ACCIÓN */
-        .btn-success { background-color: var(--ios-green) !important; }
-        .btn-warning { background-color: var(--ios-yellow) !important; color: #333 !important; } 
-        .btn-danger { background-color: var(--ios-red) !important; }
+        /* --- FIN ANIMACIÓN ESTILO ONDA INTELIGENTE --- */
 
 
-        #botonesEstado { 
-            display: flex; 
-            gap: 5px; 
-            margin-bottom: 20px; 
-            /* UX: Grid para mejor adaptación táctil en 3 columnas */
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-        }
-        
-        /* CRÍTICO: Botones de estado necesitan ser visibles y compactos */
+        .btn-confirm-cargada { background-color: var(--ios-green) !important; }
+        .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
+        .btn-confirm-averiada { background-color: var(--ios-red) !important; }
+        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } /* Estado activo para botones de Paso 2 */
+
+        #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
         #botonesEstado button { 
             background-color: #e5e5ea; 
             color: #3c3c43; 
             font-weight: 500; 
-            padding: 12px 5px; /* Tamaño compacto restaurado */
+            flex-grow: 1; 
+            padding: 12px 10px; 
             margin: 0; 
-            font-size: 14px; 
-            position: relative;
-            transition: background-color 0.2s, color 0.2s, transform 0.05s;
+            font-size: 16px; 
+            overflow: visible; 
+            animation: none !important; /* Asegura que no pulsen */
+            box-shadow: none !important;
         }
-        
-        /* Estilo específico para el botón vacía (restaura el tamaño compacto) */
-        #btnVacia {
-            background-color: #e5e5ea !important; 
-            color: #3c3c43 !important;
-            font-weight: 500 !important;
-            margin: 0 !important; 
-            padding: 12px 5px !important; /* Mismo padding que los otros botones de estado */
-            font-size: 14px !important;
-            grid-column: span 1; 
-        }
+        #botonesEstado button::before { content: none; } 
 
-        /* Estado Activo para Botones de Selección */
-        #botonesEstado button.active {
-            background-color: var(--ios-blue);
-            color: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        #botonesEstado #btnCargada.active { background-color: var(--ios-green); }
-        #botonesEstado #btnVacia.active { background-color: var(--ios-yellow); color: #333; }
-        #botonesEstado #btnAveriadaState.active { background-color: var(--ios-red); }
-        
-        /* Separación de botones */
-        #btnEliminar { background-color: #FF3B30; margin-top: 10px; }
+        #btnLimpiar { background-color: #FF3B30; margin-top: 10px; }
         .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
         
-        /* Contadores y Reportes - Aumento de margin-top para mejor separación visual */
-        #reportes { margin-top: 30px !important; } 
-        
+        /* ----------------------------------------------- */
+        /* --- ESTILOS DE RESUMEN DE FLOTA (Contadores) --- */
+        /* ----------------------------------------------- */
         #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
-        .compact-summary {
-            flex: 1 1 48%; min-width: 150px; padding: 10px 12px; border-radius: 12px; background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); overflow: hidden; position: relative;
-            /* Estos estilos aseguran que estén visibles desde el inicio (corregido en la versión anterior) */
-            opacity: 1; 
-            transform: scale(1); 
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        
+        /* Card base, ahora es el contenedor del relleno */
+        .compact-summary { 
+            flex: 1 1 48%; min-width: 150px; padding: 10px 12px; border-radius: 12px; 
+            background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); 
+            overflow: hidden; position: relative; opacity: 0; transform: scale(0.98); 
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out, background-color 0.5s ease;
+        }
+        .compact-summary.visible { opacity: 1; transform: scale(1); }
+        
+        /* Contenido de la tarjeta para superponer al relleno */
+        .compact-content { position: relative; z-index: 2; }
+
+        /* Relleno dinámico (el que el usuario quiere) */
+        .summary-fill {
+            position: absolute; bottom: 0; left: 0; width: 100%; 
+            transition: height 0.7s ease-out; /* Animación de llenado */
+            border-radius: 0 0 12px 12px;
+            z-index: 1;
         }
         
-        .progress-bar-bg { position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: var(--ios-gray-bg); opacity: 0.7; z-index: 1; }
-        .progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0; transition: width 0.7s ease-out; opacity: 0.5; z-index: 2; }
-        .summary-content { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 100%; z-index: 3; }
-        .summary-content h4 { margin: 0; font-size: 11px; font-weight: 500; color: var(--text-light-gray); }
-        .count-group { display: flex; justify-content: space-between; align-items: baseline; }
-        .count-group .count { font-size: 22px; font-weight: 700; line-height: 1.1; }
-        .count-group .percent { font-size: 11px; font-weight: 600; color: var(--dark-text); }
-        .card-total .count { color: var(--ios-blue); }
-        .card-cargada .count { color: var(--ios-green); }
-        .card-disponible .count { color: var(--ios-yellow); }
-        .card-averiada .count { color: var(--ios-red); }
-        .card-total .progress-fill { background-color: var(--ios-blue); }
-        .card-cargada .progress-fill { background-color: var(--ios-green); }
-        .card-disponible .progress-fill { background-color: var(--ios-yellow); }
-        .card-averiada .progress-fill { background-color: var(--ios-red); }
+        /* Colores de relleno */
+        #cardCargada .summary-fill { background-color: var(--fill-green); }
+        #cardDisponible .summary-fill { background-color: var(--fill-yellow); }
+        #cardAveriada .summary-fill { background-color: var(--fill-red); }
 
-        /* Historial Reciente y Filtros */
-        .historial-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; margin-top: 15px; }
-        .historial-header h4 { margin: 0; }
+        /* Efecto Visual: Total Card */
+        #cardTotal { background-color: var(--light-gray-apple); border: 1px solid var(--ios-separator); }
         
-        #filtroEstado {
-            padding: 8px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--ios-separator);
-            background-color: var(--ios-card-bg);
-            font-size: 14px;
-            color: var(--dark-text);
+        /* Efecto Visual: Porcentaje de color */
+        .compact-summary .percent-text { font-weight: 600; }
+        #cardCargada .percent-text, #cardCargada h4 { color: var(--ios-green); }
+        #cardDisponible .percent-text, #cardDisponible h4 { color: var(--ios-yellow); }
+        #cardAveriada .percent-text, #cardAveriada h4 { color: var(--ios-red); }
+
+        /* ----------------------------------------------- */
+        /* --- ESTILOS DE HISTORIAL RECIENTE (Gráfica) --- */
+        /* ----------------------------------------------- */
+        .history-card { 
+            background-color: var(--ios-card-bg); 
+            border-radius: 10px; 
+            box-shadow: var(--ios-shadow); 
+            padding: 0; 
+            margin: 15px 0 0 0;
         }
 
-        #historialReciente { list-style: none; padding: 0; margin: 0; padding-top: 0; }
+        #historialReciente { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+        }
         
-        /* ESTILO BASE DE ITEM DEL HISTORIAL */
         #historialReciente li { 
             display: flex; 
-            justify-content: space-between; 
             align-items: center; 
-            padding: 10px 0; 
+            gap: 5px;
+            padding: 10px 15px; 
             border-bottom: 1px solid var(--ios-separator); 
             font-size: 14px; 
-            /* MICRO-ANIMACIÓN: Inicio oculto */
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Curva suave */
+            position: relative;
         }
-        #historialReciente li:last-child { border-bottom: none; }
-        /* Clases para animación escalonada */
-        #historialReciente li.animated {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        #historialReciente li:last-child { border-bottom: none; } 
         
-        /* --- NUEVO ESTILO DE ANIMACIÓN DE LIMPIEZA --- */
-        #historialReciente li.explode-out {
-            /* Transición rápida para el efecto dramático */
-            transition: all 0.25s cubic-bezier(0.5, -0.5, 0.25, 1.5);
-            /* Escala a 0, gira 45 grados y se desvanece */
-            transform: scale(0) rotate(45deg);
-            opacity: 0;
-            margin: 0;
-            padding: 0;
-            height: 0;
-            border-bottom: none;
+        .status-indicator { 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            margin-right: 5px; 
+            flex-shrink: 0; /* No se encoge */
         }
+        .status-indicator.Cargada { background-color: var(--ios-green); }
+        .status-indicator.Vacía { background-color: var(--ios-yellow); } 
+        .status-indicator.Averiada { background-color: var(--ios-red); }
 
-        .historial-matricula { flex-basis: 40%; font-weight: 500; }
-        .historial-estado { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 12px; flex-basis: 30%; text-align: center; } 
-        .historial-time { color: var(--text-light-gray); font-size: 11px; flex-basis: 30%; text-align: right; }
-        .estado-Cargada { background-color: #d8f5e2; color: #1e8449; }
-        .estado-Vacía { background-color: #fff9e0; color: #b38600; } 
-        .estado-Averiada { background-color: #fce8e8; color: #c0392b; }
+        .historial-matricula { font-weight: 700; flex-grow: 1; margin-right: 10px; }
+        .historial-estado { font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
+        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } /* Empuja a la derecha */
+        
+        /* Colores de Badge */
+        .historial-estado.estado-Cargada { background-color: #e6ffec; color: #1e8449; }
+        .historial-estado.estado-Vacía { background-color: #fffde6; color: #b38600; } 
+        .historial-estado.estado-Averiada { background-color: #ffe6e6; color: #c0392b; }
+
         #advertenciaDuplicado { background-color: #fce8e8; color: #c0392b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; border: 1px solid #f9bdbd; }
-        
-        /* Modales */
-        .custom-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
 
-        .modal-content {
-            background-color: var(--ios-card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            max-width: 300px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            text-align: center;
+        /* Contenedor de botones de Filtro */
+        .filter-buttons {
+            display: flex; 
+            gap: 5px; 
+            margin-top: 10px; 
+            margin-bottom: 15px;
         }
-        .modal-content h4 { margin-top: 0; }
-        .modal-content button { margin-top: 15px; width: 48%; display: inline-block; }
-        .modal-content .btn-cancel { background-color: #e5e5ea !important; color: #3c3c43 !important; }
+        .filter-buttons button {
+            background-color: #e5e5ea; 
+            color: #3c3c43; 
+            font-weight: 500; 
+            flex-grow: 1; 
+            padding: 8px 5px; 
+            margin: 0; 
+            font-size: 14px; 
+            box-shadow: none;
+            overflow: visible; 
+            animation: none !important;
+        }
+        .filter-buttons button::before { content: none; } 
+        
+        .filter-buttons button.filter-active {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
+            color: white !important;
+        }
+        #btnFilterCargada.filter-active { background-color: var(--ios-green); }
+        #btnFilterVacia.filter-active { background-color: var(--ios-yellow); color: #333 !important;}
+        #btnFilterAveriada.filter-active { background-color: var(--ios-red); }
+        #btnFilterAll.filter-active { background-color: var(--ios-blue); }
 
-        /* --- FIX: Notificación de Estilo iOS (reemplazando el rectángulo negro) --- */
-        .notification-bar {
-            position: fixed;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            /* FIX: Cambiar color sólido por fondo translúcido y aplicar blur (estilo iOS) */
-            background-color: rgba(28, 28, 30, 0.9); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px; /* Un poco más redondeado para mejor estética */
-            opacity: 0;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 3000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Añadir sombra para pop */
+        /* --- MODAL (Para confirmación y alertas proactivas) --- */
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.5); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2000; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.3s; 
         }
-        .notification-bar.show {
-            top: 20px;
-            opacity: 1;
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal-content { 
+            background: var(--ios-card-bg); 
+            border-radius: 14px; 
+            width: 90%; 
+            max-width: 350px; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); 
+            transform: scale(0.9); 
+            transition: transform 0.3s; 
         }
-        /* --- FIN FIX --- */
-        
-        #btnMostrarMas {
-            background-color: #e5e5ea !important; 
-            color: var(--ios-blue) !important;
-            font-weight: 500 !important;
-            font-size: 16px !important;
-            margin-top: 10px;
-        }
-        
-        /* Contenedor de descripción dinámica (Paso 2) */
-        #detalleContainer {
-            margin-bottom: 20px;
-            min-height: 120px; /* Asegura espacio para la transición */
-            transition: all 0.3s ease-out;
-            position: relative;
-        }
-        
-        .detalle-content {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-            position: absolute;
-            width: 100%;
-        }
-        
-        .detalle-content.active {
-            opacity: 1;
-            transform: translateY(0);
-            position: relative;
-        }
-
+        .modal-overlay.open .modal-content { transform: scale(1); }
+        .modal-content h4 { margin-top: 0; font-size: 18px; color: var(--ios-red); }
+        .modal-content p { margin-bottom: 20px; color: var(--dark-text); font-size: 15px; }
+        .modal-buttons { display: flex; gap: 10px; }
+        .modal-buttons button { margin: 0; padding: 12px; font-size: 16px; font-weight: 500; }
+        .btn-modal-cancel { background-color: #e5e5ea; color: #3c3c43; }
+        .btn-modal-confirm-red { background-color: var(--ios-red); }
+        .btn-modal-confirm-blue { background-color: var(--ios-blue); }
     </style>
 </head>
 <body>
 
-<!-- La pantalla de carga se elimina completamente -->
-
-<!-- Barra de Notificación (Reemplaza alert()) -->
-<div id="notificationBar" class="notification-bar"></div>
-
-<!-- Encabezado Fijo y Dinámico -->
 <div class="header-fixed" id="fixedHeader">
     <div id="logoHeader" class="logo-container">
-        <div class="logo-main">
-            <!-- Icono de Engranajes/Logística -->
-            <i class="fas fa-cogs logo-icon" id="logoIcon"></i> 
-            <!-- CODE y XPO con estilos y animación -->
-            <div class="logo-code" id="logoCode">CODE</div>
-            <div class="logo-xpo" id="logoXPO">XPO</div>
-        </div>
-        <div class="app-title">Registro Rápido de Matrículas</div> 
+        <div class="logo-code" id="logoCode">CODE</div>
+        <div class="logo-xpo" id="logoXPO">XPO</div>
     </div>
 </div>
 
 <div class="container">
     
-    <div id="paso1" class="step-content">
+    <!-- Módulo 1: Ingreso de Matrícula -->
+    <div id="paso1" class="step-content active">
         <h3><i class="fas fa-barcode"></i> 1. Ingresar Matrícula</h3>
-        <!-- CRÍTICO: inputmode='text' (para teclado completo) y text-transform: uppercase en CSS -->
-        <input type="text" id="matriculaInput" placeholder="Matrícula (Tipear)" required inputmode="text" autocomplete="off">
-        <button onclick="registrarMatricula()"><i class="fas fa-arrow-right"></i> Continuar</button>
+        <input type="text" id="matriculaInput" placeholder="Matrícula (Escanear o Tipear)" required onkeypress="if(event.key === 'Enter') registrarMatricula()">
+        <!-- Botón con el efecto de onda inteligente -->
+        <button id="paso1-button" onclick="registrarMatricula()"><i class="fas fa-arrow-right"></i> Continuar</button>
     </div>
 
+    <!-- Módulo 2: Selección de Estado -->
     <div id="paso2" class="step-content">
-        <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula" style="color:var(--ios-blue); font-weight: 600;"></span></h3>
+        <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula"></span></h3>
         
         <div id="advertenciaDuplicado" style="display:none;">
-            <i class="fas fa-exclamation-triangle"></i> Esta matrícula ya estaba registrada como **<span id="estadoAnterior"></span>** (<span id="descAnterior"></span>). Al continuar, se actualizará su estado.
+            <i class="fas fa-exclamation-triangle"></i> Esta matrícula ya estaba registrada como **<span id="estadoAnterior"></span>**. Al continuar, se actualizará su estado.
         </div>
         
-        <!-- Botones de Selección de Estado (Toggle) -->
         <div id="botonesEstado">
-            <button id="btnCargada" onclick="manejarEstado('cargada', this)"><i class="fas fa-box-open"></i> Cargada</button>
-            <!-- El botón Vacia ahora es un registro rápido (autoguardado) -->
-            <button id="btnVacia" onclick="manejarEstado('vacia', this)"><i class="fas fa-box"></i> Vacía</button>
-            <button id="btnAveriadaState" onclick="manejarEstado('averiada', this)"><i class="fas fa-wrench"></i> Averiada</button>
+            <button id="btnCargada" onclick="manejarEstado('cargada')">Cargada</button>
+            <button id="btnVacia" onclick="manejarEstado('vacia')">Vacía</button>
+            <button id="btnAveriadaState" onclick="manejarEstado('averiada')">Averiada</button>
         </div>
-        
-        <!-- Contenedor Dinámico para Detalles (Cargada/Averiada) -->
-        <div id="detalleContainer">
-            
-            <div id="detalleCargada" class="detalle-content">
-                <input type="text" id="descCargada" placeholder="Descripción de la carga (Requerido)">
-                <button id="btnGuardarCargada" class="btn-success" onclick="guardarRegistroWrapper('cargada')"><i class="fas fa-check-circle"></i> Registrar Carga</button>
-            </div>
 
-            <div id="detalleAveriada" class="detalle-content">
-                <input type="text" id="descAveriada" placeholder="Descripción de la avería (Requerido)">
-                <button id="btnGuardarAveriada" class="btn-danger" onclick="guardarRegistroWrapper('averiada')"><i class="fas fa-check-circle"></i> Registrar Avería</button>
-            </div>
-            
+        <div id="cargadaDetalles" style="display:none;">
+            <input type="text" id="descCargada" placeholder="Descripción de la carga (Requerido)">
+            <button id="btnGuardarCargada" onclick="guardarRegistro('cargada')" class="btn-confirm-cargada"><i class="fas fa-check-circle"></i> Registrar Carga</button>
         </div>
-        <!-- Fin de Contenedor Dinámico -->
+
+        <div id="averiadaDetalles" style="display:none;">
+            <input type="text" id="descAveriada" placeholder="Descripción de la avería (Requerido)">
+            <button id="btnGuardarAveriada" onclick="guardarRegistro('averiada')" class="btn-confirm-averiada"><i class="fas fa-check-circle"></i> Registrar Avería</button>
+        </div>
 
         <button class="volver-button" onclick="mostrarPaso1(true)"><i class="fas fa-chevron-left"></i> Volver</button>
     </div>
     
+    <!-- Módulo 3: Resumen y Reportes -->
     <div id="reportes" class="card-section">
-        <h3><i class="fas fa-chart-bar"></i> Resumen de Flota (Almacenamiento Local)</h3>
+        <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
         
         <div id="contadores">
+            <!-- Tarjetas de Resumen con Relleno de Fondo Completo -->
             <div id="cardTotal" class="compact-summary card-total">
-                <div class="progress-bar-bg"></div>
-                <div class="summary-content">
-                    <h4>TOTAL FLOTA</h4>
-                    <div class="count-group">
-                        <span class="count" id="countTotal">0</span>
-                        <span class="percent">100%</span>
-                    </div>
+                <div class="compact-content">
+                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Total Flota</p>
+                    <h4 id="countTotal" style="margin: 5px 0 0 0; font-size: 24px; color: var(--dark-text); font-weight: 700;">0</h4>
                 </div>
             </div>
-
             <div id="cardCargada" class="compact-summary card-cargada">
-                <div class="progress-bar-bg"></div>
-                <div class="progress-fill" id="fillCargada"></div>
-                <div class="summary-content">
-                    <h4>CARGADAS</h4>
-                    <div class="count-group">
-                        <span class="count" id="countCargada">0</span>
-                        <span class="percent" id="percentCargada">0%</span>
-                    </div>
+                <div id="fillCargada" class="summary-fill" style="height: 0%;"></div>
+                <div class="compact-content">
+                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Cargadas (<span id="percentCargada" class="percent-text">0%</span>)</p>
+                    <h4 id="countCargada" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
                 </div>
             </div>
-
             <div id="cardDisponible" class="compact-summary card-disponible">
-                <div class="progress-bar-bg"></div>
-                <div class="progress-fill" id="fillDisponible"></div>
-                <div class="summary-content">
-                    <h4>VACÍAS</h4>
-                    <div class="count-group">
-                        <span class="count" id="countDisponible">0</span>
-                        <span class="percent" id="percentDisponible">0%</span>
-                    </div>
+                <div id="fillDisponible" class="summary-fill" style="height: 0%;"></div>
+                <div class="compact-content">
+                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Vacías (<span id="percentDisponible" class="percent-text">0%</span>)</p>
+                    <h4 id="countDisponible" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
                 </div>
             </div>
-
             <div id="cardAveriada" class="compact-summary card-averiada">
-                <div class="progress-bar-bg"></div>
-                <div class="progress-fill" id="fillAveriada"></div>
-                <div class="summary-content">
-                    <h4>AVERIADAS</h4>
-                    <div class="count-group">
-                        <span class="count" id="countAveriada">0</span>
-                        <span class="percent" id="percentAveriada">0%</span>
-                    </div>
+                <div id="fillAveriada" class="summary-fill" style="height: 0%;"></div>
+                <div class="compact-content">
+                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Averiadas (<span id="percentAveriada" class="percent-text">0%</span>)</p>
+                    <h4 id="countAveriada" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
                 </div>
             </div>
         </div>
@@ -557,154 +437,76 @@
             <i class="fas fa-file-pdf"></i> Exportar a PDF (Informe Ejecutivo)
         </button>
         
-        <div class="historial-header">
-            <h4><i class="fas fa-history"></i> Historial de Movimientos</h4>
-            <select id="filtroEstado" onchange="actualizarHistorialReciente()">
-                <option value="Todos">Todos los Estados</option>
-                <option value="Cargada">Cargadas</option>
-                <option value="Vacía">Vacías</option>
-                <option value="Averiada">Averiadas</option>
-            </select>
+        <h4><i class="fas fa-history"></i> Historial Reciente</h4>
+
+        <!-- Controles de Filtro -->
+        <div class="filter-buttons">
+            <button id="btnFilterAll" class="filter-active" onclick="filtrarHistorial(null)"><i class="fas fa-list"></i> Todo</button>
+            <button id="btnFilterCargada" onclick="filtrarHistorial('Cargada')"><i class="fas fa-box"></i> Cargadas</button>
+            <button id="btnFilterVacia" onclick="filtrarHistorial('Vacía')"><i class="fas fa-truck-moving"></i> Vacías</button>
+            <button id="btnFilterAveriada" onclick="filtrarHistorial('Averiada')"><i class="fas fa-wrench"></i> Averiadas</button>
         </div>
 
-        <ul id="historialReciente">
-            </ul>
+        <!-- Contenedor del historial con el nuevo estilo gráfico de tarjeta -->
+        <ul id="historialReciente" class="history-card"></ul>
         
-        <button id="btnMostrarMas" onclick="mostrarMasRegistros()" style="display:none;">
-            <i class="fas fa-plus-circle"></i> Mostrar más...
-        </button>
-
-        <button id="btnEliminar" onclick="mostrarConfirmarLimpiarRegistros()">
+        <!-- Botón que abre el modal de confirmación -->
+        <button id="btnLimpiar" onclick="mostrarModalConfirmacionLimpiar()">
             <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
         </button>
     </div>
 
 </div>
 
-<!-- Contenedor para Modal de Confirmación -->
-<div id="modalContainer"></div>
+<!-- NUEVO: Modal para confirmaciones y alertas proactivas -->
+<div id="confirmModal" class="modal-overlay" onclick="cerrarModal(event)">
+    <div class="modal-content">
+        <h4 id="modalTitle">Confirmación Requerida</h4>
+        <p id="modalMessage">¿Estás seguro de que deseas realizar esta acción?</p>
+        <div class="modal-buttons">
+            <button class="btn-modal-cancel" onclick="modalCallback(false)">Cancelar</button>
+            <button class="btn-modal-confirm-blue" id="modalConfirmButton" onclick="modalCallback(true)">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 
 <script>
-    // --- Configuración Global de Local Storage ---
-    const localStorageKey = 'xpo_matriculas_data';
-    let registrosCache = []; // Caché local para datos
-    let itemsMostrados = 5; // Estado para la paginación del historial
-    
     let matriculaActual = "";
     let registroDuplicado = null; 
-    let estadoSeleccionado = ''; 
-    
-    // --- FUNCIONES DE UTILIDAD ---
+    let modalCallback = (result) => {}; // Callback para el modal
+    let historialFiltro = null; // null = ver todo
 
-    // Reemplazo de window.alert/confirm
-    function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
-        const bar = document.getElementById('notificationBar');
-        bar.innerHTML = `<i class="${icono}"></i> ${mensaje}`;
-        bar.classList.add('show');
-
-        setTimeout(() => {
-            bar.classList.remove('show');
-        }, 3000);
-    }
-
-    function mostrarModal(mensaje, onConfirm) {
-        const modalContainer = document.getElementById('modalContainer');
-        modalContainer.innerHTML = `
-            <div class="custom-modal" id="myModal">
-                <div class="modal-content">
-                    <h4><i class="fas fa-exclamation-triangle" style="color: var(--ios-red);"></i> Confirmar Acción</h4>
-                    <p>${mensaje}</p>
-                    <button class="btn-cancel" onclick="document.getElementById('myModal').remove()">Cancelar</button>
-                    <button id="modalConfirmBtn" onclick="confirmAction()">Confirmar</button>
-                </div>
-            </div>
-        `;
-        
-        window.confirmAction = () => {
-            onConfirm();
-            document.getElementById('myModal').remove();
-        };
+    // --- FUNCIONES DE ALMACENAMIENTO (LOCALSTORAGE) ---
+    function guardarRegistros(registros) {
+        localStorage.setItem('registrosMatriculas', JSON.stringify(registros));
     }
     
-    window.mostrarConfirmarLimpiarRegistros = () => {
-        mostrarModal("¿Estás seguro de que quieres ELIMINAR TODOS los registros? Esta acción no se puede deshacer.", animateExplosionAndClean);
-    };
-
-    // --- ANIMACIÓN DE LOGO (Estilo Apple/Suave) ---
-    function animarLogo() {
-        const logoIcon = document.getElementById('logoIcon');
-        const logoCode = document.getElementById('logoCode');
-        const logoXPO = document.getElementById('logoXPO');
-        
-        // La animación se mantiene pero ahora se ejecuta inmediatamente al inicio
-        // CRÍTICO: Nos apoyamos en el CSS que tiene opacidad 0 y transform para el estado inicial
-        
-        setTimeout(() => {
-            logoIcon.style.opacity = '1';
-            logoIcon.style.transform = 'translateX(0)';
-        }, 100);
-
-        setTimeout(() => {
-            logoCode.style.opacity = '1';
-            logoCode.style.transform = 'translateX(0)';
-        }, 200);
-
-        setTimeout(() => {
-            logoXPO.style.opacity = '1';
-            logoXPO.style.transform = 'translateY(0)';
-        }, 400); 
+    function cargarRegistros() {
+        return JSON.parse(localStorage.getItem('registrosMatriculas') || '[]');
     }
-
-
-    // --- GESTIÓN DE DATOS (Local Storage) ---
-
-    // Carga los registros desde localStorage
-    function loadMatriculas() {
-        const data = localStorage.getItem(localStorageKey);
-        try {
-            // Transformamos el objeto guardado a un array para procesar
-            const objectData = data ? JSON.parse(data) : {};
-            registrosCache = Object.values(objectData);
-            console.log(`[LocalStorage] ${registrosCache.length} registros cargados.`);
-        } catch (e) {
-            console.error("Error al cargar datos de localStorage:", e);
-            registrosCache = []; 
-        }
-        
-        // Actualiza la UI inmediatamente después de cargar
+    
+    function limpiarTodosLosRegistros() {
+        localStorage.removeItem('registrosMatriculas');
         actualizarContadores();
         actualizarHistorialReciente();
+        mostrarConfirmacion("Todos los registros eliminados.", "fas fa-trash-alt");
     }
 
-    // Guarda los registros en localStorage
-    function saveMatriculas() {
-        // Convertimos el array a un objeto para fácil acceso por matricula (ID)
-        const objectData = registrosCache.reduce((acc, reg) => {
-            acc[reg.matricula] = reg;
-            return acc;
-        }, {});
-        
-        localStorage.setItem(localStorageKey, JSON.stringify(objectData));
-        
-        // Actualiza la UI para simular el tiempo real
-        actualizarContadores();
-        actualizarHistorialReciente();
-    }
-
-
-    // --- GESTIÓN DE PANTALLAS (Transición) ---
+    // --- GESTIÓN DE PANTALLAS (TRANSICIÓN DE DESVANECIMIENTO) ---
     function mostrarPaso(pasoId) {
         const currentActive = document.querySelector('.step-content.active');
         const targetPaso = document.getElementById(pasoId);
         
         document.getElementById('advertenciaDuplicado').style.display = 'none';
+        
+        if (currentActive && currentActive.id === targetPaso.id) return;
 
-        if (currentActive && currentActive.id !== targetPaso.id) {
+        if (currentActive) {
             currentActive.classList.remove('active');
             currentActive.style.opacity = 0;
             currentActive.style.transform = 'scale(0.98)';
             
-            // Permitimos la transición visual antes de cambiar el display
             setTimeout(() => { 
                 currentActive.style.display = 'none'; 
                 currentActive.style.position = 'absolute'; 
@@ -716,356 +518,219 @@
                     targetPaso.classList.add('active');
                     targetPaso.style.opacity = 1;
                     targetPaso.style.transform = 'scale(1)';
-                }, 350); 
+                }, 50); 
             }, 350); 
-        } else if (targetPaso.id === 'paso1' && !currentActive) {
-             // Caso de inicialización
-             targetPaso.style.display = 'block';
-             targetPaso.style.position = 'relative';
-             targetPaso.classList.add('active');
-             targetPaso.style.opacity = 1;
-             targetPaso.style.transform = 'scale(1)';
+        } else {
+            targetPaso.style.display = 'block';
+            targetPaso.style.position = 'relative';
+            setTimeout(() => {
+                targetPaso.classList.add('active');
+                targetPaso.style.opacity = 1;
+                targetPaso.style.transform = 'scale(1)';
+            }, 50);
         }
     }
 
-    window.mostrarPaso1 = (isBackward = false) => {
+    function mostrarPaso1(isBackward = false) {
         mostrarPaso('paso1'); 
         matriculaActual = "";
         registroDuplicado = null;
-        estadoSeleccionado = '';
         document.getElementById('matriculaInput').value = '';
         document.getElementById('descCargada').value = '';
         document.getElementById('descAveriada').value = '';
-        
-        // Limpiar estilos de botones de estado y detalles
-        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('#detalleContainer .detalle-content').forEach(det => det.classList.remove('active'));
-
-        // CRÍTICO: Enfocar el input después de volver a la pantalla principal
-        if (document.getElementById('matriculaInput')) {
-            document.getElementById('matriculaInput').focus();
-        }
+        document.getElementById('matriculaInput').focus();
     }
-
-    // --- LÓGICA CLAVE: REGISTRO ---
-    window.registrarMatricula = () => {
-        // HAPTIC FEEDBACK SIMULADO
-        const btnContinuar = document.querySelector('#paso1 button');
-        btnContinuar.style.backgroundColor = 'var(--ios-blue)'; 
-        btnContinuar.style.transform = 'scale(0.98)';
-        
-        setTimeout(() => {
-             btnContinuar.style.transform = 'scale(1)';
-        }, 50);
-
+    
+    // --- LÓGICA CLAVE: REGISTRO/ESTADO Y ALERTA INTELIGENTE ---
+    
+    function registrarMatricula() {
         matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
         if (!matriculaActual) {
             mostrarConfirmacion("Ingrese la matrícula.", "fas fa-exclamation-triangle");
             return;
         }
         
-        // Busca en el caché local
-        const existente = registrosCache.find(reg => reg.matricula === matriculaActual);
-        
+        const registros = cargarRegistros();
+        const existente = registros.find(reg => reg.matricula === matriculaActual);
         registroDuplicado = existente;
 
+        // ** LÓGICA DE INTELIGENCIA: ALERTA PROACTIVA DE AVERÍA **
+        if (existente && existente.estado === 'Averiada') {
+            abrirModal(
+                '¡Alerta de Avería!',
+                `<i class="fas fa-exclamation-triangle" style="color:var(--ios-red); margin-right:5px;"></i> La matrícula **${matriculaActual}** estaba registrada como **AVERIADA**. ¿Confirma que ha sido reparada y está lista para ser asignada a Carga o Vacía?`,
+                'Confirmar Reparación',
+                'btn-modal-confirm-blue',
+                () => {
+                    // Si confirma la reparación, procedemos a Paso 2 normalmente
+                    procederAPaso2();
+                }
+            );
+        } else {
+            // Si no hay avería previa o es un registro nuevo, procedemos directamente
+            procederAPaso2();
+        }
+    }
+
+    function procederAPaso2() {
         mostrarPaso('paso2'); 
         document.getElementById('mostrarMatricula').textContent = matriculaActual;
+        document.getElementById('cargadaDetalles').style.display = 'none';
+        document.getElementById('averiadaDetalles').style.display = 'none';
         
-        // Limpiar estilos de botones de estado y detalles al entrar en paso 2
-        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('#detalleContainer .detalle-content').forEach(det => det.classList.remove('active'));
-        estadoSeleccionado = '';
-        
-        if (existente) {
+        // Resetear botones
+        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('btn-state-active'));
+
+        if (registroDuplicado) {
             const advertenciaDiv = document.getElementById('advertenciaDuplicado');
-            document.getElementById('estadoAnterior').textContent = existente.estado;
-            document.getElementById('descAnterior').textContent = existente.descripcion;
+            document.getElementById('estadoAnterior').textContent = registroDuplicado.estado;
             advertenciaDiv.style.display = 'block';
             
-            // Precargar el estado anterior si existe, usando la función principal
-            if (existente.estado === 'Cargada') {
-                manejarEstado('cargada', document.getElementById('btnCargada'), true, existente.descripcion);
-            } else if (existente.estado === 'Averiada') {
-                manejarEstado('averiada', document.getElementById('btnAveriadaState'), true, existente.descripcion);
-            }
+            // Pre-seleccionar el estado anterior para la UX
+            const btnId = registroDuplicado.estado === 'Cargada' ? 'btnCargada' : 
+                          registroDuplicado.estado === 'Vacía' ? 'btnVacia' : 
+                          registroDuplicado.estado === 'Averiada' ? 'btnAveriadaState' : null;
+            
+            if (btnId) manejarEstado(btnId.replace('btn', '').toLowerCase().replace('state', ''), true); // 'true' para forzar la selección sin guardar
             
         } else {
             document.getElementById('advertenciaDuplicado').style.display = 'none';
         }
     }
 
-    window.manejarEstado = (estadoKey, buttonElement, isPreload = false, descripcionExistente = '') => {
-        
-        // HAPTIC FEEDBACK SIMULADO en botones de estado
-        buttonElement.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-             buttonElement.style.transform = 'scale(1)';
-        }, 50);
 
-        // 1. Manejo del Caso Rápido: VACÍA (Registro Rápido)
-        if (estadoKey === 'vacia') {
-            // Activar botón para la micro-animación de registro
-            buttonElement.classList.add('active');
-            guardarRegistroWrapper('vacia', buttonElement);
-            return; 
+    function manejarEstado(estado, isAutoSelect = false) {
+        document.getElementById('cargadaDetalles').style.display = 'none';
+        document.getElementById('averiadaDetalles').style.display = 'none';
+
+        // Activar el botón visualmente
+        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('btn-state-active'));
+        let activeBtnId = '';
+        
+        if (estado === 'cargada') {
+            document.getElementById('cargadaDetalles').style.display = 'block';
+            document.getElementById('descCargada').focus();
+            document.getElementById('descCargada').value = (registroDuplicado && registroDuplicado.estado === 'Cargada') ? registroDuplicado.descripcion : '';
+            activeBtnId = 'btnCargada';
+        } else if (estado === 'averiada') {
+            document.getElementById('averiadaDetalles').style.display = 'block';
+            document.getElementById('descAveriada').focus();
+            document.getElementById('descAveriada').value = (registroDuplicado && registroDuplicado.estado === 'Averiada') ? registroDuplicado.descripcion : '';
+            activeBtnId = 'btnAveriadaState';
+        } else if (estado === 'vacia') { 
+            activeBtnId = 'btnVacia';
+            if (!isAutoSelect) {
+                // Si no es una autoselección (es decir, el usuario hizo click), guardamos directamente Vacía.
+                guardarRegistro('vacia', 'Lista para cargar');
+            }
         }
         
-        // 2. Flujo normal para Cargada/Averiada
-        
-        // Remover 'active' de todos los botones
-        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('active'));
-        
-        // Agregar 'active' al botón clickeado
-        buttonElement.classList.add('active');
-        
-        // 3. Ocultar todos los detalles y limpiar valores
-        document.querySelectorAll('#detalleContainer .detalle-content').forEach(det => det.classList.remove('active'));
-        document.getElementById('descCargada').value = '';
-        document.getElementById('descAveriada').value = '';
-        
-        estadoSeleccionado = estadoKey; 
-        
-        // 4. Mostrar el detalle correcto
-        if (estadoKey === 'cargada') {
-            const detalle = document.getElementById('detalleCargada');
-            detalle.classList.add('active');
-            
-            if (isPreload) {
-                 document.getElementById('descCargada').value = descripcionExistente;
-            }
-            document.getElementById('descCargada').focus();
-            
-        } else if (estadoKey === 'averiada') {
-            const detalle = document.getElementById('detalleAveriada');
-            detalle.classList.add('active');
-            
-            if (isPreload) {
-                 document.getElementById('descAveriada').value = descripcionExistente;
-            }
-            document.getElementById('descAveriada').focus();
+        if (activeBtnId) {
+            document.getElementById(activeBtnId).classList.add('btn-state-active');
         }
     }
     
-    // Nueva función para micro-interacción de éxito en el botón de guardar
-    function microInteraccionBoton(buttonElement, estadoDisplay) {
-        // HAPTIC FEEDBACK SIMULADO
-        buttonElement.style.transform = 'scale(0.98)';
-        setTimeout(() => {
-             buttonElement.style.transform = 'scale(1)';
-        }, 50);
-
-        const isQuickAction = estadoDisplay === 'Vacía';
-        
-        // Capturar estado original solo si no es la acción rápida (Vacía)
-        const originalText = isQuickAction ? '<i class="fas fa-box"></i> Vacía' : buttonElement.innerHTML;
-        const originalClass = isQuickAction ? '' : buttonElement.className;
-        const originalBg = isQuickAction ? '#e5e5ea' : getComputedStyle(buttonElement).backgroundColor;
-        const originalColor = isQuickAction ? '#3c3c43' : getComputedStyle(buttonElement).color;
-        
+    function microInteraccionBoton(buttonElement, estado) {
+        const originalText = buttonElement.innerHTML;
+        buttonElement.disabled = true; 
         
         let confirmText = '';
         let confirmClass = '';
         
-        if (estadoDisplay === 'Cargada') {
-            confirmText = '<i class="fas fa-check"></i> ¡Cargada Registrada!';
-            confirmClass = 'btn-success';
-        } else if (estadoDisplay === 'Vacía') {
-            // El botón 'Vacía' ya está activo y es amarillo
-            confirmText = '<i class="fas fa-check"></i> ¡Vacía Registrada!';
-            confirmClass = 'btn-warning active'; 
-        } else if (estadoDisplay === 'Averiada') {
-            confirmText = '<i class="fas fa-times-circle"></i> ¡Avería Registrada!';
-            confirmClass = 'btn-danger';
+        if (estado === 'Cargada') {
+            confirmText = '<i class="fas fa-check"></i> ¡Guardado!';
+            confirmClass = 'btn-confirm-cargada';
+        } else if (estado === 'Vacía') {
+            confirmText = '<i class="fas fa-check"></i> ¡Guardado!';
+            confirmClass = 'btn-confirm-vacia';
+        } else if (estado === 'Averiada') {
+            confirmText = '<i class="fas fa-times-circle"></i> ¡Guardado!';
+            confirmClass = 'btn-confirm-averiada';
         }
 
+        // Aplicar feedback
         buttonElement.innerHTML = confirmText;
-        buttonElement.className = confirmClass; 
-        buttonElement.disabled = true; 
+        buttonElement.classList.add(confirmClass);
+        
+        // ** NOTA: La animación Siri Wave se gestiona puramente por CSS y no necesita ser manipulada aquí, evitando el efecto de "bloqueo". **
 
         setTimeout(() => {
-            // Restaurar a la clase original después del registro
+            // Restaurar estado
             buttonElement.innerHTML = originalText;
-            buttonElement.disabled = false;
+            buttonElement.classList.remove(confirmClass);
+            buttonElement.disabled = false; 
             
-            if (isQuickAction) {
-                // Para Vacía, restauramos las propiedades CSS de botón de selección inactivo
-                buttonElement.className = '';
-                buttonElement.style.backgroundColor = originalBg; 
-                buttonElement.style.color = originalColor;
-            } else {
-                 // Para Cargada/Averiada, restauramos la clase de botón de guardar.
-                 buttonElement.className = originalClass; 
-            }
-            
-            mostrarConfirmacion(`¡${matriculaActual} registrada como ${estadoDisplay}!`);
-            // CRÍTICO: Auto-regreso al Paso 1 después del registro
+            mostrarConfirmacion(`¡${estado} registrado!`);
             mostrarPaso1(true); 
         }, 800); 
     }
 
 
-    // --- FUNCIÓN CENTRAL DE GUARDADO (Local Storage) ---
-    async function guardarRegistro(estadoKey, btnElement) {
-        let descripcion = '';
+    function guardarRegistro(estado, descripcionManual = '') {
+        let descripcion = descripcionManual;
+        let btnElement = null;
         let estadoDisplay = '';
 
-        if (estadoKey === 'cargada') {
+        if (estado === 'cargada') {
             descripcion = document.getElementById('descCargada').value;
+            btnElement = document.getElementById('btnGuardarCargada');
             estadoDisplay = 'Cargada'; 
-        } else if (estadoKey === 'averiada') {
+        } else if (estado === 'averiada') {
             descripcion = document.getElementById('descAveriada').value;
+            btnElement = document.getElementById('btnGuardarAveriada');
             estadoDisplay = 'Averiada'; 
-        } else if (estadoKey === 'vacia') {
+        } else if (estado === 'vacia') {
              descripcion = 'Lista para cargar';
+             btnElement = document.getElementById('btnVacia');
              estadoDisplay = 'Vacía'; 
         }
-        
-        // Validación de descripción
+
         if ((estadoDisplay === 'Cargada' || estadoDisplay === 'Averiada') && !descripcion.trim()) {
-            throw new Error(`Necesita descripción de ${estadoDisplay}.`);
-        }
-        
-        const registroData = {
-            matricula: matriculaActual, // Usamos la matrícula como ID
-            estado: estadoDisplay, 
-            descripcion: descripcion.trim() || 'N/A',
-            timestamp: Date.now(), // Usamos timestamp de JS
-        };
-
-        try {
-            // 1. Encontrar el índice del registro existente
-            const index = registrosCache.findIndex(reg => reg.matricula === matriculaActual);
-
-            if (index !== -1) {
-                // 2. Si existe, actualiza el registro en el caché
-                registrosCache[index] = registroData;
-            } else {
-                // 3. Si no existe, añade el nuevo registro al caché
-                registrosCache.push(registroData);
-            }
-            
-            // 4. Guardar y actualizar la UI
-            saveMatriculas();
-            
-            // Éxito:
-            if (btnElement) {
-                microInteraccionBoton(btnElement, estadoDisplay);
-            }
-            return true; 
-            
-        } catch (e) {
-             // Este error solo ocurriría si localStorage falla o hay un error de validación
-             throw new Error(`Error al guardar en almacenamiento local: ${e.message}`);
-        }
-    }
-    
-    // Wrapper que maneja el inicio del guardado y errores finales
-    window.guardarRegistroWrapper = async (estadoKey, buttonElement = null) => {
-        let btnElement = buttonElement; 
-
-        if (!btnElement) {
-            if (estadoKey === 'cargada') {
-                btnElement = document.getElementById('btnGuardarCargada');
-            } else if (estadoKey === 'averiada') {
-                btnElement = document.getElementById('btnGuardarAveriada');
-            }
-        }
-        
-        if (btnElement) btnElement.disabled = true;
-
-        try {
-            await guardarRegistro(estadoKey, btnElement); 
-        } catch (error) {
-            console.error("Error final de guardado:", error);
-            mostrarConfirmacion(error.message, "fas fa-bug");
-            
-            // Re-habilitar botón y restaurar texto original en caso de fallo final
-            if (btnElement) {
-                 btnElement.disabled = false;
-                 // Restaurar el botón vacío si la acción rápida falló
-                 if (estadoKey === 'vacia' && error.message.includes("almacenamiento local")) { 
-                    btnElement.classList.remove('active');
-                    btnElement.innerHTML = '<i class="fas fa-box"></i> Vacía';
-                 }
-            }
-        }
-    };
-
-
-    // --- CONTADORES Y HISTORIAL ---
-    
-    window.mostrarMasRegistros = () => {
-        itemsMostrados = itemsMostrados * 2; 
-        actualizarHistorialReciente();
-    }
-
-    function actualizarHistorialReciente() {
-        const filtro = document.getElementById('filtroEstado').value;
-
-        // 1. Ordenar registros por timestamp de forma descendente (más reciente primero)
-        const registrosOrdenados = [...registrosCache].sort((a, b) => b.timestamp - a.timestamp);
-        
-        // 2. Aplicar Filtro
-        const registrosFiltrados = filtro === 'Todos' 
-            ? registrosOrdenados 
-            : registrosOrdenados.filter(reg => reg.estado === filtro);
-
-
-        const ul = document.getElementById('historialReciente');
-        const btnMostrarMas = document.getElementById('btnMostrarMas');
-        
-        ul.innerHTML = ''; 
-        
-        if (registrosFiltrados.length === 0) {
-            ul.innerHTML = '<li style="justify-content:center; color: var(--text-light-gray); border-bottom: none; opacity:1; transform:translateY(0);">No hay movimientos registrados para este filtro.</li>';
-            btnMostrarMas.style.display = 'none';
+            mostrarConfirmacion(`Necesita una descripción para ${estadoDisplay}.`, "fas fa-exclamation-triangle");
             return;
         }
 
-        // 3. Aplicar Paginación (Mostrar solo N elementos)
-        const registrosAmostrar = registrosFiltrados.slice(0, itemsMostrados);
-        
-        // 4. Actualizar botón Mostrar Más
-        if (registrosFiltrados.length > itemsMostrados) {
-            btnMostrarMas.textContent = `Mostrar más (${registrosAmostrar.length} de ${registrosFiltrados.length})`;
-            btnMostrarMas.style.display = 'block';
+        const nuevoRegistro = {
+            matricula: matriculaActual,
+            estado: estadoDisplay,
+            descripcion: descripcion.trim() || 'N/A',
+            timestamp: new Date().getTime() 
+        };
+
+        let registros = cargarRegistros();
+        const index = registros.findIndex(reg => reg.matricula === matriculaActual);
+
+        if (index !== -1) {
+            registros[index] = nuevoRegistro; // Reemplazar registro existente
         } else {
-            btnMostrarMas.style.display = 'none';
+            registros.push(nuevoRegistro); // Añadir nuevo registro
         }
-        
-        // 5. Renderizar lista con animación escalonada (Staggered Fade-In)
-        const formatter = new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-        registrosAmostrar.forEach((reg, index) => {
-            const hora = formatter.format(reg.timestamp);
+        guardarRegistros(registros);
+        actualizarContadores();
+        actualizarHistorialReciente();
 
-            const estadoDisplay = reg.estado; 
-            const estadoClass = `estado-${estadoDisplay}`;
-            
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="historial-matricula">${reg.matricula}</span>
-                <span class="historial-estado ${estadoClass}" title="${reg.descripcion}">${estadoDisplay}</span>
-                <span class="historial-time">${hora}</span>
-            `;
-            ul.appendChild(li);
-            
-            // Aplicar la animación con un retraso basado en el índice
-            setTimeout(() => {
-                li.classList.add('animated');
-            }, 50 * index); 
-        });
+        if (btnElement) {
+            // Animación y transición visual
+            microInteraccionBoton(btnElement, estadoDisplay);
+        } else if (estado === 'vacia') {
+             // Ya que el botón Vacia no tiene un botón de 'Guardar' aparte
+             microInteraccionBoton(document.getElementById('btnVacia'), estadoDisplay);
+        }
     }
 
+    // --- MANEJO DE LA INTERFAZ DE USUARIO (Contadores e Historial) ---
     function actualizarContadores() {
-        let counts = { Cargada: 0, Vacía: 0, Averiada: 0, Total: registrosCache.length };
+        const registros = cargarRegistros();
+        let counts = { Cargada: 0, Vacía: 0, Averiada: 0, Total: registros.length };
 
-        registrosCache.forEach(reg => {
+        registros.forEach(reg => {
             if (reg.estado === 'Cargada') counts.Cargada++;
             else if (reg.estado === 'Vacía') counts.Vacía++; 
             else if (reg.estado === 'Averiada') counts.Averiada++;
         });
+        
+        counts.Disponible = counts.Vacía; 
 
         const totalFlota = counts.Total;
         
@@ -1074,77 +739,442 @@
         document.getElementById('countDisponible').textContent = counts.Vacía; 
         document.getElementById('countAveriada').textContent = counts.Averiada;
 
-        const updateCompactCard = (stateKey, count) => {
+        const updateCompactCard = (state, count) => {
             const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
             const percentText = `${percentValue}%`;
             
-            const percentElement = document.getElementById(`percent${stateKey}`);
+            const percentElement = document.getElementById(`percent${state}`);
             if(percentElement) percentElement.textContent = percentText;
             
-            const fillElement = document.getElementById(`fill${stateKey}`);
-            if(fillElement) fillElement.style.width = percentText;
+            // AJUSTE: Altura del relleno de fondo
+            const fillElement = document.getElementById(`fill${state}`);
+            if(fillElement) fillElement.style.height = percentText;
         };
-
+        
         updateCompactCard('Cargada', counts.Cargada);
         updateCompactCard('Disponible', counts.Vacía); 
         updateCompactCard('Averiada', counts.Averiada);
+        
+        // Animación de aparición de tarjetas
+        const cardIds = ['cardTotal', 'cardCargada', 'cardDisponible', 'cardAveriada'];
+        cardIds.forEach((id, index) => {
+            const item = document.getElementById(id);
+            if (!item.classList.contains('visible')) {
+                setTimeout(() => {
+                    item.classList.add('visible');
+                }, 50 + index * 50); 
+            }
+        });
     }
 
-    // --- Animación de "Eclosión" antes de la Limpieza ---
-    window.animateExplosionAndClean = () => {
-        const ul = document.getElementById('historialReciente');
-        const items = ul.querySelectorAll('li.animated'); 
+    function filtrarHistorial(estado) {
+        historialFiltro = estado;
         
-        if (items.length === 0) {
-            limpiarRegistros();
+        // Activar el botón de filtro correcto
+        document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('filter-active'));
+        if (estado === 'Cargada') {
+            document.getElementById('btnFilterCargada').classList.add('filter-active');
+        } else if (estado === 'Vacía') {
+            document.getElementById('btnFilterVacia').classList.add('filter-active');
+        } else if (estado === 'Averiada') {
+            document.getElementById('btnFilterAveriada').classList.add('filter-active');
+        } else {
+            document.getElementById('btnFilterAll').classList.add('filter-active');
+        }
+        
+        actualizarHistorialReciente();
+    }
+
+    function actualizarHistorialReciente() {
+        let registros = cargarRegistros();
+        const ul = document.getElementById('historialReciente');
+        ul.innerHTML = ''; 
+
+        // 1. Filtrar si es necesario
+        if (historialFiltro) {
+            registros = registros.filter(reg => reg.estado === historialFiltro);
+        }
+        
+        if (registros.length === 0) {
+            let message = 'Aún no hay movimientos registrados.';
+            if (historialFiltro) {
+                message = `No hay matrículas registradas como "${historialFiltro}".`;
+            }
+            ul.innerHTML = `<li style="justify-content:center; color: var(--text-light-gray); border-bottom: none;">${message}</li>`;
             return;
         }
 
-        // 1. Aplicar la animación de explosión a todos los elementos visibles.
-        items.forEach((item, index) => {
-            setTimeout(() => {
-                item.classList.remove('animated'); 
-                item.classList.add('explode-out');
-            }, 50 * index); 
-        });
+        // 2. Ordenar por timestamp (más reciente primero)
+        registros.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Mostrar solo los 5 más recientes del conjunto filtrado
+        const ultimosRegistros = historialFiltro ? registros : registros.slice(0, 5);
+        
+        ultimosRegistros.forEach(reg => {
+            const dateObj = new Date(reg.timestamp);
+            const hora = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-        // 2. Esperar a que la animación termine (250ms es la duración en CSS)
-        setTimeout(() => {
-            // 3. Ejecutar la función de limpieza de localStorage real
-            limpiarRegistros();
-        }, 350); 
+            const estadoDisplay = reg.estado;
+            const estadoClass = `estado-${estadoDisplay}`;
+            
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="status-indicator ${estadoDisplay}"></span>
+                <span class="historial-matricula">${reg.matricula}</span>
+                <span class="historial-estado ${estadoClass}">${estadoDisplay}</span>
+                <span class="historial-time">${hora}</span>
+            `;
+            ul.appendChild(li);
+        });
+    }
+    
+    // --- MODAL CENTRALIZADO ---
+    
+    function abrirModal(title, message, confirmText, confirmClass, callback) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalMessage').innerHTML = message;
+        document.getElementById('modalConfirmButton').textContent = confirmText;
+        document.getElementById('modalConfirmButton').className = `btn-modal-confirm ${confirmClass}`;
+        modalCallback = (result) => {
+            cerrarModal();
+            if (result) callback();
+        };
+        document.getElementById('confirmModal').classList.add('open');
+    }
+    
+    function cerrarModal(event) {
+        const modal = document.getElementById('confirmModal');
+        // Asegurarse de que solo se cierra al tocar el overlay directamente, no el contenido.
+        if (!event || event.target === modal) {
+            modal.classList.remove('open');
+        }
     }
 
+    function mostrarModalConfirmacionLimpiar() {
+        abrirModal(
+            '¡Eliminar Todos!',
+            'Esta acción **eliminará permanentemente** todos los registros guardados en tu dispositivo. ¿Estás seguro de continuar?',
+            'Sí, Eliminar Todo',
+            'btn-modal-confirm-red',
+            limpiarTodosLosRegistros 
+        );
+    }
 
-    // --- LIMPIAR REGISTROS (Local Storage) ---
-    window.limpiarRegistros = () => {
-        if (registrosCache.length === 0) {
-            mostrarConfirmacion("No hay registros para eliminar.", "fas fa-info-circle");
+    function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
+        console.log(`[Notificación] ${mensaje}`);
+        // Aquí podríamos disparar un toast o un modal de notificación si fuera una app completa.
+    }
+    
+    // --- EXPORTACIÓN PDF (Mismo código que antes, solo actualizado) ---
+    function hexToRgb(hex) {
+        let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? [
+            parseInt(result[1], 16),
+            parseInt(result[2], 16),
+            parseInt(result[3], 16)
+        ] : [0, 0, 0];
+    }
+    
+    function exportarPDF() {
+        const registros = cargarRegistros();
+
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined' || !window.jspdf.jsPDF.API.autoTable) {
+            mostrarConfirmacion("Error: El generador de PDF (jsPDF) no se ha cargado completamente. Inténtalo de nuevo.", "fas fa-exclamation-triangle");
+            console.error("jsPDF object:", window.jspdf);
+            return;
+        }
+
+        if (registros.length === 0) {
+            mostrarConfirmacion("No hay registros para exportar.", "fas fa-info-circle");
             return;
         }
 
         try {
-            localStorage.removeItem(localStorageKey);
-            registrosCache = []; // Limpiar caché local
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const margin = 10;
+            let yPos = margin;
+            const pageWidth = doc.internal.pageSize.width;
             
-            // Forzar actualización de UI
-            actualizarContadores();
-            actualizarHistorialReciente(); 
+            // --- 1. CONFIGURACIÓN DE COLORES TIPO APPLE ---
+            const APPLE_COLORS = {
+                RED_XPO: hexToRgb('#FF3B30'),
+                DARK_TEXT: hexToRgb('#1C1C1E'),
+                MEDIUM_GRAY: hexToRgb('#D1D1D6'),
+                GREEN_CARGADA: hexToRgb('#34C759'),
+                YELLOW_VACIA: hexToRgb('#FFCC00'),
+                HEADER_FILL: [255, 255, 255] 
+            };
             
-            mostrarConfirmacion("Todos los registros han sido eliminados del almacenamiento local.", "fas fa-trash-alt");
-            itemsMostrados = 5; // Resetear paginación
+            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS ---
+            const registrosCargadas = registros
+                .filter(reg => reg.estado === 'Cargada')
+                .map(reg => [reg.matricula, reg.descripcion]); 
+            
+            const registrosVacías = registros
+                .filter(reg => reg.estado === 'Vacía')
+                .map(reg => [reg.matricula, reg.descripcion || 'Lista para cargar']); 
+            
+            const registrosAveriadas = registros
+                .filter(reg => reg.estado === 'Averiada')
+                .map(reg => [reg.matricula, reg.descripcion]);
+                
+            const counts = {
+                    Cargada: registrosCargadas.length,
+                    Vacía: registrosVacías.length,
+                    Averiada: registrosAveriadas.length,
+                    Total: registros.length
+                };
+            
+            // --- 3. IMPLEMENTAR ENCABEZADO Y LOGO (Diseño Tipográfico Simple) ---
+            const headerCardHeight = 25;
+            const headerCardY = yPos;
+            const headerCardX = margin;
+            const headerCardWidth = pageWidth - 2 * margin;
+            
+            doc.setFillColor(APPLE_COLORS.HEADER_FILL[0], APPLE_COLORS.HEADER_FILL[1], APPLE_COLORS.HEADER_FILL[2]);
+            doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
+            doc.setGState(new jsPDF.GState({ opacity: 0.9 })); 
+            doc.roundedRect(headerCardX, headerCardY, headerCardWidth, headerCardHeight, 3, 3, 'FD'); 
+            doc.setGState(new jsPDF.GState({ opacity: 1 })); 
+            
+            const logoY = headerCardY + headerCardHeight / 2;
+            doc.setFont("helvetica", "bold");
+            
+            doc.setFontSize(18);
+            const codeText = "CODE";
+            const codeWidth = doc.getStringUnitWidth(codeText) * doc.getFontSize() / doc.internal.scaleFactor;
+            
+            doc.setFontSize(18);
+            const xpoText = "XPO";
+            const xpoWidth = doc.getStringUnitWidth(xpoText) * doc.getFontSize() / doc.internal.scaleFactor;
+            
+            const gap = 3; 
+            const totalWidth = codeWidth + xpoWidth + gap;
+            
+            const codeStartX = (pageWidth / 2) - (totalWidth / 2);
+            const xpoStartX = codeStartX + codeWidth + gap;
+            
+            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+            doc.text(codeText, codeStartX, logoY, { align: 'left', baseline: 'middle' });
+            
+            doc.setTextColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
+            doc.text(xpoText, xpoStartX, logoY, { align: 'left', baseline: 'middle' });
+            
+            yPos = headerCardY + headerCardHeight + margin; 
+            
+            // --- 4. IMPLEMENTAR BADGES SEMITRANSPARENTES DE RESUMEN ---
+            
+            const badgeHeight = 10; 
+            const badgeMargin = 5;
+            const badgeWidth = (pageWidth - 2 * margin - 2 * badgeMargin) / 3;
+            const badgeY = yPos;
+            
+            const badges = [
+                { label: 'CARGADAS', count: counts.Cargada, color: APPLE_COLORS.GREEN_CARGADA, x: margin, stateKey: 'Cargada' },
+                { label: 'VACÍAS', count: counts.Vacía, color: APPLE_COLORS.YELLOW_VACIA, x: margin + badgeWidth + badgeMargin, stateKey: 'Vacía' },
+                { label: 'AVERIADAS', count: counts.Averiada, color: APPLE_COLORS.RED_XPO, x: margin + 2 * (badgeWidth + badgeMargin), stateKey: 'Averiada' }
+            ];
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            
+            badges.forEach(badge => {
+                const percentage = counts.Total > 0 ? (badge.count / counts.Total) : 0;
+                const fillWidth = badgeWidth * percentage;
+                
+                doc.setFillColor(255, 255, 255);
+                doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
+                doc.setGState(new jsPDF.GState({ opacity: 0.9 }));
+                doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD'); 
+                doc.setGState(new jsPDF.GState({ opacity: 1 }));
+                
+                doc.setFillColor(badge.color[0], badge.color[1], badge.color[2]);
+                doc.setGState(new jsPDF.GState({ opacity: 0.2 }));
+                doc.roundedRect(badge.x, badgeY, fillWidth, badgeHeight, 1.5, 1.5, 'F'); 
+                doc.setGState(new jsPDF.GState({ opacity: 1 }));
+                
+                doc.setFontSize(6);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+                doc.text(badge.label, badge.x + badgeWidth / 2, badgeY + 3.5, { align: 'center' });
+
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
+                doc.text(`${badge.count} (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 3.5, { align: 'center' });
+            });
+            
+            yPos = badgeY + badgeHeight + 15; 
+
+            // --- 5. APLICAR DISEÑO DE TABLAS ---
+            
+            const tableMarginX = 5; 
+            const halfWidth = (pageWidth - 2 * margin - tableMarginX) / 2;
+            let startYDoubleColumn = yPos;
+            
+            // Títulos de Sección
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+            
+            doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
+            
+            const xPosVacias = margin + halfWidth + tableMarginX;
+            doc.text(`PLATAFORMAS VACÍAS (${counts.Vacía})`, xPosVacias, startYDoubleColumn); 
+            
+            startYDoubleColumn += 5; 
+            
+            // Estilos de la Tabla (Apple Pages Look)
+            const styles = { 
+                fontSize: 9, 
+                cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }, 
+                valign: 'middle', 
+                font: "helvetica", 
+                textColor: APPLE_COLORS.DARK_TEXT, 
+                lineColor: APPLE_COLORS.MEDIUM_GRAY, 
+                lineWidth: 0.05, 
+                fontStyle: 'normal' 
+            };
+            
+            const headStyles = { 
+                fillColor: [249, 249, 249], 
+                textColor: APPLE_COLORS.DARK_TEXT, 
+                fontStyle: 'bold', 
+                lineWidth: { top: 0, right: 0, bottom: 0.15, left: 0 }, 
+                cellPadding: 3 
+            };
+            
+            const alternateRowStyles = { 
+                fillColor: [255, 255, 255] 
+            };
+            
+            const tableOptions = {
+                startY: startYDoubleColumn,
+                styles: styles,
+                headStyles: headStyles,
+                alternateRowStyles: alternateRowStyles, 
+                didParseCell: (data) => {
+                    if (data.row.section === 'body') {
+                        data.cell.styles.minCellHeight = 5;
+                    }
+                }
+            };
+
+            // --- Tabla de Cargadas ---
+            doc.autoTable({
+                head: [['MATRÍCULA', 'CONTENIDO']],
+                body: registrosCargadas,
+                margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
+                tableWidth: halfWidth,
+                columnStyles: {
+                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [240, 255, 240], textColor: APPLE_COLORS.GREEN_CARGADA }, 
+                    1: { cellWidth: 'auto' }
+                },
+                ...tableOptions
+            });
+            let finalYCargadas = doc.autoTable.previous.finalY;
+
+            // --- Tabla de Vacías ---
+            doc.autoTable({
+                head: [['MATRÍCULA', 'DESCRIPCIÓN']],
+                body: registrosVacías,
+                margin: { left: xPosVacias, right: margin }, 
+                tableWidth: halfWidth,
+                columnStyles: {
+                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 255, 240], textColor: APPLE_COLORS.YELLOW_VACIA }, 
+                    1: { cellWidth: 'auto' }
+                },
+                ...tableOptions
+            });
+            let finalYVacías = doc.autoTable.previous.finalY;
+
+            let finalY = Math.max(finalYCargadas, finalYVacías); 
+            
+            // --- Tabla de Averíadas (Full Width) ---
+            if (counts.Averiada > 0) {
+                
+                if (finalY + 20 > doc.internal.pageSize.height - margin) {
+                    doc.addPage();
+                    finalY = margin;
+                } else {
+                     finalY += 10; 
+                }
+
+                // Título de Sección Averiada
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+                doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
+                
+                doc.autoTable({
+                    head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
+                    body: registrosAveriadas,
+                    startY: finalY + 10,
+                    margin: { left: margin, right: margin },
+                    columnStyles: {
+                        0: { cellWidth: 30, fontStyle: 'bold', fillColor: [255, 240, 240], textColor: APPLE_COLORS.RED_XPO }, 
+                        1: { cellWidth: 'auto' }
+                    },
+                    ...tableOptions
+                });
+                finalY = doc.autoTable.previous.finalY;
+            }
+
+            // --- Pie de Página (Footer) ---
+            const footerY = doc.internal.pageSize.height - 5;
+            
+            doc.setFontSize(8);
+            doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
+            doc.setFont("helvetica", "normal");
+            
+            const pageCount = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Texto de derechos de autor
+                doc.text(`© ${new Date().getFullYear()} XPO LOGISTICS - Informe interno`, margin, footerY);
+                
+                // Conteo de Páginas
+                doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
+                
+                // Línea divisoria sutil para el footer
+                doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
+                doc.setLineWidth(0.1);
+                doc.line(margin, footerY - 2, pageWidth - margin, footerY - 2);
+                
+                // Título del reporte e información de la fecha
+                if (i === 1) {
+                    const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+                    const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(8);
+                    doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
+                    doc.text(`REPORTE EJECUTIVO DE FLOTA | ${currentDay}, ${currentDate}`, margin, headerCardY + headerCardHeight + margin - 2); 
+                }
+            }
+            
+            // Abrimos el PDF en una nueva pestaña
+            doc.output('dataurlnewwindow', {filename: 'Reporte_XPO_Ejecutivo.pdf'});
+            mostrarConfirmacion("PDF generado. Se ha abierto en una nueva pestaña (o la descarga ha comenzado).", "fas fa-file-pdf");
+
         } catch (e) {
-            console.error("Error al limpiar registros:", e);
-            mostrarConfirmacion("Error al eliminar registros del almacenamiento local.", "fas fa-bug");
+            console.error("Error al generar PDF:", e);
+            mostrarConfirmacion("Error al generar el PDF. Revisa la consola para más detalles.", "fas fa-exclamation-triangle");
         }
     }
 
-    // --- FUNCIÓN DE SCROLL DINÁMICO (Efecto Blur) ---
+
+    // --- LÓGICA DE ANIMACIÓN Y SCROLL ---
     function handleScroll() {
         const header = document.getElementById('fixedHeader');
         const scrollPosition = window.scrollY;
         
-        // Aplica el estilo 'scrolled' con el fondo blanco y blur si el scroll supera 10px
         if (scrollPosition > 10) {
             header.classList.add('scrolled');
         } else {
@@ -1152,182 +1182,58 @@
         }
     }
     
-    // --- EXPORTACIÓN A PDF (Mantenida) ---
-    window.exportarPDF = () => {
-        const registros = [...registrosCache]; // Usar la caché local
-        if (registros.length === 0) {
-            mostrarConfirmacion("No hay registros para exportar.", "fas fa-info-circle");
-            return;
+    // --- Lógica de animación restaurada con localStorage ---
+    function animarLogo() {
+        const logoCode = document.getElementById('logoCode');
+        const logoXPO = document.getElementById('logoXPO');
+
+        // Resetear estilos iniciales (que son establecidos en CSS para la animación)
+        logoCode.style.opacity = '0';
+        logoXPO.style.opacity = '0';
+        logoXPO.style.transform = 'translateY(20px)';
+        
+        // Comprobar si ya se animó antes (Persistencia con localStorage)
+        if (!localStorage.getItem('logoAnimado')) {
+             // Inicia animación si es la primera vez
+             setTimeout(() => {
+                logoCode.style.opacity = '1';
+                logoCode.style.transform = 'translateY(0)';
+             }, 50);
+
+             setTimeout(() => {
+                logoXPO.style.opacity = '1';
+                logoXPO.style.transform = 'translateY(0)';
+             }, 350); 
+             
+             localStorage.setItem('logoAnimado', 'true');
+        } else {
+            // Si ya se animó, mostrar inmediatamente sin animación
+            logoCode.style.opacity = '1';
+            logoCode.style.transform = 'translateY(0)';
+            logoXPO.style.opacity = '1';
+            logoXPO.style.transform = 'translateY(0)';
         }
-
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const margin = 10;
-        let yPos = 10;
-        const pageWidth = doc.internal.pageSize.width; 
-        
-        const registrosCargadas = registros
-            .filter(reg => reg.estado === 'Cargada')
-            .map(reg => [reg.matricula, reg.descripcion]); 
-        
-        const registrosVacías = registros
-            .filter(reg => reg.estado === 'Vacía')
-            .map(reg => [reg.matricula]);
-        
-        const registrosAveriadas = registros
-            .filter(reg => reg.estado === 'Averiada')
-            .map(reg => [reg.matricula, reg.descripcion]);
-            
-        const counts = {
-            Cargada: registrosCargadas.length,
-            Vacía: registrosVacías.length,
-            Averiada: registrosAveriadas.length,
-            Total: registros.length
-        };
-        
-        const COLOR_TEXTO_OSCURO = [30, 30, 30];
-        const COLOR_TEXTO_CLARO = [150, 150, 150];
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-        doc.text("XPO LOGISTICS", margin, yPos); 
-        
-        doc.setFontSize(16);
-        doc.setTextColor(255, 59, 48); 
-        doc.text("CODE", pageWidth - margin, yPos, { align: 'right' }); 
-        
-        yPos += 5;
-        
-        const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
-        const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-        
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(COLOR_TEXTO_CLARO[0], COLOR_TEXTO_CLARO[1], COLOR_TEXTO_CLARO[2]); 
-        doc.text(`INFORME DE FLOTA | ${currentDay}, ${currentDate} | TOTAL: ${counts.Total} PLATAFORMAS`, margin, yPos);
-        yPos += 12; 
-
-        const tableMarginX = 5; 
-        const halfWidth = (pageWidth - margin * 2 - tableMarginX) / 2;
-        let startYDoubleColumn = yPos;
-        
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-        
-        doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
-        
-        const xPosVacias = margin + halfWidth + tableMarginX;
-        doc.text(`PLATAFORMAS VACÍAS (${counts.Vacía})`, xPosVacias, startYDoubleColumn); 
-        
-        startYDoubleColumn += 5; 
-        
-        const styles = { fontSize: 8, cellPadding: 2, valign: 'top', font: "helvetica", textColor: [51, 51, 51], lineColor: [240, 240, 240], lineWidth: 0.1, fontStyle: 'normal' };
-        const headStyles = { fillColor: [249, 249, 249], textColor: [80, 80, 80], fontStyle: 'bold', lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 }, cellPadding: 3 };
-        const alternateRowStyles = { fillColor: [252, 252, 252] };
-
-
-        doc.autoTable({
-            head: [['MATRÍCULA', 'CONTENIDO']],
-            body: registrosCargadas,
-            startY: startYDoubleColumn,
-            margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
-            tableWidth: halfWidth,
-            styles: styles,
-            headStyles: headStyles,
-            alternateRowStyles: alternateRowStyles, 
-            columnStyles: {
-                0: { cellWidth: 20 }, 
-                1: { cellWidth: 'auto' }
-            }
-        });
-        let finalYCargadas = doc.autoTable.previous.finalY;
-
-        doc.autoTable({
-            head: [['MATRÍCULA']],
-            body: registrosVacías,
-            startY: startYDoubleColumn, 
-            margin: { left: xPosVacias, right: margin }, 
-            tableWidth: halfWidth,
-            styles: styles,
-            headStyles: headStyles,
-            alternateRowStyles: alternateRowStyles, 
-            columnStyles: {
-                0: { cellWidth: 'auto' } 
-            }
-        });
-        let finalYDisponibles = doc.autoTable.previous.finalY;
-
-        let finalY = Math.max(finalYCargadas, finalYDisponibles); 
-        
-        
-        if (registrosAveriadas.length > 0) {
-            
-            if (finalY + 20 > doc.internal.pageSize.height - margin) {
-                doc.addPage();
-                finalY = margin;
-            } else {
-                 finalY += 10; 
-            }
-
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(COLOR_TEXTO_OSCURO[0], COLOR_TEXTO_OSCURO[1], COLOR_TEXTO_OSCURO[2]);
-            doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
-            
-            doc.autoTable({
-                head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
-                body: registrosAveriadas,
-                startY: finalY + 10,
-                margin: { left: margin, right: margin },
-                styles: styles,
-                headStyles: headStyles,
-                alternateRowStyles: alternateRowStyles, 
-                columnStyles: {
-                    0: { cellWidth: 30 }, 
-                    1: { cellWidth: 'auto' }
-                }
-            });
-        }
-
-        const pageCount = doc.internal.getNumberOfPages();
-        for(let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(COLOR_TEXTO_CLARO[0], COLOR_TEXTO_CLARO[1], COLOR_TEXTO_CLARO[2]);
-            
-            doc.setFont("helvetica", "normal");
-            doc.text(`© 2025 XPO LOGISTICS - Informe interno`, margin, doc.internal.pageSize.height - 5);
-            
-            doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, doc.internal.pageSize.height - 5, { align: 'right' });
-        }
-
-        doc.save("Reporte_XPO_Ejecutivo_Compacto.pdf");
-        mostrarConfirmacion("PDF exportado correctamente.", "fas fa-file-pdf");
     }
 
-    // --- INICIALIZACIÓN ---
+    // --- INICIALIZACIÓN GLOBAL ---
     document.addEventListener('DOMContentLoaded', () => {
-        // Inicialización de datos locales
-        loadMatriculas(); 
+        animarLogo();
+        actualizarContadores();
+        actualizarHistorialReciente(); 
         
-        // Mostrar la primera pantalla inmediatamente
-        mostrarPaso1(false);
-        animarLogo(); 
-
-        // CRÍTICO: Añadir event listener para la tecla Enter en el input de matrícula (Paso 1)
-        const matriculaInput = document.getElementById('matriculaInput');
-        matriculaInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault(); 
-                registrarMatricula();
-            }
-        });
+        // El botón de paso 1 ya tiene un ID en el HTML.
         
-        // Manejo de scroll para efecto visual del header
+        document.getElementById('paso1').style.display = 'block';
+        document.getElementById('paso1').style.position = 'relative'; 
+        document.getElementById('paso1').classList.add('active');
+        document.getElementById('matriculaInput').focus();
+        
+        // --- ACTIVAR EL MANEJO DE SCROLL PARA EL EFECTO DINÁMICO ---
         window.addEventListener('scroll', handleScroll);
-        handleScroll(); 
+        handleScroll();
+
+        // Asegurar que el filtro inicial sea 'Todo'
+        document.getElementById('btnFilterAll').classList.add('filter-active');
     });
 </script>
 
