@@ -115,7 +115,7 @@
             cursor: pointer; 
             font-size: 18px; 
             font-weight: 600; 
-            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s; /* Aseguramos que box-shadow transicione suavemente */
+            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s;
             -webkit-appearance: none; 
             position: relative; 
             overflow: hidden; 
@@ -126,55 +126,40 @@
         button:active { 
             opacity: 1; 
             transform: scale(0.99); 
-            /* La sombra se controlará por el estilo Siri/Inteligente */
         }
         
         /* Aseguramos que el contenido del botón esté en el nivel superior (z-index: 2) */
         button i, button span, button strong {
             position: relative;
             z-index: 2;
-            pointer-events: none; /* Asegura que el click pase al botón */
+            pointer-events: none; 
         }
 
 
         /* --- NUEVO: ANIMACIÓN ESTILO ONDA INTELIGENTE (SIRI WAVE) --- */
-        
-        /* 1. Animación de Desplazamiento del Gradiente */
         @keyframes siri-wave {
             0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; } /* Desplaza el gradiente de izquierda a derecha */
+            100% { background-position: 100% 50%; } 
         }
 
         #paso1 button {
-            /* Aplicar el gradiente dinámico */
             background: var(--siri-gradient);
-            background-size: 300% 300%; /* Hacemos el gradiente 3 veces más grande para un desplazamiento sutil */
-            
-            /* Aplicar la animación lenta de desplazamiento */
-            animation: siri-wave 12s ease-in-out infinite alternate; /* Onda lenta y suave */
-            
-            /* Sombra sutil y más limpia, con color basado en Siri Blue */
+            background-size: 300% 300%; 
+            animation: siri-wave 12s ease-in-out infinite alternate;
             box-shadow: 0 4px 15px rgba(0, 122, 255, 0.5);
             transition: all 0.3s ease; 
         }
         
-        /* El pseudo-elemento ya no es necesario, lo limpiamos */
-        #paso1 button::before { content: none; } 
-
-        /* Feedback al click: Mantener la fluidez de la animación y añadir un feedback visual rápido */
         #paso1 button:active { 
             transform: scale(0.98); 
-            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); /* Sombra más intensa al tocar */
-            animation-duration: 5s; /* Acelerar la onda un poco al presionar para un feedback más vivo */
+            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); 
+            animation-duration: 5s; 
         }
         
-        /* --- FIN ANIMACIÓN ESTILO ONDA INTELIGENTE --- */
-
-
         .btn-confirm-cargada { background-color: var(--ios-green) !important; }
         .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
         .btn-confirm-averiada { background-color: var(--ios-red) !important; }
-        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } /* Estado activo para botones de Paso 2 */
+        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } 
 
         #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
         #botonesEstado button { 
@@ -186,11 +171,9 @@
             margin: 0; 
             font-size: 16px; 
             overflow: visible; 
-            animation: none !important; /* Asegura que no pulsen */
+            animation: none !important; 
             box-shadow: none !important;
         }
-        #botonesEstado button::before { content: none; } 
-
         #btnLimpiar { background-color: #FF3B30; margin-top: 10px; }
         .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
         
@@ -199,7 +182,6 @@
         /* ----------------------------------------------- */
         #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
         
-        /* Card base, ahora es el contenedor del relleno */
         .compact-summary { 
             flex: 1 1 48%; min-width: 150px; padding: 10px 12px; border-radius: 12px; 
             background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); 
@@ -208,13 +190,12 @@
         }
         .compact-summary.visible { opacity: 1; transform: scale(1); }
         
-        /* Contenido de la tarjeta para superponer al relleno */
         .compact-content { position: relative; z-index: 2; }
 
-        /* Relleno dinámico (el que el usuario quiere) */
+        /* Relleno dinámico */
         .summary-fill {
             position: absolute; bottom: 0; left: 0; width: 100%; 
-            transition: height 0.7s ease-out; /* Animación de llenado */
+            transition: height 0.7s ease-out; 
             border-radius: 0 0 12px 12px;
             z-index: 1;
         }
@@ -234,7 +215,7 @@
         #cardAveriada .percent-text, #cardAveriada h4 { color: var(--ios-red); }
 
         /* ----------------------------------------------- */
-        /* --- ESTILOS DE HISTORIAL RECIENTE (Gráfica) --- */
+        /* --- ESTILOS DE HISTORIAL RECIENTE --- */
         /* ----------------------------------------------- */
         .history-card { 
             list-style: none; 
@@ -266,7 +247,7 @@
             height: 8px; 
             border-radius: 50%; 
             margin-right: 5px; 
-            flex-shrink: 0; /* No se encoge */
+            flex-shrink: 0; 
         }
         .status-indicator.Cargada { background-color: var(--ios-green); }
         .status-indicator.Vacía { background-color: var(--ios-yellow); } 
@@ -274,7 +255,7 @@
 
         .historial-matricula { font-weight: 700; flex-grow: 1; margin-right: 10px; }
         .historial-estado { font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } /* Empuja a la derecha */
+        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } 
         
         /* Colores de Badge */
         .historial-estado.estado-Cargada { background-color: #e6ffec; color: #1e8449; }
@@ -302,7 +283,6 @@
             overflow: visible; 
             animation: none !important;
         }
-        .filter-buttons button::before { content: none; } 
         
         .filter-buttons button.filter-active {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
@@ -642,8 +622,6 @@
         buttonElement.innerHTML = confirmText;
         buttonElement.classList.add(confirmClass);
         
-        // ** NOTA: La animación Siri Wave se gestiona puramente por CSS y no necesita ser manipulada aquí, evitando el efecto de "bloqueo". **
-
         setTimeout(() => {
             // Restaurar estado
             buttonElement.innerHTML = originalText;
@@ -729,7 +707,6 @@
         document.getElementById('countDisponible').textContent = counts.Vacía; 
         document.getElementById('countAveriada').textContent = counts.Averiada;
 
-        // ** CORRECCIÓN: Se utiliza interpolación de plantillas de cadena (template literals) correctamente. **
         const updateCompactCard = (state, count) => {
             const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
             const percentText = `${percentValue}%`;
@@ -737,7 +714,6 @@
             const percentElement = document.getElementById(`percent${state}`);
             if(percentElement) percentElement.textContent = percentText;
             
-            // AJUSTE: Altura del relleno de fondo
             const fillElement = document.getElementById(`fill${state}`);
             if(fillElement) fillElement.style.height = percentText;
         };
@@ -855,8 +831,20 @@
         console.log(`[Notificación] ${mensaje}`);
         // Implementación simple de notificación (podría ser un toast)
     }
+
+    // --- FUNCIÓN AUXILIAR PARA DESCARGA (Fallback) ---
+    function downloadPdf(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
     
-    // --- EXPORTACIÓN PDF (FUNCIÓN CORREGIDA) ---
+    // --- EXPORTACIÓN PDF (FUNCIÓN CORREGIDA PARA SHARING/BLOB) ---
     function hexToRgb(hex) {
         let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace(shorthandRegex, function(m, r, g, b) {
@@ -870,18 +858,15 @@
         ] : [0, 0, 0];
     }
     
-    function exportarPDF() {
+    async function exportarPDF() {
         const registros = cargarRegistros();
 
-        // ** CORRECCIÓN CLAVE: Aseguramos el acceso al objeto jsPDF que se carga con el UMD **
         const PDFConstructor = window.jspdf ? window.jspdf.jsPDF : window.jsPDF; 
         
         if (typeof PDFConstructor === 'undefined' || !PDFConstructor.API || !PDFConstructor.API.autoTable) {
             mostrarConfirmacion("Error: El generador de PDF (jsPDF o AutoTable) no se ha cargado. Revisa las librerías.", "fas fa-exclamation-triangle");
-            console.error("jsPDF object:", window.jsPDF);
             return;
         }
-        // ***************************************************************
 
         if (registros.length === 0) {
             mostrarConfirmacion("No hay registros para exportar.", "fas fa-info-circle");
@@ -925,7 +910,7 @@
                     Total: registros.length
                 };
             
-            // --- 3. IMPLEMENTAR ENCABEZADO XPO LOGISTICS Y CODE CORPORATIVO ---
+            // --- 3. IMPLEMENTAR ENCABEZADO Y TÍTULO ---
             const headerCardHeight = 25;
             const headerCardY = yPos;
             const headerCardX = margin;
@@ -945,7 +930,6 @@
             const xpoText = "XPO";
             const logiText = " LOGISTICS"; 
             
-            doc.setFontSize(22);
             const xpoWidth = doc.getStringUnitWidth(xpoText) * doc.getFontSize() / doc.internal.scaleFactor;
             const logiWidth = doc.getStringUnitWidth(logiText) * doc.getFontSize() / doc.internal.scaleFactor;
             const totalWidth = xpoWidth + logiWidth;
@@ -961,7 +945,7 @@
             doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
             doc.text(logiText, logiStartX, logoY + 1, { align: 'left', baseline: 'middle' });
             
-            // "CODE" Corporate Look & Report Title
+            // "CODE" Corporate Look & Report Title/Date
             doc.setFontSize(8);
             doc.setFont("helvetica", "normal");
             doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
@@ -969,16 +953,12 @@
             const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
             const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
             
-            // Izquierda: Corporate "CODE" y Fecha
-            // ** CORRECCIÓN: Se usa la interpolación correcta ${} **
             doc.text(`CODE | ${currentDay}, ${currentDate}`, margin + 2, headerCardY + headerCardHeight - 4); 
-            
-            // Derecha: Título del Reporte
             doc.text(`REPORTE EJECUTIVO DE FLOTA`, pageWidth - margin - 2, headerCardY + headerCardHeight - 4, { align: 'right' }); 
             
             yPos = headerCardY + headerCardHeight + margin; 
             
-            // --- 4. IMPLEMENTAR BADGES SEMITRANSPARENTES DE RESUMEN (Size 10) ---
+            // --- 4. IMPLEMENTAR BADGES SEMITRANSPARENTES DE RESUMEN ---
             
             const badgeHeight = 10; 
             const badgeMargin = 5;
@@ -1004,48 +984,41 @@
                 doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD'); 
                 doc.setGState(new doc.GState({ opacity: 1 }));
                 
-                // Relleno suave (Efecto Progresivo)
                 doc.setFillColor(badge.color[0], badge.color[1], badge.color[2]);
                 doc.setGState(new doc.GState({ opacity: 0.2 }));
                 doc.roundedRect(badge.x, badgeY, fillWidth, badgeHeight, 1.5, 1.5, 'F'); 
                 doc.setGState(new doc.GState({ opacity: 1 }));
                 
-                // Textos
-                doc.setFontSize(7); // Tamaño para etiqueta
+                doc.setFontSize(7);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
                 doc.text(badge.label, badge.x + badgeWidth / 2, badgeY + 3.5, { align: 'center' });
 
-                doc.setFontSize(10); // Tamaño principal (10pt)
+                doc.setFontSize(10);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
-                // ** CORRECCIÓN: Se usa la interpolación correcta ${} **
                 doc.text(`${badge.count} (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 3.5, { align: 'center' });
             });
             
             yPos = badgeY + badgeHeight + 15; 
 
-            // --- 5. APLICAR DISEÑO DE TABLAS (Tipo Apple Pages: Filas Alternas Blanco/Gris) ---
+            // --- 5. APLICAR DISEÑO DE TABLAS ---
             
             const tableMarginX = 5; 
             const halfWidth = (pageWidth - 2 * margin - tableMarginX) / 2;
             let startYDoubleColumn = yPos;
             
-            // Títulos de Sección
             doc.setFontSize(12);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
             
-            // ** CORRECCIÓN: Se usa la interpolación correcta ${} **
             doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
             
             const xPosVacias = margin + halfWidth + tableMarginX;
-            // ** CORRECCIÓN: Se usa la interpolación correcta ${} **
             doc.text(`PLATAFORMAS VACÍAS (${counts.Vacía})`, xPosVacias, startYDoubleColumn); 
             
             startYDoubleColumn += 5; 
             
-            // Estilos de la Tabla (Apple Pages Look: Base Blanco, Alterna Gris Suave)
             const styles = { 
                 fontSize: 9, 
                 cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }, 
@@ -1055,20 +1028,19 @@
                 lineColor: APPLE_COLORS.MEDIUM_GRAY, 
                 lineWidth: 0.05, 
                 fontStyle: 'normal',
-                fillColor: [255, 255, 255] // Base Blanca
+                fillColor: [255, 255, 255]
             };
             
             const headStyles = { 
-                fillColor: LIGHT_GRAY_APPLE, // Gris Suave para el encabezado
+                fillColor: LIGHT_GRAY_APPLE,
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 fontStyle: 'bold', 
                 lineWidth: { top: 0, right: 0, bottom: 0.15, left: 0 }, 
                 cellPadding: 3 
             };
             
-            // Filas pares (0, 2, 4...) en Blanco (del styles base), Filas impares (1, 3, 5...) en Gris Suave
             const alternateRowStyles = { 
-                fillColor: LIGHT_GRAY_APPLE // Gris Suave
+                fillColor: LIGHT_GRAY_APPLE
             };
             
             const tableOptions = {
@@ -1083,7 +1055,7 @@
                 }
             };
 
-            // --- Tabla de Cargadas (Sin colores en celdas) ---
+            // --- Tabla de Cargadas ---
             doc.autoTable({
                 head: [['MATRÍCULA', 'CONTENIDO']],
                 body: registrosCargadas,
@@ -1097,9 +1069,9 @@
             });
             let finalYCargadas = doc.autoTable.previous.finalY;
 
-            // --- Tabla de Vacías (Sin colores en celdas) ---
+            // --- Tabla de Vacías ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'ESTADO']], // Cambio el título de columna
+                head: [['MATRÍCULA', 'ESTADO']],
                 body: registrosVacías,
                 margin: { left: xPosVacias, right: margin }, 
                 tableWidth: halfWidth,
@@ -1113,7 +1085,7 @@
 
             let finalY = Math.max(finalYCargadas, finalYVacías); 
             
-            // --- Tabla de Averíadas (Full Width, Sin colores en celdas) ---
+            // --- Tabla de Averíadas ---
             if (counts.Averiada > 0) {
                 
                 if (finalY + 20 > doc.internal.pageSize.height - margin) {
@@ -1123,17 +1095,15 @@
                      finalY += 10; 
                 }
 
-                // Título de Sección Averiada
                 doc.setFontSize(12);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-                // ** CORRECCIÓN: Se usa la interpolación correcta ${} **
                 doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
                 
                 doc.autoTable({
                     head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
-                    body: registrosAveriadas,
                     startY: finalY + 10,
+                    body: registrosAveriadas,
                     margin: { left: margin, right: margin },
                     columnStyles: {
                         0: { cellWidth: 30, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
@@ -1155,26 +1125,43 @@
             for(let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
                 
-                // Texto de derechos de autor
                 doc.text(`© ${new Date().getFullYear()} XPO LOGISTICS - Informe interno`, margin, footerY);
                 
-                // Conteo de Páginas
-                // ** CORRECCIÓN: Se usa la interpolación correcta ${} **
                 doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
                 
-                // Línea divisoria sutil para el footer
                 doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
                 doc.setLineWidth(0.1);
                 doc.line(margin, footerY - 2, pageWidth - margin, footerY - 2);
             }
             
-            // ----------------------------------------------------------------
-            // ** Abrir en Nueva Pestaña para Forzar Visualización **
-            // ----------------------------------------------------------------
-
-            doc.output('dataurlnewwindow', {filename: 'Reporte_XPO_Ejecutivo.pdf'});
-
-            mostrarConfirmacion("PDF generado. Se ha abierto en una nueva pestaña.", "fas fa-file-pdf");
+            // --- LÓGICA DE EXPORTACIÓN CON BLOB Y COMPARTIR NATIVO ---
+            const pdfBlob = doc.output('blob');
+            const fileName = `Reporte_XPO_Ejecutivo_${currentDate.replace(/ /g, '_')}.pdf`;
+            
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], fileName, { type: 'application/pdf' })] })) {
+                // 1. Compartir si es compatible (Móvil)
+                const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+                
+                navigator.share({
+                    files: [file],
+                    title: 'Informe Ejecutivo de Flota XPO',
+                    text: `Compartiendo el Reporte Ejecutivo de Flota del ${currentDate}.`
+                }).then(() => {
+                    mostrarConfirmacion("PDF compartido exitosamente.", "fas fa-share-alt");
+                }).catch((error) => {
+                    if (error.name === 'AbortError') {
+                         mostrarConfirmacion("Compartir cancelado.", "fas fa-times-circle");
+                    } else {
+                         // Fallback a descarga si el share falla (ej. error de permisos)
+                         downloadPdf(pdfBlob, fileName);
+                         mostrarConfirmacion("Error al compartir. Iniciando descarga.", "fas fa-download");
+                    }
+                });
+            } else {
+                // 2. Descarga o Abrir en nueva ventana (Fallback para Escritorio o navegador no compatible)
+                downloadPdf(pdfBlob, fileName);
+                mostrarConfirmacion("PDF generado. Iniciando descarga.", "fas fa-download");
+            }
 
         } catch (e) {
             console.error("Error al generar PDF:", e);
@@ -1200,14 +1187,11 @@
         const logoCode = document.getElementById('logoCode');
         const logoXPO = document.getElementById('logoXPO');
 
-        // Resetear estilos iniciales (que son establecidos en CSS para la animación)
         logoCode.style.opacity = '0';
         logoXPO.style.opacity = '0';
         logoXPO.style.transform = 'translateY(20px)';
         
-        // Comprobar si ya se animó antes (Persistencia con localStorage)
         if (!localStorage.getItem('logoAnimado')) {
-             // Inicia animación si es la primera vez
              setTimeout(() => {
                 logoCode.style.opacity = '1';
                 logoCode.style.transform = 'translateY(0)';
@@ -1220,7 +1204,6 @@
              
              localStorage.setItem('logoAnimado', 'true');
         } else {
-            // Si ya se animó, mostrar inmediatamente sin animación
             logoCode.style.opacity = '1';
             logoCode.style.transform = 'translateY(0)';
             logoXPO.style.opacity = '1';
@@ -1241,11 +1224,9 @@
         document.getElementById('paso1').classList.add('active');
         document.getElementById('matriculaInput').focus();
         
-        // --- ACTIVAR EL MANEJO DE SCROLL PARA EL EFECTO DINÁMICO ---
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
-        // Asegurar que el filtro inicial sea 'Todo'
         document.getElementById('btnFilterAll').classList.add('filter-active');
     });
 </script>
