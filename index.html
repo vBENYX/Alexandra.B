@@ -7,7 +7,6 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- Librerías de PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -350,6 +349,38 @@
         .btn-modal-cancel { background-color: #e5e5ea; color: #3c3c43; }
         .btn-modal-confirm-red { background-color: var(--ios-red); }
         .btn-modal-confirm-blue { background-color: var(--ios-blue); }
+        
+        /* --- NUEVO: TOAST DE NOTIFICACIÓN (Estilo iOS) --- */
+        .toast-notification {
+            position: fixed;
+            top: 60px; /* Debajo del encabezado fijo */
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px); /* Oculto arriba */
+            background-color: rgba(50, 50, 50, 0.95); /* Gris oscuro */
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 2500;
+            opacity: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0); /* Muestra en posición */
+        }
+        
+        .toast-notification i {
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -363,15 +394,12 @@
 
 <div class="container">
     
-    <!-- Módulo 1: Ingreso de Matrícula -->
     <div id="paso1" class="step-content active">
         <h3><i class="fas fa-barcode"></i> 1. Ingresar Matrícula</h3>
         <input type="text" id="matriculaInput" placeholder="Matrícula (Escanear o Tipear)" required onkeypress="if(event.key === 'Enter') registrarMatricula()">
-        <!-- Botón con el efecto de onda inteligente -->
         <button id="paso1-button" onclick="registrarMatricula()"><i class="fas fa-arrow-right"></i> Continuar</button>
     </div>
 
-    <!-- Módulo 2: Selección de Estado -->
     <div id="paso2" class="step-content">
         <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula"></span></h3>
         
@@ -398,12 +426,10 @@
         <button class="volver-button" onclick="mostrarPaso1(true)"><i class="fas fa-chevron-left"></i> Volver</button>
     </div>
     
-    <!-- Módulo 3: Resumen y Reportes -->
     <div id="reportes" class="card-section">
         <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
         
         <div id="contadores">
-            <!-- Tarjetas de Resumen con Relleno de Fondo Completo -->
             <div id="cardTotal" class="compact-summary card-total">
                 <div class="compact-content">
                     <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Total Flota</p>
@@ -439,7 +465,6 @@
         
         <h4><i class="fas fa-history"></i> Historial Reciente</h4>
 
-        <!-- Controles de Filtro -->
         <div class="filter-buttons">
             <button id="btnFilterAll" class="filter-active" onclick="filtrarHistorial(null)"><i class="fas fa-list"></i> Todo</button>
             <button id="btnFilterCargada" onclick="filtrarHistorial('Cargada')"><i class="fas fa-box"></i> Cargadas</button>
@@ -447,10 +472,8 @@
             <button id="btnFilterAveriada" onclick="filtrarHistorial('Averiada')"><i class="fas fa-wrench"></i> Averiadas</button>
         </div>
 
-        <!-- Contenedor del historial con el nuevo estilo gráfico de tarjeta -->
         <ul id="historialReciente" class="history-card"></ul>
         
-        <!-- Botón que abre el modal de confirmación -->
         <button id="btnLimpiar" onclick="mostrarModalConfirmacionLimpiar()">
             <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
         </button>
@@ -458,7 +481,6 @@
 
 </div>
 
-<!-- NUEVO: Modal para confirmaciones y alertas proactivas -->
 <div id="confirmModal" class="modal-overlay" onclick="cerrarModal(event)">
     <div class="modal-content">
         <h4 id="modalTitle">Confirmación Requerida</h4>
@@ -468,6 +490,11 @@
             <button class="btn-modal-confirm-blue" id="modalConfirmButton" onclick="modalCallback(true)">Confirmar</button>
         </div>
     </div>
+</div>
+
+<div id="toastNotification" class="toast-notification">
+    <i id="toastIcon" class="fas"></i>
+    <span id="toastMessage"></span>
 </div>
 
 
@@ -544,7 +571,9 @@
     // --- LÓGICA CLAVE: REGISTRO/ESTADO Y ALERTA INTELIGENTE ---
     
     function registrarMatricula() {
-        matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
+        // CORRECCIÓN: Limpiar espacios extra y forzar mayúsculas
+        matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().replace(/\s/g, '').trim(); 
+        
         if (!matriculaActual) {
             mostrarConfirmacion("Ingrese la matrícula.", "fas fa-exclamation-triangle");
             return;
@@ -620,8 +649,10 @@
         } else if (estado === 'vacia') { 
             activeBtnId = 'btnVacia';
             if (!isAutoSelect) {
-                // Si no es una autoselección (es decir, el usuario hizo click), guardamos directamente Vacía.
-                guardarRegistro('vacia', 'Lista para cargar');
+                // CORRECCIÓN: Guardamos el texto original del botón para restaurarlo después del feedback
+                const btnVacia = document.getElementById('btnVacia');
+                const originalText = btnVacia.innerHTML; 
+                guardarRegistro('vacia', 'Lista para cargar', originalText);
             }
         }
         
@@ -630,8 +661,9 @@
         }
     }
     
-    function microInteraccionBoton(buttonElement, estado) {
-        const originalText = buttonElement.innerHTML;
+    // CORRECCIÓN: Función microInteraccionBoton ajustada
+    function microInteraccionBoton(buttonElement, estado, originalBtnHtml = null) {
+        const originalText = originalBtnHtml || buttonElement.innerHTML;
         buttonElement.disabled = true; 
         
         let confirmText = '';
@@ -652,21 +684,19 @@
         buttonElement.innerHTML = confirmText;
         buttonElement.classList.add(confirmClass);
         
-        // ** NOTA: La animación Siri Wave se gestiona puramente por CSS y no necesita ser manipulada aquí, evitando el efecto de "bloqueo". **
-
         setTimeout(() => {
             // Restaurar estado
             buttonElement.innerHTML = originalText;
             buttonElement.classList.remove(confirmClass);
             buttonElement.disabled = false; 
             
-            mostrarConfirmacion(`¡${estado} registrado!`);
+            mostrarConfirmacion(`¡${estado} registrado!`); 
             mostrarPaso1(true); 
         }, 800); 
     }
 
-
-    function guardarRegistro(estado, descripcionManual = '') {
+    // CORRECCIÓN: Función guardarRegistro ajustada para el botón 'Vacía'
+    function guardarRegistro(estado, descripcionManual = '', originalBtnHtml = null) {
         let descripcion = descripcionManual;
         let btnElement = null;
         let estadoDisplay = '';
@@ -681,7 +711,7 @@
             estadoDisplay = 'Averiada'; 
         } else if (estado === 'vacia') {
              descripcion = 'Lista para cargar';
-             btnElement = document.getElementById('btnVacia');
+             btnElement = null; // No tiene botón de Guardar aparte
              estadoDisplay = 'Vacía'; 
         }
 
@@ -693,7 +723,7 @@
         const nuevoRegistro = {
             matricula: matriculaActual,
             estado: estadoDisplay,
-            descripcion: descripcion.trim() || 'N/A',
+            descripcion: descripcion.trim() || (estadoDisplay === 'Vacía' ? 'Lista para cargar' : 'N/A'),
             timestamp: new Date().getTime() 
         };
 
@@ -711,11 +741,11 @@
         actualizarHistorialReciente();
 
         if (btnElement) {
-            // Animación y transición visual
+            // Animación y transición visual para botones de Guardar (Cargada/Averiada)
             microInteraccionBoton(btnElement, estadoDisplay);
         } else if (estado === 'vacia') {
-             // Ya que el botón Vacia no tiene un botón de 'Guardar' aparte
-             microInteraccionBoton(document.getElementById('btnVacia'), estadoDisplay);
+             // Usamos el botón Vacía para la animación de guardado, pasando el HTML original
+             microInteraccionBoton(document.getElementById('btnVacia'), estadoDisplay, originalBtnHtml);
         }
     }
 
@@ -743,10 +773,9 @@
             const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
             const percentText = `${percentValue}%`;
             
-            const percentElement = document.getElementById(`percent${state}`);
+            const percentElement = document.getElementById(`percent${state}`); 
             if(percentElement) percentElement.textContent = percentText;
             
-            // AJUSTE: Altura del relleno de fondo
             const fillElement = document.getElementById(`fill${state}`);
             if(fillElement) fillElement.style.height = percentText;
         };
@@ -785,30 +814,35 @@
         actualizarHistorialReciente();
     }
 
+    // CORRECCIÓN DE LA FUNCIÓN: Asegura que el historial se muestre correctamente
     function actualizarHistorialReciente() {
         let registros = cargarRegistros();
         const ul = document.getElementById('historialReciente');
         ul.innerHTML = ''; 
 
         // 1. Filtrar si es necesario
+        let registrosAmostrar = [...registros]; // Clonar el array
         if (historialFiltro) {
-            registros = registros.filter(reg => reg.estado === historialFiltro);
+            registrosAmostrar = registrosAmostrar.filter(reg => reg.estado === historialFiltro);
         }
         
-        if (registros.length === 0) {
+        if (registrosAmostrar.length === 0) {
             let message = 'Aún no hay movimientos registrados.';
             if (historialFiltro) {
-                message = `No hay matrículas registradas como "${historialFiltro}".`;
+                message = `No hay matrículas registradas como **${historialFiltro}**.`;
             }
             ul.innerHTML = `<li style="justify-content:center; color: var(--text-light-gray); border-bottom: none;">${message}</li>`;
+            ul.classList.remove('history-card'); 
             return;
         }
+        
+        ul.classList.add('history-card'); 
 
         // 2. Ordenar por timestamp (más reciente primero)
-        registros.sort((a, b) => b.timestamp - a.timestamp);
+        registrosAmostrar.sort((a, b) => b.timestamp - a.timestamp);
         
         // Mostrar solo los 5 más recientes del conjunto filtrado
-        const ultimosRegistros = historialFiltro ? registros : registros.slice(0, 5);
+        const ultimosRegistros = historialFiltro ? registrosAmostrar : registrosAmostrar.slice(0, 5);
         
         ultimosRegistros.forEach(reg => {
             const dateObj = new Date(reg.timestamp);
@@ -817,12 +851,18 @@
             const estadoDisplay = reg.estado;
             const estadoClass = `estado-${estadoDisplay}`;
             
+            // CORRECCIÓN: Aseguramos que la descripción sea válida y luego la cortamos.
+            const descripcion = reg.descripcion || (estadoDisplay === 'Vacía' ? 'Lista para cargar' : 'Sin Descripción');
+            const descripcionCorta = descripcion.length > 25 ? descripcion.substring(0, 22) + '...' : descripcion;
+
             const li = document.createElement('li');
             li.innerHTML = `
                 <span class="status-indicator ${estadoDisplay}"></span>
                 <span class="historial-matricula">${reg.matricula}</span>
-                <span class="historial-estado ${estadoClass}">${estadoDisplay}</span>
-                <span class="historial-time">${hora}</span>
+                <span class="historial-estado ${estadoClass}" title="${descripcion}">
+                    ${estadoDisplay}
+                </span>
+                <span class="historial-time">${hora} | ${descripcionCorta}</span>
             `;
             ul.appendChild(li);
         });
@@ -860,12 +900,32 @@
         );
     }
 
+    // CORRECCIÓN: Implementación real del Toast de Notificación
     function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
-        console.log(`[Notificación] ${mensaje}`);
-        // Aquí podríamos disparar un toast o un modal de notificación si fuera una app completa.
+        const toast = document.getElementById('toastNotification');
+        const toastIcon = document.getElementById('toastIcon');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // Limpiar animaciones previas
+        toast.classList.remove('show');
+        
+        // Actualizar contenido
+        toastIcon.className = icono;
+        toastMessage.textContent = mensaje;
+
+        // Mostrar el toast
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 50); // Pequeño retraso para asegurar el reset
+
+        // Ocultar el toast después de 3 segundos
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000); 
     }
     
-    // --- EXPORTACIÓN PDF (Mismo código que antes, solo actualizado) ---
+    // --- EXPORTACIÓN PDF MEJORADA (Incluye fecha/hora en la preparación) ---
     function hexToRgb(hex) {
         let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace(shorthandRegex, function(m, r, g, b) {
@@ -910,18 +970,25 @@
                 HEADER_FILL: [255, 255, 255] 
             };
             
-            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS ---
+            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS (MEJORADO: Añadimos Fecha y Hora) ---
+            const mapRegistroToPDF = (reg) => {
+                const dateObj = new Date(reg.timestamp);
+                const fechaHora = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ' ' + dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                const descripcion = reg.descripcion || (reg.estado === 'Vacía' ? 'Lista para cargar' : 'N/A');
+                return [reg.matricula, descripcion, fechaHora];
+            };
+
             const registrosCargadas = registros
                 .filter(reg => reg.estado === 'Cargada')
-                .map(reg => [reg.matricula, reg.descripcion]); 
+                .map(mapRegistroToPDF); 
             
             const registrosVacías = registros
                 .filter(reg => reg.estado === 'Vacía')
-                .map(reg => [reg.matricula, reg.descripcion || 'Lista para cargar']); 
+                .map(mapRegistroToPDF); 
             
             const registrosAveriadas = registros
                 .filter(reg => reg.estado === 'Averiada')
-                .map(reg => [reg.matricula, reg.descripcion]);
+                .map(mapRegistroToPDF);
                 
             const counts = {
                     Cargada: registrosCargadas.length,
@@ -1067,13 +1134,14 @@
 
             // --- Tabla de Cargadas ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'CONTENIDO']],
+                head: [['MATRÍCULA', 'CONTENIDO', 'REGISTRO']],
                 body: registrosCargadas,
                 margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [240, 255, 240], textColor: APPLE_COLORS.GREEN_CARGADA }, 
-                    1: { cellWidth: 'auto' }
+                    0: { cellWidth: 20, fontStyle: 'bold', fillColor: [240, 255, 240], textColor: APPLE_COLORS.GREEN_CARGADA }, 
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 20, fontSize: 7, textColor: APPLE_COLORS.MEDIUM_GRAY } // Columna de Fecha/Hora
                 },
                 ...tableOptions
             });
@@ -1081,13 +1149,14 @@
 
             // --- Tabla de Vacías ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'DESCRIPCIÓN']],
+                head: [['MATRÍCULA', 'DESCRIPCIÓN', 'REGISTRO']],
                 body: registrosVacías,
                 margin: { left: xPosVacias, right: margin }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 255, 240], textColor: APPLE_COLORS.YELLOW_VACIA }, 
-                    1: { cellWidth: 'auto' }
+                    0: { cellWidth: 20, fontStyle: 'bold', fillColor: [255, 255, 240], textColor: APPLE_COLORS.YELLOW_VACIA }, 
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 20, fontSize: 7, textColor: APPLE_COLORS.MEDIUM_GRAY } // Columna de Fecha/Hora
                 },
                 ...tableOptions
             });
@@ -1112,13 +1181,14 @@
                 doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
                 
                 doc.autoTable({
-                    head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
+                    head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA', 'REGISTRO']],
                     body: registrosAveriadas,
                     startY: finalY + 10,
                     margin: { left: margin, right: margin },
                     columnStyles: {
-                        0: { cellWidth: 30, fontStyle: 'bold', fillColor: [255, 240, 240], textColor: APPLE_COLORS.RED_XPO }, 
-                        1: { cellWidth: 'auto' }
+                        0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 240, 240], textColor: APPLE_COLORS.RED_XPO }, 
+                        1: { cellWidth: 'auto' },
+                        2: { cellWidth: 20, fontSize: 7, textColor: APPLE_COLORS.MEDIUM_GRAY } // Columna de Fecha/Hora
                     },
                     ...tableOptions
                 });
@@ -1127,7 +1197,9 @@
 
             // --- Pie de Página (Footer) ---
             const footerY = doc.internal.pageSize.height - 5;
-            
+            const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+            const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+
             doc.setFontSize(8);
             doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
             doc.setFont("helvetica", "normal");
@@ -1149,8 +1221,6 @@
                 
                 // Título del reporte e información de la fecha
                 if (i === 1) {
-                    const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
-                    const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
                     
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(8);
@@ -1165,7 +1235,8 @@
 
         } catch (e) {
             console.error("Error al generar PDF:", e);
-            mostrarConfirmacion("Error al generar el PDF. Revisa la consola para más detalles.", "fas fa-exclamation-triangle");
+            // CORRECCIÓN DE ERROR: Mostrar un mensaje más detallado si la generación falla.
+            mostrarConfirmacion(`Error al generar el PDF: ${e.message}. Revisa la consola.`, "fas fa-exclamation-triangle");
         }
     }
 
@@ -1221,7 +1292,6 @@
         actualizarContadores();
         actualizarHistorialReciente(); 
         
-        // El botón de paso 1 ya tiene un ID en el HTML.
         document.getElementById('btnExportar').addEventListener('click', exportarPDF);
         
         document.getElementById('paso1').style.display = 'block';
@@ -1229,7 +1299,6 @@
         document.getElementById('paso1').classList.add('active');
         document.getElementById('matriculaInput').focus();
         
-        // --- ACTIVAR EL MANEJO DE SCROLL PARA EL EFECTO DINÁMICO ---
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
@@ -1240,4 +1309,3 @@
 
 </body>
 </html>
-
