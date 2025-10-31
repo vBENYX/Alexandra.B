@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CODE XPO | Registro Táctil de Matrículas</title>
+    <title>XPO Logistics | Registro Táctil de Flota</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
+    <!-- Librerías de PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -28,19 +29,19 @@
             --vibrant-gradient: linear-gradient(90deg, #007AFF 0%, #34D8A4 100%); 
             --logo-red: #FF3B30;
             
-            /* Colores para el relleno de tarjetas */
-            --fill-green: rgba(52, 199, 89, 0.1); 
-            --fill-yellow: rgba(255, 204, 0, 0.1); 
-            --fill-red: rgba(255, 59, 48, 0.1); 
+            /* Colores para el relleno de tarjetas (SUAVES) */
+            --fill-green: rgba(52, 199, 89, 0.12); 
+            --fill-yellow: rgba(255, 204, 0, 0.15); 
+            --fill-red: rgba(255, 59, 48, 0.12); 
             
-            /* NUEVO: Colores para el efecto de Onda Inteligente (Siri/Apple) */
+            /* Colores para el efecto de Onda Inteligente (Siri/Apple) */
             --siri-blue: #007AFF;
             --siri-cyan: #34D8A4; 
             --siri-violet: #8e44ad; 
             
             /* Gradiente base que se animará */
             --siri-gradient: linear-gradient(
-                135deg, /* Ángulo diagonal para una mejor sensación de movimiento */
+                135deg, 
                 var(--siri-violet) 0%, 
                 var(--siri-blue) 25%, 
                 var(--siri-cyan) 50%, 
@@ -65,7 +66,7 @@
         }
         
         /* ----------------------------------------------- */
-        /* --- ENCABEZADO FIJO --- */
+        /* --- ENCABEZADO FIJO CORPORATIVO --- */
         /* ----------------------------------------------- */
         .header-fixed {
             position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; 
@@ -76,12 +77,42 @@
             -webkit-backdrop-filter: blur(15px); 
             backdrop-filter: blur(15px); 
             box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05); 
+            display: flex; align-items: center;
         }
         .header-fixed.scrolled { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
-        .logo-container { display: flex; align-items: baseline; gap: 5px; overflow: hidden; }
-        .logo-code { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; background: var(--vibrant-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; transition-delay: 0.1s; }
-        .logo-xpo { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--logo-red); line-height: 1; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; transition-delay: 0.25s; }
-        .logo-code.animate-in, .logo-xpo.animate-in { opacity: 1; transform: translateY(0); } 
+        
+        .logo-container { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+        
+        /* Logo CODE (símbolo corporativo minimalista) */
+        .logo-corporate-code { 
+            font-size: 16px; 
+            font-weight: 900; 
+            line-height: 1; 
+            background: var(--vibrant-gradient);
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            margin-right: 5px; 
+            transition: none;
+        }
+
+        /* XPO (rojo) */
+        .logo-xpo-red { 
+            font-size: 24px; 
+            font-weight: 800; 
+            letter-spacing: -0.5px;
+            color: var(--logo-red); 
+            line-height: 1; 
+            transition: none;
+        }
+        /* LOGISTICS (negro) */
+        .logo-logistics-black {
+            font-size: 20px; /* Un poco más pequeño que XPO */
+            font-weight: 600; /* Menos negrita */
+            color: var(--dark-text);
+            line-height: 1; 
+            transition: none;
+        }
+
         .container { width: 100%; max-width: 450px; background-color: transparent; box-shadow: none; position: relative; height: auto; min-height: calc(100vh - 75px); overflow: hidden; padding: 0 10px; }
 
         /* --- ESTILOS DE PASOS Y CARDS --- */
@@ -115,57 +146,42 @@
             cursor: pointer; 
             font-size: 18px; 
             font-weight: 600; 
-            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s; /* Aseguramos que box-shadow transicione suavemente */
+            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s; 
             -webkit-appearance: none; 
             position: relative; 
             overflow: hidden; 
             z-index: 1;
         }
 
-        /* Efecto Activo Base */
         button:active { 
             opacity: 1; 
             transform: scale(0.99); 
-            /* La sombra se controlará por el estilo Siri/Inteligente */
         }
         
-        /* Aseguramos que el contenido del botón esté en el nivel superior (z-index: 2) */
         button i, button span, button strong {
             position: relative;
             z-index: 2;
-            pointer-events: none; /* Asegura que el click pase al botón */
+            pointer-events: none; 
         }
 
-
-        /* --- NUEVO: ANIMACIÓN ESTILO ONDA INTELIGENTE (SIRI WAVE) --- */
-        
-        /* 1. Animación de Desplazamiento del Gradiente */
+        /* --- ANIMACIÓN ESTILO ONDA INTELIGENTE (SIRI WAVE) --- */
         @keyframes siri-wave {
             0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; } /* Desplaza el gradiente de izquierda a derecha */
+            100% { background-position: 100% 50%; } 
         }
 
         #paso1 button {
-            /* Aplicar el gradiente dinámico */
             background: var(--siri-gradient);
-            background-size: 300% 300%; /* Hacemos el gradiente 3 veces más grande para un desplazamiento sutil */
-            
-            /* Aplicar la animación lenta de desplazamiento */
-            animation: siri-wave 12s ease-in-out infinite alternate; /* Onda lenta y suave */
-            
-            /* Sombra sutil y más limpia, con color basado en Siri Blue */
+            background-size: 300% 300%; 
+            animation: siri-wave 12s ease-in-out infinite alternate; 
             box-shadow: 0 4px 15px rgba(0, 122, 255, 0.5);
             transition: all 0.3s ease; 
         }
         
-        /* El pseudo-elemento ya no es necesario, lo limpiamos */
-        #paso1 button::before { content: none; } 
-
-        /* Feedback al click: Mantener la fluidez de la animación y añadir un feedback visual rápido */
         #paso1 button:active { 
             transform: scale(0.98); 
-            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); /* Sombra más intensa al tocar */
-            animation-duration: 5s; /* Acelerar la onda un poco al presionar para un feedback más vivo */
+            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); 
+            animation-duration: 5s; 
         }
         
         /* --- FIN ANIMACIÓN ESTILO ONDA INTELIGENTE --- */
@@ -174,7 +190,7 @@
         .btn-confirm-cargada { background-color: var(--ios-green) !important; }
         .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
         .btn-confirm-averiada { background-color: var(--ios-red) !important; }
-        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } /* Estado activo para botones de Paso 2 */
+        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } 
 
         #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
         #botonesEstado button { 
@@ -186,7 +202,7 @@
             margin: 0; 
             font-size: 16px; 
             overflow: visible; 
-            animation: none !important; /* Asegura que no pulsen */
+            animation: none !important; 
             box-shadow: none !important;
         }
         #botonesEstado button::before { content: none; } 
@@ -195,26 +211,31 @@
         .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
         
         /* ----------------------------------------------- */
-        /* --- ESTILOS DE RESUMEN DE FLOTA (Contadores) --- */
+        /* --- ESTILOS DE RESUMEN DE FLOTA (COMPACTOS) --- */
         /* ----------------------------------------------- */
         #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
         
-        /* Card base, ahora es el contenedor del relleno */
+        /* Cards más compactas (Solicitud de tamaño 10) */
         .compact-summary { 
-            flex: 1 1 48%; min-width: 150px; padding: 10px 12px; border-radius: 12px; 
+            flex: 1 1 48%; min-width: 130px; 
+            padding: 8px 10px; /* Reducción de padding */
+            border-radius: 12px; 
             background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); 
             overflow: hidden; position: relative; opacity: 0; transform: scale(0.98); 
             transition: opacity 0.3s ease-out, transform 0.3s ease-out, background-color 0.5s ease;
         }
         .compact-summary.visible { opacity: 1; transform: scale(1); }
         
-        /* Contenido de la tarjeta para superponer al relleno */
-        .compact-content { position: relative; z-index: 2; }
+        /* Tipografía más compacta */
+        .compact-summary p { margin: 0; font-size: 11px !important; color: var(--text-light-gray); }
+        .compact-summary h4 { margin: 3px 0 0 0 !important; font-size: 20px !important; font-weight: 700; }
 
+        .compact-content { position: relative; z-index: 2; }
+        
         /* Relleno dinámico (el que el usuario quiere) */
         .summary-fill {
             position: absolute; bottom: 0; left: 0; width: 100%; 
-            transition: height 0.7s ease-out; /* Animación de llenado */
+            transition: height 0.7s ease-out; 
             border-radius: 0 0 12px 12px;
             z-index: 1;
         }
@@ -234,7 +255,7 @@
         #cardAveriada .percent-text, #cardAveriada h4 { color: var(--ios-red); }
 
         /* ----------------------------------------------- */
-        /* --- ESTILOS DE HISTORIAL RECIENTE (Gráfica) --- */
+        /* --- ESTILOS DE HISTORIAL RECIENTE --- */
         /* ----------------------------------------------- */
         .history-card { 
             background-color: var(--ios-card-bg); 
@@ -266,7 +287,7 @@
             height: 8px; 
             border-radius: 50%; 
             margin-right: 5px; 
-            flex-shrink: 0; /* No se encoge */
+            flex-shrink: 0; 
         }
         .status-indicator.Cargada { background-color: var(--ios-green); }
         .status-indicator.Vacía { background-color: var(--ios-yellow); } 
@@ -274,7 +295,7 @@
 
         .historial-matricula { font-weight: 700; flex-grow: 1; margin-right: 10px; }
         .historial-estado { font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } /* Empuja a la derecha */
+        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } 
         
         /* Colores de Badge */
         .historial-estado.estado-Cargada { background-color: #e6ffec; color: #1e8449; }
@@ -355,8 +376,10 @@
 
 <div class="header-fixed" id="fixedHeader">
     <div id="logoHeader" class="logo-container">
-        <div class="logo-code" id="logoCode">CODE</div>
-        <div class="logo-xpo" id="logoXPO">XPO</div>
+        <!-- Logo CODE Corporativo y Branding XPO LOGISTICS -->
+        <span class="logo-corporate-code">CODE</span>
+        <span class="logo-xpo-red">XPO</span>
+        <span class="logo-logistics-black">LOGISTICS</span>
     </div>
 </div>
 
@@ -398,31 +421,32 @@
         <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
         
         <div id="contadores">
+            <!-- Tarjetas de resumen (más compactas) -->
             <div id="cardTotal" class="compact-summary card-total">
                 <div class="compact-content">
-                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Total Flota</p>
-                    <h4 id="countTotal" style="margin: 5px 0 0 0; font-size: 24px; color: var(--dark-text); font-weight: 700;">0</h4>
+                    <p>Total Flota</p>
+                    <h4 id="countTotal">0</h4>
                 </div>
             </div>
             <div id="cardCargada" class="compact-summary card-cargada">
                 <div id="fillCargada" class="summary-fill" style="height: 0%;"></div>
                 <div class="compact-content">
-                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Cargadas (<span id="percentCargada" class="percent-text">0%</span>)</p>
-                    <h4 id="countCargada" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
+                    <p>Cargadas (<span id="percentCargada" class="percent-text">0%</span>)</p>
+                    <h4 id="countCargada">0</h4>
                 </div>
             </div>
             <div id="cardDisponible" class="compact-summary card-disponible">
                 <div id="fillDisponible" class="summary-fill" style="height: 0%;"></div>
                 <div class="compact-content">
-                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Vacías (<span id="percentDisponible" class="percent-text">0%</span>)</p>
-                    <h4 id="countDisponible" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
+                    <p>Vacías (<span id="percentDisponible" class="percent-text">0%</span>)</p>
+                    <h4 id="countDisponible">0</h4>
                 </div>
             </div>
             <div id="cardAveriada" class="compact-summary card-averiada">
                 <div id="fillAveriada" class="summary-fill" style="height: 0%;"></div>
                 <div class="compact-content">
-                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Averiadas (<span id="percentAveriada" class="percent-text">0%</span>)</p>
-                    <h4 id="countAveriada" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
+                    <p>Averiadas (<span id="percentAveriada" class="percent-text">0%</span>)</p>
+                    <h4 id="countAveriada">0</h4>
                 </div>
             </div>
         </div>
@@ -464,8 +488,8 @@
 <script>
     let matriculaActual = "";
     let registroDuplicado = null; 
-    let modalCallback = (result) => {}; // Callback para el modal
-    let historialFiltro = null; // null = ver todo
+    let modalCallback = (result) => {}; 
+    let historialFiltro = null; 
 
     // --- FUNCIONES DE ALMACENAMIENTO (LOCALSTORAGE) ---
     function guardarRegistros(registros) {
@@ -611,7 +635,7 @@
             activeBtnId = 'btnVacia';
             if (!isAutoSelect) {
                 // Si no es una autoselección (es decir, el usuario hizo click), guardamos directamente Vacía.
-                guardarRegistro('vacia', 'Lista para cargar');
+                guardarRegistro('vacia'); // Llamada sin descripción para que se guarde como ''
             }
         }
         
@@ -669,7 +693,8 @@
             btnElement = document.getElementById('btnGuardarAveriada');
             estadoDisplay = 'Averiada'; 
         } else if (estado === 'vacia') {
-             descripcion = 'Lista para cargar';
+             // CAMBIO: La descripción para 'Vacía' es un string vacío para que la columna de la tabla quede vacía en el PDF
+             descripcion = ''; 
              btnElement = document.getElementById('btnVacia');
              estadoDisplay = 'Vacía'; 
         }
@@ -682,7 +707,8 @@
         const nuevoRegistro = {
             matricula: matriculaActual,
             estado: estadoDisplay,
-            descripcion: descripcion.trim() || 'N/A',
+            // Aseguramos que la descripción sea string vacío si no hay nada (Vacía)
+            descripcion: descripcion.trim() || '', 
             timestamp: new Date().getTime() 
         };
 
@@ -735,7 +761,7 @@
             const percentElement = document.getElementById(`percent${state}`);
             if(percentElement) percentElement.textContent = percentText;
             
-            // AJUSTE: Altura del relleno de fondo
+            // Altura del relleno de fondo
             const fillElement = document.getElementById(`fill${state}`);
             if(fillElement) fillElement.style.height = percentText;
         };
@@ -854,7 +880,7 @@
         // Aquí podríamos disparar un toast o un modal de notificación si fuera una app completa.
     }
     
-    // --- EXPORTACIÓN PDF (Estilo Apple - Compacto y Limpio) ---
+    // --- EXPORTACIÓN PDF (Estilo Apple Pages/Alternando Columnas) ---
     
     /**
      * Función auxiliar para convertir colores HEX a RGB para jsPDF.
@@ -874,7 +900,7 @@
     
     /**
      * Genera y descarga un archivo PDF con el historial de la flota aplicando un diseño
-     * limpio, compacto y estilo Apple (tipografía helvetica, colores cálidos, sin negritas).
+     * limpio y estilo Apple Pages.
      */
     function exportarPDF() {
         const registros = cargarRegistros();
@@ -897,15 +923,16 @@
             let yPos = margin;
             const pageWidth = doc.internal.pageSize.width;
             
-            // --- 1. CONFIGURACIÓN DE COLORES TIPO APPLE (Colores más cálidos y limpios) ---
+            // --- 1. CONFIGURACIÓN DE COLORES TIPO APPLE ---
             const APPLE_COLORS = {
                 RED_XPO: hexToRgb('#FF3B30'),
                 DARK_TEXT: hexToRgb('#1C1C1E'),
                 MEDIUM_GRAY: hexToRgb('#D1D1D6'),
-                LIGHT_GRAY_BG: hexToRgb('#F9F9F9'), // Fondo cálido y claro para header/tablas
+                LIGHT_GRAY_BG: hexToRgb('#F9F9F9'), 
                 GREEN_CARGADA: hexToRgb('#34C759'),
                 YELLOW_VACIA: hexToRgb('#FFCC00'),
-                HEADER_FILL: [255, 255, 255] 
+                HEADER_FILL: [255, 255, 255],
+                SOFT_COLUMN_GRAY: hexToRgb('#F7F7F7') // Gris suave para columnas alternas
             };
             
             // --- 2. PREPARACIÓN DE DATOS Y CONTEOS ---
@@ -915,7 +942,7 @@
             
             const registrosVacías = registros
                 .filter(reg => reg.estado === 'Vacía')
-                .map(reg => [reg.matricula, reg.descripcion || 'Lista para cargar']); 
+                .map(reg => [reg.matricula, reg.descripcion || '']); // Descripcion es string vacío.
             
             const registrosAveriadas = registros
                 .filter(reg => reg.estado === 'Averiada')
@@ -928,7 +955,7 @@
                     Total: registros.length
                 };
             
-            // --- 3. IMPLEMENTAR ENCABEZADO Y LOGO (Diseño Tipográfico Simple) ---
+            // --- 3. IMPLEMENTAR ENCABEZADO Y LOGO (XPO LOGISTICS) ---
             const headerCardHeight = 25;
             const headerCardY = yPos;
             const headerCardX = margin;
@@ -942,33 +969,48 @@
             doc.setGState(new doc.GState({ opacity: 1 })); 
             
             const logoY = headerCardY + headerCardHeight / 2;
+            
+            // 3.1 LOGO CODE (Stylized corporate icon in top-left)
+            doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
+            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+            doc.text("CODE", margin + 3, logoY - 5, { align: 'left' });
+            doc.setDrawColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
+            doc.setLineWidth(1);
+            doc.line(margin + 3, logoY - 4, margin + 3 + 12, logoY - 4);
             
-            // Calcular y centrar logo (tipografía helvetica)
-            doc.setFontSize(18);
-            const codeText = "CODE";
-            const codeWidth = doc.getStringUnitWidth(codeText) * doc.getFontSize() / doc.internal.scaleFactor;
-            
+            // 3.2 XPO LOGISTICS branding (Centered, Red/Black Bold)
             const xpoText = "XPO";
+            doc.setFontSize(22);
             const xpoWidth = doc.getStringUnitWidth(xpoText) * doc.getFontSize() / doc.internal.scaleFactor;
             
-            const gap = 3; 
-            const totalWidth = codeWidth + xpoWidth + gap;
+            const logisticsText = "LOGISTICS";
+            doc.setFontSize(18); 
+            const logisticsWidth = doc.getStringUnitWidth(logisticsText) * doc.getFontSize() / doc.internal.scaleFactor;
             
-            const codeStartX = (pageWidth / 2) - (totalWidth / 2);
-            const xpoStartX = codeStartX + codeWidth + gap;
+            const gap = 2; 
+            const totalWidth = xpoWidth + logisticsWidth + gap;
             
-            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-            doc.text(codeText, codeStartX, logoY, { align: 'left', baseline: 'middle' });
+            const xpoStartX = (pageWidth / 2) - (totalWidth / 2);
+            const logisticsStartX = xpoStartX + xpoWidth + gap;
             
+            // XPO (Red, Bold)
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
             doc.setTextColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
             doc.text(xpoText, xpoStartX, logoY, { align: 'left', baseline: 'middle' });
+            
+            // LOGISTICS (Black, Bold)
+            doc.setFontSize(18);
+            doc.setFont("helvetica", "bold"); // Mantener bold para corporativo, pero más pequeño.
+            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+            doc.text(logisticsText, logisticsStartX, logoY, { align: 'left', baseline: 'middle' });
             
             yPos = headerCardY + headerCardHeight + margin; 
             
             // --- 4. IMPLEMENTAR BADGES MÁS PEQUEÑOS Y COMPACTOS ---
             
-            const badgeHeight = 8; // **BADGES MÁS PEQUEÑOS**
+            const badgeHeight = 8; 
             const badgeMargin = 4; 
             const badgeWidth = (pageWidth - 2 * margin - 2 * badgeMargin) / 3;
             const badgeY = yPos;
@@ -983,14 +1025,14 @@
                 const percentage = counts.Total > 0 ? (badge.count / counts.Total) : 0;
                 const fillWidth = badgeWidth * percentage;
                 
-                // Fondo de tarjeta (cálido, claro)
+                // Fondo de tarjeta
                 doc.setFillColor(APPLE_COLORS.LIGHT_GRAY_BG[0], APPLE_COLORS.LIGHT_GRAY_BG[1], APPLE_COLORS.LIGHT_GRAY_BG[2]);
                 doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
                 doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD'); 
                 
-                // Barra de llenado (sutil)
+                // Barra de llenado (efecto progresivo, color suave)
                 doc.setFillColor(badge.color[0], badge.color[1], badge.color[2]);
-                doc.setGState(new doc.GState({ opacity: 0.15 })); // Opacidad baja
+                doc.setGState(new doc.GState({ opacity: 0.15 })); 
                 doc.roundedRect(badge.x, badgeY, fillWidth, badgeHeight, 1.5, 1.5, 'F'); 
                 doc.setGState(new doc.GState({ opacity: 1 }));
                 
@@ -1001,15 +1043,15 @@
                 doc.text(badge.label, badge.x + badgeWidth / 2, badgeY + 3, { align: 'center' }); 
 
                 // Texto: Conteo (prominente, compacto)
-                doc.setFontSize(8); // **Texto de conteo reducido**
+                doc.setFontSize(8); 
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
                 doc.text(`${badge.count} (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 2.5, { align: 'center' }); 
             });
             
-            yPos = badgeY + badgeHeight + 10; // **APROVECHAR EL ESPACIO**
+            yPos = badgeY + badgeHeight + 10; 
 
-            // --- 5. APLICAR DISEÑO DE TABLAS (Sin Negritas, Más Compacto) ---
+            // --- 5. APLICAR DISEÑO DE TABLAS (Alternando Columnas y Estilo Apple Pages) ---
             
             const tableMarginX = 5; 
             const halfWidth = (pageWidth - 2 * margin - tableMarginX) / 2;
@@ -1029,18 +1071,18 @@
             
             // Estilos de la Tabla (Minimalista y Compacto)
             const styles = { 
-                fontSize: 8, // **CELDAS MÁS PEQUEÑAS Y TEXTOS TAMBIÉN**
-                cellPadding: { top: 1.5, right: 2, bottom: 1.5, left: 2 }, // **COMPACTO**
+                fontSize: 8, 
+                cellPadding: { top: 1.5, right: 2, bottom: 1.5, left: 2 }, 
                 valign: 'middle', 
-                font: "helvetica", // **TIPOGRAFÍA APPLE**
+                font: "helvetica", 
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 lineColor: APPLE_COLORS.MEDIUM_GRAY, 
                 lineWidth: 0.05, 
-                fontStyle: 'normal' // **NO SEA EN NEGRITA** (para el contenido)
+                fontStyle: 'normal' 
             };
             
             const headStyles = { 
-                fillColor: APPLE_COLORS.LIGHT_GRAY_BG, // Fondo cálido y claro
+                fillColor: APPLE_COLORS.LIGHT_GRAY_BG, 
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 fontStyle: 'bold', 
                 lineWidth: { top: 0, right: 0, bottom: 0.15, left: 0 }, 
@@ -1059,7 +1101,16 @@
                 alternateRowStyles: alternateRowStyles, 
                 didParseCell: (data) => {
                     if (data.row.section === 'body') {
-                        data.cell.styles.minCellHeight = 5; // **MÁS PEQUEÑO**
+                        data.cell.styles.minCellHeight = 5; 
+                        // Aplicar color de relleno de columna: Columna 0 (Matrícula) = Gris Suave
+                        if (data.column.index === 0) {
+                            data.cell.styles.fillColor = APPLE_COLORS.SOFT_COLUMN_GRAY;
+                        } else {
+                            data.cell.styles.fillColor = [255, 255, 255]; // Columna 1 = Blanco
+                        }
+                        // Asegurar que el texto sea negro/dark para todo el cuerpo
+                        data.cell.styles.textColor = APPLE_COLORS.DARK_TEXT;
+                        data.cell.styles.fontStyle = 'normal';
                     }
                 }
             };
@@ -1070,24 +1121,16 @@
                 body: registrosCargadas,
                 margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
                 tableWidth: halfWidth,
-                columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [249, 255, 249], textColor: APPLE_COLORS.DARK_TEXT }, // Relleno suave (cálido verde claro)
-                    1: { cellWidth: 'auto' }
-                },
                 ...tableOptions
             });
             let finalYCargadas = doc.autoTable.previous.finalY;
 
             // --- Tabla de Vacías ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'DESCRIPCIÓN']],
-                body: registrosVacías,
+                head: [['MATRÍCULA', 'PLATAFORMA']], // Columna de descripción renombrada a 'Plataforma'
+                body: registrosVacías, // La descripción es un string vacío, cumpliendo el requisito.
                 margin: { left: xPosVacias, right: margin }, 
                 tableWidth: halfWidth,
-                columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 255, 249], textColor: APPLE_COLORS.DARK_TEXT }, // Relleno suave (cálido amarillo claro)
-                    1: { cellWidth: 'auto' }
-                },
                 ...tableOptions
             });
             let finalYVacías = doc.autoTable.previous.finalY;
@@ -1116,10 +1159,6 @@
                     body: registrosAveriadas,
                     startY: finalY + 10,
                     margin: { left: margin, right: margin },
-                    columnStyles: {
-                        0: { cellWidth: 30, fontStyle: 'bold', fillColor: [255, 249, 249], textColor: APPLE_COLORS.DARK_TEXT }, // Relleno suave (cálido rojo claro)
-                        1: { cellWidth: 'auto' }
-                    },
                     ...tableOptions
                 });
                 finalY = doc.autoTable.previous.finalY;
@@ -1182,46 +1221,17 @@
         }
     }
     
-    // --- Lógica de animación restaurada con localStorage ---
-    function animarLogo() {
-        const logoCode = document.getElementById('logoCode');
-        const logoXPO = document.getElementById('logoXPO');
-
-        // Resetear estilos iniciales (que son establecidos en CSS para la animación)
-        logoCode.style.opacity = '0';
-        logoXPO.style.opacity = '0';
-        logoXPO.style.transform = 'translateY(20px)';
-        
-        // Comprobar si ya se animó antes (Persistencia con localStorage)
-        if (!localStorage.getItem('logoAnimado')) {
-             // Inicia animación si es la primera vez
-             setTimeout(() => {
-                logoCode.style.opacity = '1';
-                logoCode.style.transform = 'translateY(0)';
-             }, 50);
-
-             setTimeout(() => {
-                logoXPO.style.opacity = '1';
-                logoXPO.style.transform = 'translateY(0)';
-             }, 350); 
-             
-             localStorage.setItem('logoAnimado', 'true');
-        } else {
-            // Si ya se animó, mostrar inmediatamente sin animación
-            logoCode.style.opacity = '1';
-            logoCode.style.transform = 'translateY(0)';
-            logoXPO.style.opacity = '1';
-            logoXPO.style.transform = 'translateY(0)';
-        }
+    // La animación compleja del logo ha sido reemplazada por una presentación inmediata corporativa.
+    function setupLogo() {
+        // No hay animación compleja, el logo se muestra inmediatamente con el estilo corporativo
     }
 
     // --- INICIALIZACIÓN GLOBAL ---
     document.addEventListener('DOMContentLoaded', () => {
-        animarLogo();
+        setupLogo();
         actualizarContadores();
         actualizarHistorialReciente(); 
         
-        // El botón de paso 1 ya tiene un ID en el HTML.
         document.getElementById('btnExportar').addEventListener('click', exportarPDF);
         
         document.getElementById('paso1').style.display = 'block';
@@ -1240,3 +1250,4 @@
 
 </body>
 </html>
+
