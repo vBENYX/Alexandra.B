@@ -237,17 +237,17 @@
         /* --- ESTILOS DE HISTORIAL RECIENTE (Gráfica) --- */
         /* ----------------------------------------------- */
         .history-card { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+        }
+
+        .history-card { 
             background-color: var(--ios-card-bg); 
             border-radius: 10px; 
             box-shadow: var(--ios-shadow); 
             padding: 0; 
             margin: 15px 0 0 0;
-        }
-
-        #historialReciente { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
         }
         
         #historialReciente li { 
@@ -670,7 +670,7 @@
             btnElement = document.getElementById('btnGuardarAveriada');
             estadoDisplay = 'Averiada'; 
         } else if (estado === 'vacia') {
-             descripcion = 'Lista para cargar';
+             descripcion = 'Vacía'; // Asegurar que en el JSON se guarda 'Vacía'
              btnElement = document.getElementById('btnVacia');
              estadoDisplay = 'Vacía'; 
         }
@@ -899,15 +899,16 @@
                 YELLOW_VACIA: hexToRgb('#FFCC00'),
                 HEADER_FILL: [255, 255, 255] 
             };
+            const LIGHT_GRAY_APPLE = [249, 249, 249]; // Gris suave para tablas
             
-            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS ---
+            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS (Vacías ahora es 'Vacía') ---
             const registrosCargadas = registros
                 .filter(reg => reg.estado === 'Cargada')
                 .map(reg => [reg.matricula, reg.descripcion]); 
             
             const registrosVacías = registros
                 .filter(reg => reg.estado === 'Vacía')
-                .map(reg => [reg.matricula, reg.descripcion || 'Lista para cargar']); 
+                .map(reg => [reg.matricula, 'Vacía']); // CAMBIO: "Vacía" en lugar de "Lista para cargar"
             
             const registrosAveriadas = registros
                 .filter(reg => reg.estado === 'Averiada')
@@ -920,7 +921,7 @@
                     Total: registros.length
                 };
             
-            // --- 3. IMPLEMENTAR ENCABEZADO Y LOGO (Diseño Tipográfico Simple) ---
+            // --- 3. IMPLEMENTAR ENCABEZADO XPO LOGISTICS Y CODE CORPORATIVO ---
             const headerCardHeight = 25;
             const headerCardY = yPos;
             const headerCardX = margin;
@@ -935,29 +936,45 @@
             const logoY = headerCardY + headerCardHeight / 2;
             doc.setFont("helvetica", "bold");
             
-            doc.setFontSize(18);
-            const codeText = "CODE";
-            const codeWidth = doc.getStringUnitWidth(codeText) * doc.getFontSize() / doc.internal.scaleFactor;
-            
-            doc.setFontSize(18);
+            // LOGO XPO Logistics (Centered)
+            doc.setFontSize(22); 
             const xpoText = "XPO";
+            const logiText = " LOGISTICS"; 
+            
+            // Medición
+            doc.setFontSize(22);
             const xpoWidth = doc.getStringUnitWidth(xpoText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const logiWidth = doc.getStringUnitWidth(logiText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const totalWidth = xpoWidth + logiWidth;
             
-            const gap = 3; 
-            const totalWidth = codeWidth + xpoWidth + gap;
+            const xpoStartX = (pageWidth / 2) - (totalWidth / 2);
+            const logiStartX = xpoStartX + xpoWidth;
             
-            const codeStartX = (pageWidth / 2) - (totalWidth / 2);
-            const xpoStartX = codeStartX + codeWidth + gap;
-            
-            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-            doc.text(codeText, codeStartX, logoY, { align: 'left', baseline: 'middle' });
-            
+            // XPO (Red, Bold)
             doc.setTextColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
-            doc.text(xpoText, xpoStartX, logoY, { align: 'left', baseline: 'middle' });
+            doc.text(xpoText, xpoStartX, logoY + 1, { align: 'left', baseline: 'middle' }); 
+            
+            // Logistics (Black, Bold)
+            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+            doc.text(logiText, logiStartX, logoY + 1, { align: 'left', baseline: 'middle' });
+            
+            // "CODE" Corporate Look & Report Title
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
+            
+            const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+            const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+            
+            // Izquierda: Corporate "CODE" y Fecha
+            doc.text(`CODE | ${currentDay}, ${currentDate}`, margin + 2, headerCardY + headerCardHeight - 4); 
+            
+            // Derecha: Título del Reporte
+            doc.text(`REPORTE EJECUTIVO DE FLOTA`, pageWidth - margin - 2, headerCardY + headerCardHeight - 4, { align: 'right' }); 
             
             yPos = headerCardY + headerCardHeight + margin; 
             
-            // --- 4. IMPLEMENTAR BADGES SEMITRANSPARENTES DE RESUMEN ---
+            // --- 4. IMPLEMENTAR BADGES SEMITRANSPARENTES DE RESUMEN (Size 10) ---
             
             const badgeHeight = 10; 
             const badgeMargin = 5;
@@ -967,7 +984,7 @@
             const badges = [
                 { label: 'CARGADAS', count: counts.Cargada, color: APPLE_COLORS.GREEN_CARGADA, x: margin, stateKey: 'Cargada' },
                 { label: 'VACÍAS', count: counts.Vacía, color: APPLE_COLORS.YELLOW_VACIA, x: margin + badgeWidth + badgeMargin, stateKey: 'Vacía' },
-                { label: 'AVERIADAS', count: counts.Averiada, color: APPLE_COLORS.RED_XPO, x: margin + 2 * (badgeWidth + badgeMargin), stateKey: 'Averiada' }
+                { label: 'AVERIADAS', count: counts.RED_XPO, color: APPLE_COLORS.RED_XPO, x: margin + 2 * (badgeWidth + badgeMargin), stateKey: 'Averiada' }
             ];
 
             doc.setFontSize(10);
@@ -983,17 +1000,19 @@
                 doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD'); 
                 doc.setGState(new doc.GState({ opacity: 1 }));
                 
+                // Relleno suave (Efecto Progresivo)
                 doc.setFillColor(badge.color[0], badge.color[1], badge.color[2]);
                 doc.setGState(new doc.GState({ opacity: 0.2 }));
                 doc.roundedRect(badge.x, badgeY, fillWidth, badgeHeight, 1.5, 1.5, 'F'); 
                 doc.setGState(new doc.GState({ opacity: 1 }));
                 
-                doc.setFontSize(6);
+                // Textos
+                doc.setFontSize(7); // Tamaño para etiqueta
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
                 doc.text(badge.label, badge.x + badgeWidth / 2, badgeY + 3.5, { align: 'center' });
 
-                doc.setFontSize(9);
+                doc.setFontSize(10); // Tamaño principal (10pt)
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
                 doc.text(` (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 3.5, { align: 'center' });
@@ -1001,7 +1020,7 @@
             
             yPos = badgeY + badgeHeight + 15; 
 
-            // --- 5. APLICAR DISEÑO DE TABLAS ---
+            // --- 5. APLICAR DISEÑO DE TABLAS (Tipo Apple Pages: Filas Alternas Blanco/Gris) ---
             
             const tableMarginX = 5; 
             const halfWidth = (pageWidth - 2 * margin - tableMarginX) / 2;
@@ -1019,7 +1038,7 @@
             
             startYDoubleColumn += 5; 
             
-            // Estilos de la Tabla (Apple Pages Look)
+            // Estilos de la Tabla (Apple Pages Look: Base Blanco, Alterna Gris Suave)
             const styles = { 
                 fontSize: 9, 
                 cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }, 
@@ -1028,19 +1047,21 @@
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 lineColor: APPLE_COLORS.MEDIUM_GRAY, 
                 lineWidth: 0.05, 
-                fontStyle: 'normal' 
+                fontStyle: 'normal',
+                fillColor: [255, 255, 255] // Base Blanca
             };
             
             const headStyles = { 
-                fillColor: [249, 249, 249], 
+                fillColor: LIGHT_GRAY_APPLE, // Gris Suave para el encabezado
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 fontStyle: 'bold', 
                 lineWidth: { top: 0, right: 0, bottom: 0.15, left: 0 }, 
                 cellPadding: 3 
             };
             
+            // Filas pares (0, 2, 4...) en Blanco (del styles base), Filas impares (1, 3, 5...) en Gris Suave
             const alternateRowStyles = { 
-                fillColor: [255, 255, 255] 
+                fillColor: LIGHT_GRAY_APPLE // Gris Suave
             };
             
             const tableOptions = {
@@ -1055,29 +1076,29 @@
                 }
             };
 
-            // --- Tabla de Cargadas ---
+            // --- Tabla de Cargadas (Sin colores en celdas) ---
             doc.autoTable({
                 head: [['MATRÍCULA', 'CONTENIDO']],
                 body: registrosCargadas,
                 margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [240, 255, 240], textColor: APPLE_COLORS.GREEN_CARGADA }, 
-                    1: { cellWidth: 'auto' }
+                    0: { cellWidth: 25, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
+                    1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
                 },
                 ...tableOptions
             });
             let finalYCargadas = doc.autoTable.previous.finalY;
 
-            // --- Tabla de Vacías ---
+            // --- Tabla de Vacías (Sin colores en celdas) ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'DESCRIPCIÓN']],
+                head: [['MATRÍCULA', 'ESTADO']], // Cambio el título de columna
                 body: registrosVacías,
                 margin: { left: xPosVacias, right: margin }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 255, 240], textColor: APPLE_COLORS.YELLOW_VACIA }, 
-                    1: { cellWidth: 'auto' }
+                    0: { cellWidth: 25, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
+                    1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
                 },
                 ...tableOptions
             });
@@ -1085,7 +1106,7 @@
 
             let finalY = Math.max(finalYCargadas, finalYVacías); 
             
-            // --- Tabla de Averíadas (Full Width) ---
+            // --- Tabla de Averíadas (Full Width, Sin colores en celdas) ---
             if (counts.Averiada > 0) {
                 
                 if (finalY + 20 > doc.internal.pageSize.height - margin) {
@@ -1107,8 +1128,8 @@
                     startY: finalY + 10,
                     margin: { left: margin, right: margin },
                     columnStyles: {
-                        0: { cellWidth: 30, fontStyle: 'bold', fillColor: [255, 240, 240], textColor: APPLE_COLORS.RED_XPO }, 
-                        1: { cellWidth: 'auto' }
+                        0: { cellWidth: 30, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
+                        1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
                     },
                     ...tableOptions
                 });
@@ -1137,38 +1158,20 @@
                 doc.setLineWidth(0.1);
                 doc.line(margin, footerY - 2, pageWidth - margin, footerY - 2);
                 
-                // Título del reporte e información de la fecha
-                if (i === 1) {
-                    const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
-                    const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-                    
-                    doc.setFont("helvetica", "normal");
-                    doc.setFontSize(8);
-                    doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
-                    doc.text(`REPORTE EJECUTIVO DE FLOTA | ${currentDay}, ${currentDate}`, margin, headerCardY + headerCardHeight + margin - 2); 
-                }
+                // Nota: El título del reporte y la fecha ya están en el Header principal (i === 1)
             }
             
             // ----------------------------------------------------------------
-            // ** CAMBIO CLAVE: Generar Blob y Forzar Descarga **
+            // ** Generar Blob y Forzar Descarga **
             // ----------------------------------------------------------------
 
-            // 1. Obtener el Blob
             const pdfBlob = doc.output('blob');
-
-            // 2. Crear un objeto URL para el Blob
             const blobUrl = URL.createObjectURL(pdfBlob);
-
-            // 3. Crear un enlace temporal para la descarga
             const a = document.createElement('a');
             a.href = blobUrl;
-            a.download = 'Reporte_XPO_Ejecutivo.pdf'; // Nombre de archivo para compartir
-
-            // 4. Simular el clic para iniciar la descarga
+            a.download = 'Reporte_XPO_Ejecutivo.pdf'; 
             document.body.appendChild(a);
             a.click();
-
-            // 5. Limpiar y revocar el objeto URL
             document.body.removeChild(a);
             URL.revokeObjectURL(blobUrl);
 
@@ -1232,7 +1235,6 @@
         actualizarContadores();
         actualizarHistorialReciente(); 
         
-        // El botón de paso 1 ya tiene un ID en el HTML.
         document.getElementById('btnExportar').addEventListener('click', exportarPDF);
         
         document.getElementById('paso1').style.display = 'block';
