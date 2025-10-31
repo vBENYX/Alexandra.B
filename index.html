@@ -115,7 +115,7 @@
             cursor: pointer; 
             font-size: 18px; 
             font-weight: 600; 
-            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s;
+            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s; /* Aseguramos que box-shadow transicione suavemente */
             -webkit-appearance: none; 
             position: relative; 
             overflow: hidden; 
@@ -126,40 +126,55 @@
         button:active { 
             opacity: 1; 
             transform: scale(0.99); 
+            /* La sombra se controlará por el estilo Siri/Inteligente */
         }
         
         /* Aseguramos que el contenido del botón esté en el nivel superior (z-index: 2) */
         button i, button span, button strong {
             position: relative;
             z-index: 2;
-            pointer-events: none; 
+            pointer-events: none; /* Asegura que el click pase al botón */
         }
 
 
         /* --- NUEVO: ANIMACIÓN ESTILO ONDA INTELIGENTE (SIRI WAVE) --- */
+        
+        /* 1. Animación de Desplazamiento del Gradiente */
         @keyframes siri-wave {
             0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; } 
+            100% { background-position: 100% 50%; } /* Desplaza el gradiente de izquierda a derecha */
         }
 
         #paso1 button {
+            /* Aplicar el gradiente dinámico */
             background: var(--siri-gradient);
-            background-size: 300% 300%; 
-            animation: siri-wave 12s ease-in-out infinite alternate;
+            background-size: 300% 300%; /* Hacemos el gradiente 3 veces más grande para un desplazamiento sutil */
+            
+            /* Aplicar la animación lenta de desplazamiento */
+            animation: siri-wave 12s ease-in-out infinite alternate; /* Onda lenta y suave */
+            
+            /* Sombra sutil y más limpia, con color basado en Siri Blue */
             box-shadow: 0 4px 15px rgba(0, 122, 255, 0.5);
             transition: all 0.3s ease; 
         }
         
+        /* El pseudo-elemento ya no es necesario, lo limpiamos */
+        #paso1 button::before { content: none; } 
+
+        /* Feedback al click: Mantener la fluidez de la animación y añadir un feedback visual rápido */
         #paso1 button:active { 
             transform: scale(0.98); 
-            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); 
-            animation-duration: 5s; 
+            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); /* Sombra más intensa al tocar */
+            animation-duration: 5s; /* Acelerar la onda un poco al presionar para un feedback más vivo */
         }
         
+        /* --- FIN ANIMACIÓN ESTILO ONDA INTELIGENTE --- */
+
+
         .btn-confirm-cargada { background-color: var(--ios-green) !important; }
         .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
         .btn-confirm-averiada { background-color: var(--ios-red) !important; }
-        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } 
+        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } /* Estado activo para botones de Paso 2 */
 
         #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
         #botonesEstado button { 
@@ -171,9 +186,11 @@
             margin: 0; 
             font-size: 16px; 
             overflow: visible; 
-            animation: none !important; 
+            animation: none !important; /* Asegura que no pulsen */
             box-shadow: none !important;
         }
+        #botonesEstado button::before { content: none; } 
+
         #btnLimpiar { background-color: #FF3B30; margin-top: 10px; }
         .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
         
@@ -182,6 +199,7 @@
         /* ----------------------------------------------- */
         #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
         
+        /* Card base, ahora es el contenedor del relleno */
         .compact-summary { 
             flex: 1 1 48%; min-width: 150px; padding: 10px 12px; border-radius: 12px; 
             background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); 
@@ -190,12 +208,13 @@
         }
         .compact-summary.visible { opacity: 1; transform: scale(1); }
         
+        /* Contenido de la tarjeta para superponer al relleno */
         .compact-content { position: relative; z-index: 2; }
 
-        /* Relleno dinámico */
+        /* Relleno dinámico (el que el usuario quiere) */
         .summary-fill {
             position: absolute; bottom: 0; left: 0; width: 100%; 
-            transition: height 0.7s ease-out; 
+            transition: height 0.7s ease-out; /* Animación de llenado */
             border-radius: 0 0 12px 12px;
             z-index: 1;
         }
@@ -215,20 +234,20 @@
         #cardAveriada .percent-text, #cardAveriada h4 { color: var(--ios-red); }
 
         /* ----------------------------------------------- */
-        /* --- ESTILOS DE HISTORIAL RECIENTE --- */
+        /* --- ESTILOS DE HISTORIAL RECIENTE (Gráfica) --- */
         /* ----------------------------------------------- */
-        .history-card { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-        }
-
         .history-card { 
             background-color: var(--ios-card-bg); 
             border-radius: 10px; 
             box-shadow: var(--ios-shadow); 
             padding: 0; 
             margin: 15px 0 0 0;
+        }
+
+        #historialReciente { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
         }
         
         #historialReciente li { 
@@ -247,7 +266,7 @@
             height: 8px; 
             border-radius: 50%; 
             margin-right: 5px; 
-            flex-shrink: 0; 
+            flex-shrink: 0; /* No se encoge */
         }
         .status-indicator.Cargada { background-color: var(--ios-green); }
         .status-indicator.Vacía { background-color: var(--ios-yellow); } 
@@ -255,7 +274,7 @@
 
         .historial-matricula { font-weight: 700; flex-grow: 1; margin-right: 10px; }
         .historial-estado { font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } 
+        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } /* Empuja a la derecha */
         
         /* Colores de Badge */
         .historial-estado.estado-Cargada { background-color: #e6ffec; color: #1e8449; }
@@ -283,6 +302,7 @@
             overflow: visible; 
             animation: none !important;
         }
+        .filter-buttons button::before { content: none; } 
         
         .filter-buttons button.filter-active {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
@@ -591,7 +611,7 @@
             activeBtnId = 'btnVacia';
             if (!isAutoSelect) {
                 // Si no es una autoselección (es decir, el usuario hizo click), guardamos directamente Vacía.
-                guardarRegistro('vacia', 'Lista para cargar'); // Nota: el texto 'Lista para cargar' se usa aquí para el guardado en localStorage, pero en el PDF se sustituirá por 'Vacía'.
+                guardarRegistro('vacia', 'Lista para cargar');
             }
         }
         
@@ -622,13 +642,15 @@
         buttonElement.innerHTML = confirmText;
         buttonElement.classList.add(confirmClass);
         
+        // ** NOTA: La animación Siri Wave se gestiona puramente por CSS y no necesita ser manipulada aquí, evitando el efecto de "bloqueo". **
+
         setTimeout(() => {
             // Restaurar estado
             buttonElement.innerHTML = originalText;
             buttonElement.classList.remove(confirmClass);
             buttonElement.disabled = false; 
             
-            mostrarConfirmacion(`¡${matriculaActual} registrado!`);
+            mostrarConfirmacion(`¡${estado.toLowerCase()} registrado!`);
             mostrarPaso1(true); 
         }, 800); 
     }
@@ -654,7 +676,7 @@
         }
 
         if ((estadoDisplay === 'Cargada' || estadoDisplay === 'Averiada') && !descripcion.trim()) {
-            mostrarConfirmacion(`Necesita una descripción para ${estadoDisplay}.`, "fas fa-exclamation-triangle");
+            mostrarConfirmacion(`Necesita una descripción para ${estadoDisplay.toLowerCase()}.`, "fas fa-exclamation-triangle");
             return;
         }
 
@@ -714,6 +736,7 @@
             const percentElement = document.getElementById(`percent${state}`);
             if(percentElement) percentElement.textContent = percentText;
             
+            // AJUSTE: Altura del relleno de fondo
             const fillElement = document.getElementById(`fill${state}`);
             if(fillElement) fillElement.style.height = percentText;
         };
@@ -774,8 +797,8 @@
         // 2. Ordenar por timestamp (más reciente primero)
         registros.sort((a, b) => b.timestamp - a.timestamp);
         
-        // Mostrar solo los 5 más recientes del conjunto filtrado (si no hay filtro activo)
-        const ultimosRegistros = historialFiltro === null ? registros.slice(0, 5) : registros; 
+        // Mostrar solo los 5 más recientes del conjunto filtrado
+        const ultimosRegistros = historialFiltro ? registros : registros.slice(0, 5);
         
         ultimosRegistros.forEach(reg => {
             const dateObj = new Date(reg.timestamp);
@@ -829,10 +852,14 @@
 
     function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
         console.log(`[Notificación] ${mensaje}`);
-        // Implementación simple de notificación (podría ser un toast)
+        // Aquí podríamos disparar un toast o un modal de notificación si fuera una app completa.
     }
     
-    // --- EXPORTACIÓN PDF (FUNCIÓN CORREGIDA PARA EL NUEVO DISEÑO) ---
+    // --- EXPORTACIÓN PDF (Estilo Apple - Compacto y Limpio) ---
+    
+    /**
+     * Función auxiliar para convertir colores HEX a RGB para jsPDF.
+     */
     function hexToRgb(hex) {
         let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace(shorthandRegex, function(m, r, g, b) {
@@ -846,13 +873,16 @@
         ] : [0, 0, 0];
     }
     
-    async function exportarPDF() {
+    /**
+     * Genera y descarga un archivo PDF con el historial de la flota aplicando un diseño
+     * limpio, compacto y estilo Apple (tipografía helvetica, colores cálidos, sin negritas).
+     */
+    function exportarPDF() {
         const registros = cargarRegistros();
 
-        const PDFConstructor = window.jspdf ? window.jspdf.jsPDF : window.jsPDF; 
-        
-        if (typeof PDFConstructor === 'undefined' || !PDFConstructor.API || !PDFConstructor.API.autoTable) {
-            mostrarConfirmacion("Error: El generador de PDF (jsPDF o AutoTable) no se ha cargado. Revisa las librerías.", "fas fa-exclamation-triangle");
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined' || !window.jspdf.jsPDF.API.autoTable) {
+            mostrarConfirmacion("Error: El generador de PDF (jsPDF) no se ha cargado completamente. Inténtalo de nuevo.", "fas fa-exclamation-triangle");
+            console.error("jsPDF object:", window.jspdf);
             return;
         }
 
@@ -862,17 +892,18 @@
         }
 
         try {
-           const doc = new PDFConstructor('p', 'mm', 'a4');
+           const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
             const margin = 10;
             let yPos = margin;
             const pageWidth = doc.internal.pageSize.width;
             
-            // --- 1. CONFIGURACIÓN DE COLORES TIPO APPLE ---
+            // --- 1. CONFIGURACIÓN DE COLORES TIPO APPLE (Colores más cálidos y limpios) ---
             const APPLE_COLORS = {
                 RED_XPO: hexToRgb('#FF3B30'),
                 DARK_TEXT: hexToRgb('#1C1C1E'),
                 MEDIUM_GRAY: hexToRgb('#D1D1D6'),
-                SOFT_GRAY_APPLE: hexToRgb('#F9F9F9'), // Gris muy suave para tablas
+                LIGHT_GRAY_BG: hexToRgb('#F9F9F9'), // Fondo cálido y claro para header/tablas
                 GREEN_CARGADA: hexToRgb('#34C759'),
                 YELLOW_VACIA: hexToRgb('#FFCC00'),
                 HEADER_FILL: [255, 255, 255] 
@@ -885,8 +916,7 @@
             
             const registrosVacías = registros
                 .filter(reg => reg.estado === 'Vacía')
-                // REQUISITO: Cambiar la descripción a "Vacía"
-                .map(reg => [reg.matricula, 'Vacía']); 
+                .map(reg => [reg.matricula, reg.descripcion || 'Lista para cargar']); 
             
             const registrosAveriadas = registros
                 .filter(reg => reg.estado === 'Averiada')
@@ -899,111 +929,94 @@
                     Total: registros.length
                 };
             
-            // --- 3. IMPLEMENTAR ENCABEZADO Y TÍTULO (REDISEÑO CORPORATIVO) ---
+            // --- 3. IMPLEMENTAR ENCABEZADO Y LOGO (Diseño Tipográfico Simple) ---
             const headerCardHeight = 25;
             const headerCardY = yPos;
             const headerCardX = margin;
             const headerCardWidth = pageWidth - 2 * margin;
             
-            // Recuadro del Header
+            // Dibujar tarjeta de fondo limpia
             doc.setFillColor(APPLE_COLORS.HEADER_FILL[0], APPLE_COLORS.HEADER_FILL[1], APPLE_COLORS.HEADER_FILL[2]);
             doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
+            doc.setGState(new doc.GState({ opacity: 0.95 })); 
             doc.roundedRect(headerCardX, headerCardY, headerCardWidth, headerCardHeight, 3, 3, 'FD'); 
+            doc.setGState(new doc.GState({ opacity: 1 })); 
             
             const logoY = headerCardY + headerCardHeight / 2;
-            
-            // LOGO XPO LOGISTICS (Centered)
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(22); 
+            
+            // Calcular y centrar logo (tipografía helvetica)
+            doc.setFontSize(18);
+            const codeText = "CODE";
+            const codeWidth = doc.getStringUnitWidth(codeText) * doc.getFontSize() / doc.internal.scaleFactor;
+            
             const xpoText = "XPO";
-            const logiText = " LOGISTICS"; 
-            
             const xpoWidth = doc.getStringUnitWidth(xpoText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const logiWidth = doc.getStringUnitWidth(logiText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const totalWidth = xpoWidth + logiWidth;
             
-            const xpoStartX = (pageWidth / 2) - (totalWidth / 2);
-            const logiStartX = xpoStartX + xpoWidth;
+            const gap = 3; 
+            const totalWidth = codeWidth + xpoWidth + gap;
             
-            // XPO (Red, Bold)
-            doc.setTextColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
-            doc.text(xpoText, xpoStartX, logoY + 1, { align: 'left', baseline: 'middle' }); 
+            const codeStartX = (pageWidth / 2) - (totalWidth / 2);
+            const xpoStartX = codeStartX + codeWidth + gap;
             
-            // Logistics (Black, Bold)
             doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-            doc.text(logiText, logiStartX, logoY + 1, { align: 'left', baseline: 'middle' });
+            doc.text(codeText, codeStartX, logoY, { align: 'left', baseline: 'middle' });
             
-            // CODE (Corporate Look - Top Left)
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "bold");
-            // Se usa un azul vibrante (similar al de la app) para darle el toque 'CODE'
-            const CODE_BLUE = hexToRgb('#007AFF');
-            doc.setTextColor(CODE_BLUE[0], CODE_BLUE[1], CODE_BLUE[2]);
-            doc.text(`CODE`, margin + 2, headerCardY + 4);
-            
-            // Report Title/Date (Soft Gray - Bottom Right)
-            doc.setFontSize(8);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
-            
-            const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-            
-            doc.text(`REPORTE EJECUTIVO DE FLOTA | ${currentDate}`, pageWidth - margin - 2, headerCardY + headerCardHeight - 4, { align: 'right' }); 
+            doc.setTextColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
+            doc.text(xpoText, xpoStartX, logoY, { align: 'left', baseline: 'middle' });
             
             yPos = headerCardY + headerCardHeight + margin; 
             
-            // --- 4. IMPLEMENTAR BADGES SEMITRANSPARENTES DE RESUMEN ---
+            // --- 4. IMPLEMENTAR BADGES MÁS PEQUEÑOS Y COMPACTOS ---
             
-            const badgeHeight = 10; 
-            const badgeMargin = 5;
+            const badgeHeight = 8; // **BADGES MÁS PEQUEÑOS**
+            const badgeMargin = 4; 
             const badgeWidth = (pageWidth - 2 * margin - 2 * badgeMargin) / 3;
             const badgeY = yPos;
             
             const badges = [
-                { label: 'CARGADAS', count: counts.Cargada, color: APPLE_COLORS.GREEN_CARGADA, x: margin, stateKey: 'Cargada' },
-                { label: 'VACÍAS', count: counts.Vacía, color: APPLE_COLORS.YELLOW_VACIA, x: margin + badgeWidth + badgeMargin, stateKey: 'Vacía' },
-                { label: 'AVERIADAS', count: counts.Averiada, color: APPLE_COLORS.RED_XPO, x: margin + 2 * (badgeWidth + badgeMargin), stateKey: 'Averiada' }
+                { label: 'CARGADAS', count: counts.Cargada, color: APPLE_COLORS.GREEN_CARGADA, x: margin },
+                { label: 'VACÍAS', count: counts.Vacía, color: APPLE_COLORS.YELLOW_VACIA, x: margin + badgeWidth + badgeMargin },
+                { label: 'AVERIADAS', count: counts.Averiada, color: APPLE_COLORS.RED_XPO, x: margin + 2 * (badgeWidth + badgeMargin) }
             ];
 
-            doc.setFontSize(10); // Tamaño 10 solicitado por el usuario
-            doc.setFont("helvetica", "bold");
-            
             badges.forEach(badge => {
                 const percentage = counts.Total > 0 ? (badge.count / counts.Total) : 0;
                 const fillWidth = badgeWidth * percentage;
                 
-                // Recuadro Blanco Base
-                doc.setFillColor(255, 255, 255);
+                // Fondo de tarjeta (cálido, claro)
+                doc.setFillColor(APPLE_COLORS.LIGHT_GRAY_BG[0], APPLE_COLORS.LIGHT_GRAY_BG[1], APPLE_COLORS.LIGHT_GRAY_BG[2]);
                 doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
                 doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD'); 
                 
-                // Relleno Progresivo (Soft Color)
+                // Barra de llenado (sutil)
                 doc.setFillColor(badge.color[0], badge.color[1], badge.color[2]);
-                doc.setGState(new doc.GState({ opacity: 0.2 })); // Softness (20% Opacity)
+                doc.setGState(new doc.GState({ opacity: 0.15 })); // Opacidad baja
                 doc.roundedRect(badge.x, badgeY, fillWidth, badgeHeight, 1.5, 1.5, 'F'); 
                 doc.setGState(new doc.GState({ opacity: 1 }));
                 
-                // Texto de Etiqueta
-                doc.setFontSize(7);
+                // Texto: Label (pequeño)
+                doc.setFontSize(6); 
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-                doc.text(badge.label, badge.x + badgeWidth / 2, badgeY + 3.5, { align: 'center' });
+                doc.text(badge.label, badge.x + badgeWidth / 2, badgeY + 3, { align: 'center' }); 
 
-                // Texto de Cantidad y Porcentaje
-                doc.setFontSize(10);
+                // Texto: Conteo (prominente, compacto)
+                doc.setFontSize(8); // **Texto de conteo reducido**
                 doc.setFont("helvetica", "bold");
-                doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]); // Texto oscuro, como si fuera solo un dato
-                doc.text(`${badge.count} (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 3.5, { align: 'center' });
+                doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
+                doc.text(`${badge.count} (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 2.5, { align: 'center' }); 
             });
             
-            yPos = badgeY + badgeHeight + 15; 
+            yPos = badgeY + badgeHeight + 10; // **APROVECHAR EL ESPACIO**
 
-            // --- 5. APLICAR DISEÑO DE TABLAS (Apple Pages Style) ---
+            // --- 5. APLICAR DISEÑO DE TABLAS (Sin Negritas, Más Compacto) ---
             
             const tableMarginX = 5; 
             const halfWidth = (pageWidth - 2 * margin - tableMarginX) / 2;
             let startYDoubleColumn = yPos;
             
+            // Títulos de Sección
             doc.setFontSize(12);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
@@ -1015,20 +1028,20 @@
             
             startYDoubleColumn += 5; 
             
+            // Estilos de la Tabla (Minimalista y Compacto)
             const styles = { 
-                fontSize: 9, 
-                cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }, 
+                fontSize: 8, // **CELDAS MÁS PEQUEÑAS Y TEXTOS TAMBIÉN**
+                cellPadding: { top: 1.5, right: 2, bottom: 1.5, left: 2 }, // **COMPACTO**
                 valign: 'middle', 
-                font: "helvetica", 
+                font: "helvetica", // **TIPOGRAFÍA APPLE**
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 lineColor: APPLE_COLORS.MEDIUM_GRAY, 
                 lineWidth: 0.05, 
-                fontStyle: 'normal',
-                fillColor: [255, 255, 255]
+                fontStyle: 'normal' // **NO SEA EN NEGRITA** (para el contenido)
             };
             
             const headStyles = { 
-                fillColor: APPLE_COLORS.SOFT_GRAY_APPLE, // Gris suave en la cabecera
+                fillColor: APPLE_COLORS.LIGHT_GRAY_BG, // Fondo cálido y claro
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 fontStyle: 'bold', 
                 lineWidth: { top: 0, right: 0, bottom: 0.15, left: 0 }, 
@@ -1036,17 +1049,18 @@
             };
             
             const alternateRowStyles = { 
-                fillColor: APPLE_COLORS.SOFT_GRAY_APPLE // Gris suave para filas alternas (Apple Pages)
+                fillColor: [255, 255, 255] 
             };
             
+            // Opciones base para todas las tablas
             const tableOptions = {
                 startY: startYDoubleColumn,
                 styles: styles,
                 headStyles: headStyles,
-                alternateRowStyles: alternateRowStyles, // Aplica el efecto de filas alternas
+                alternateRowStyles: alternateRowStyles, 
                 didParseCell: (data) => {
                     if (data.row.section === 'body') {
-                        data.cell.styles.minCellHeight = 5;
+                        data.cell.styles.minCellHeight = 5; // **MÁS PEQUEÑO**
                     }
                 }
             };
@@ -1058,8 +1072,8 @@
                 margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
-                    1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
+                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [249, 255, 249], textColor: APPLE_COLORS.DARK_TEXT }, // Relleno suave (cálido verde claro)
+                    1: { cellWidth: 'auto' }
                 },
                 ...tableOptions
             });
@@ -1067,13 +1081,13 @@
 
             // --- Tabla de Vacías ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'ESTADO']],
+                head: [['MATRÍCULA', 'DESCRIPCIÓN']],
                 body: registrosVacías,
                 margin: { left: xPosVacias, right: margin }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
-                    1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
+                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 255, 249], textColor: APPLE_COLORS.DARK_TEXT }, // Relleno suave (cálido amarillo claro)
+                    1: { cellWidth: 'auto' }
                 },
                 ...tableOptions
             });
@@ -1081,9 +1095,10 @@
 
             let finalY = Math.max(finalYCargadas, finalYVacías); 
             
-            // --- Tabla de Averíadas ---
+            // --- Tabla de Averíadas (Full Width) ---
             if (counts.Averiada > 0) {
                 
+                // Manejo de página si no cabe
                 if (finalY + 20 > doc.internal.pageSize.height - margin) {
                     doc.addPage();
                     finalY = margin;
@@ -1091,6 +1106,7 @@
                      finalY += 10; 
                 }
 
+                // Título de Sección Averiada
                 doc.setFontSize(12);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
@@ -1098,12 +1114,12 @@
                 
                 doc.autoTable({
                     head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
-                    startY: finalY + 10,
                     body: registrosAveriadas,
+                    startY: finalY + 10,
                     margin: { left: margin, right: margin },
                     columnStyles: {
-                        0: { cellWidth: 30, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
-                        1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
+                        0: { cellWidth: 30, fontStyle: 'bold', fillColor: [255, 249, 249], textColor: APPLE_COLORS.DARK_TEXT }, // Relleno suave (cálido rojo claro)
+                        1: { cellWidth: 'auto' }
                     },
                     ...tableOptions
                 });
@@ -1121,20 +1137,32 @@
             for(let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
                 
+                // Texto de derechos de autor
                 doc.text(`© ${new Date().getFullYear()} XPO LOGISTICS - Informe interno`, margin, footerY);
                 
+                // Conteo de Páginas
                 doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
                 
+                // Línea divisoria sutil para el footer
                 doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
                 doc.setLineWidth(0.1);
                 doc.line(margin, footerY - 2, pageWidth - margin, footerY - 2);
+                
+                // Título del reporte e información de la fecha
+                if (i === 1) {
+                    const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+                    const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(8);
+                    doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
+                    doc.text(`REPORTE EJECUTIVO DE FLOTA | ${currentDay}, ${currentDate}`, margin, headerCardY + headerCardHeight + margin - 2); 
+                }
             }
             
-            // --- LÓGICA DE EXPORTACIÓN (Descarga Directa) ---
-            const fileName = `Reporte_XPO_Ejecutivo_${currentDate.replace(/ /g, '_')}.pdf`;
-            doc.save(fileName);
-            
-            mostrarConfirmacion("PDF generado y descargado con éxito.", "fas fa-download");
+            // Abrimos el PDF en una nueva pestaña
+            doc.output('dataurlnewwindow', {filename: 'Reporte_XPO_Ejecutivo.pdf'});
+            mostrarConfirmacion("PDF generado. Se ha abierto en una nueva pestaña (o la descarga ha comenzado).", "fas fa-file-pdf");
 
         } catch (e) {
             console.error("Error al generar PDF:", e);
@@ -1160,11 +1188,14 @@
         const logoCode = document.getElementById('logoCode');
         const logoXPO = document.getElementById('logoXPO');
 
+        // Resetear estilos iniciales (que son establecidos en CSS para la animación)
         logoCode.style.opacity = '0';
         logoXPO.style.opacity = '0';
         logoXPO.style.transform = 'translateY(20px)';
         
+        // Comprobar si ya se animó antes (Persistencia con localStorage)
         if (!localStorage.getItem('logoAnimado')) {
+             // Inicia animación si es la primera vez
              setTimeout(() => {
                 logoCode.style.opacity = '1';
                 logoCode.style.transform = 'translateY(0)';
@@ -1177,6 +1208,7 @@
              
              localStorage.setItem('logoAnimado', 'true');
         } else {
+            // Si ya se animó, mostrar inmediatamente sin animación
             logoCode.style.opacity = '1';
             logoCode.style.transform = 'translateY(0)';
             logoXPO.style.opacity = '1';
@@ -1190,6 +1222,7 @@
         actualizarContadores();
         actualizarHistorialReciente(); 
         
+        // El botón de paso 1 ya tiene un ID en el HTML.
         document.getElementById('btnExportar').addEventListener('click', exportarPDF);
         
         document.getElementById('paso1').style.display = 'block';
@@ -1197,9 +1230,11 @@
         document.getElementById('paso1').classList.add('active');
         document.getElementById('matriculaInput').focus();
         
+        // --- ACTIVAR EL MANEJO DE SCROLL PARA EL EFECTO DINÁMICO ---
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
+        // Asegurar que el filtro inicial sea 'Todo'
         document.getElementById('btnFilterAll').classList.add('filter-active');
     });
 </script>
