@@ -1,466 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CODE XPO | Registro Táctil de Matrículas</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    
-    <style>
-        /* Variables y Reset para Móviles (iOS Theme) */
-        :root {
-            --ios-blue: #007AFF;
-            --ios-green: #34C759;
-            --ios-red: #FF3B30;
-            --ios-yellow: #FFCC00;
-            --ios-gray-bg: #f2f2f7;
-            --ios-card-bg: #ffffff;
-            --ios-separator: #d1d1d6;
-            --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            --transition-duration: 0.35s;
-            --text-light-gray: #6d6d71;
-            --light-gray-apple: #f9f9f9; 
-            --dark-text: #1c1c1e;
-            --vibrant-gradient: linear-gradient(90deg, #007AFF 0%, #34D8A4 100%); 
-            --logo-red: #FF3B30;
-            
-            /* Colores para el relleno de tarjetas */
-            --fill-green: rgba(52, 199, 89, 0.1); 
-            --fill-yellow: rgba(255, 204, 0, 0.1); 
-            --fill-red: rgba(255, 59, 48, 0.1); 
-            
-            /* NUEVO: Colores para el efecto de Onda Inteligente (Siri/Apple) */
-            --siri-blue: #007AFF;
-            --siri-cyan: #34D8A4; 
-            --siri-violet: #8e44ad; 
-            
-            /* Gradiente base que se animará */
-            --siri-gradient: linear-gradient(
-                135deg, /* Ángulo diagonal para una mejor sensación de movimiento */
-                var(--siri-violet) 0%, 
-                var(--siri-blue) 25%, 
-                var(--siri-cyan) 50%, 
-                var(--siri-blue) 75%,
-                var(--siri-violet) 100%
-            );
-        }
-
-        /* Estilo Base: Fondo de iOS y Tipografía SF Pro */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-            background-color: var(--ios-gray-bg);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            color: var(--dark-text);
-            overflow-x: hidden;
-            padding-top: 75px; 
-        }
-        
-        /* ----------------------------------------------- */
-        /* --- ENCABEZADO FIJO --- */
-        /* ----------------------------------------------- */
-        .header-fixed {
-            position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; 
-            padding: 15px 20px 10px 20px; 
-            z-index: 1000;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.95); 
-            -webkit-backdrop-filter: blur(15px); 
-            backdrop-filter: blur(15px); 
-            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05); 
-        }
-        .header-fixed.scrolled { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
-        .logo-container { display: flex; align-items: baseline; gap: 5px; overflow: hidden; }
-        .logo-code { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; background: var(--vibrant-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; transition-delay: 0.1s; }
-        .logo-xpo { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--logo-red); line-height: 1; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; transition-delay: 0.25s; }
-        .logo-code.animate-in, .logo-xpo.animate-in { opacity: 1; transform: translateY(0); } 
-        .container { width: 100%; max-width: 450px; background-color: transparent; box-shadow: none; position: relative; height: auto; min-height: calc(100vh - 75px); overflow: hidden; padding: 0 10px; }
-
-        /* --- ESTILOS DE PASOS Y CARDS --- */
-        .card-section { background-color: var(--ios-card-bg); margin: 10px 0; padding: 20px; border-radius: 10px; box-shadow: var(--ios-shadow); position: relative; }
-        .step-content { opacity: 0; transform: scale(0.98); transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; padding: 20px; background-color: var(--ios-card-bg); border-radius: 10px; box-shadow: var(--ios-shadow); display: none; }
-        .step-content.active { opacity: 1; transform: scale(1); position: relative; display: block; margin-bottom: 20px; }
-
-        /* INPUTS */
-        input[type="text"] { 
-            width: 100%; 
-            padding: 15px; 
-            margin-bottom: 20px; 
-            border: 1px solid var(--ios-separator); 
-            border-radius: 10px; 
-            box-sizing: border-box; 
-            font-size: 18px; 
-            background-color: #f9f9f9; 
-            transition: border-color 0.2s; 
-            -webkit-appearance: none; 
-        }
-        
-        /* BOTONES BASE */
-        button { 
-            width: 100%; 
-            background-color: var(--ios-blue); 
-            color: white; 
-            padding: 15px 20px; 
-            margin: 10px 0; 
-            border: none; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-size: 18px; 
-            font-weight: 600; 
-            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s; /* Aseguramos que box-shadow transicione suavemente */
-            -webkit-appearance: none; 
-            position: relative; 
-            overflow: hidden; 
-            z-index: 1;
-        }
-
-        /* Efecto Activo Base */
-        button:active { 
-            opacity: 1; 
-            transform: scale(0.99); 
-            /* La sombra se controlará por el estilo Siri/Inteligente */
-        }
-        
-        /* Aseguramos que el contenido del botón esté en el nivel superior (z-index: 2) */
-        button i, button span, button strong {
-            position: relative;
-            z-index: 2;
-            pointer-events: none; /* Asegura que el click pase al botón */
-        }
-
-
-        /* --- NUEVO: ANIMACIÓN ESTILO ONDA INTELIGENTE (SIRI WAVE) --- */
-        
-        /* 1. Animación de Desplazamiento del Gradiente */
-        @keyframes siri-wave {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; } /* Desplaza el gradiente de izquierda a derecha */
-        }
-
-        #paso1 button {
-            /* Aplicar el gradiente dinámico */
-            background: var(--siri-gradient);
-            background-size: 300% 300%; /* Hacemos el gradiente 3 veces más grande para un desplazamiento sutil */
-            
-            /* Aplicar la animación lenta de desplazamiento */
-            animation: siri-wave 12s ease-in-out infinite alternate; /* Onda lenta y suave */
-            
-            /* Sombra sutil y más limpia, con color basado en Siri Blue */
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.5);
-            transition: all 0.3s ease; 
-        }
-        
-        /* El pseudo-elemento ya no es necesario, lo limpiamos */
-        #paso1 button::before { content: none; } 
-
-        /* Feedback al click: Mantener la fluidez de la animación y añadir un feedback visual rápido */
-        #paso1 button:active { 
-            transform: scale(0.98); 
-            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); /* Sombra más intensa al tocar */
-            animation-duration: 5s; /* Acelerar la onda un poco al presionar para un feedback más vivo */
-        }
-        
-        /* --- FIN ANIMACIÓN ESTILO ONDA INTELIGENTE --- */
-
-
-        .btn-confirm-cargada { background-color: var(--ios-green) !important; }
-        .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
-        .btn-confirm-averiada { background-color: var(--ios-red) !important; }
-        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } /* Estado activo para botones de Paso 2 */
-
-        #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
-        #botonesEstado button { 
-            background-color: #e5e5ea; 
-            color: #3c3c43; 
-            font-weight: 500; 
-            flex-grow: 1; 
-            padding: 12px 10px; 
-            margin: 0; 
-            font-size: 16px; 
-            overflow: visible; 
-            animation: none !important; /* Asegura que no pulsen */
-            box-shadow: none !important;
-        }
-        #botonesEstado button::before { content: none; } 
-
-        #btnLimpiar { background-color: #FF3B30; margin-top: 10px; }
-        .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
-        
-        /* ----------------------------------------------- */
-        /* --- ESTILOS DE RESUMEN DE FLOTA (Contadores) --- */
-        /* ----------------------------------------------- */
-        #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
-        
-        /* Card base, ahora es el contenedor del relleno */
-        .compact-summary { 
-            flex: 1 1 48%; min-width: 150px; padding: 10px 12px; border-radius: 12px; 
-            background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); 
-            overflow: hidden; position: relative; opacity: 0; transform: scale(0.98); 
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out, background-color 0.5s ease;
-        }
-        .compact-summary.visible { opacity: 1; transform: scale(1); }
-        
-        /* Contenido de la tarjeta para superponer al relleno */
-        .compact-content { position: relative; z-index: 2; }
-
-        /* Relleno dinámico (el que el usuario quiere) */
-        .summary-fill {
-            position: absolute; bottom: 0; left: 0; width: 100%; 
-            transition: height 0.7s ease-out; /* Animación de llenado */
-            border-radius: 0 0 12px 12px;
-            z-index: 1;
-        }
-        
-        /* Colores de relleno */
-        #cardCargada .summary-fill { background-color: var(--fill-green); }
-        #cardDisponible .summary-fill { background-color: var(--fill-yellow); }
-        #cardAveriada .summary-fill { background-color: var(--fill-red); }
-
-        /* Efecto Visual: Total Card */
-        #cardTotal { background-color: var(--light-gray-apple); border: 1px solid var(--ios-separator); }
-        
-        /* Efecto Visual: Porcentaje de color */
-        .compact-summary .percent-text { font-weight: 600; }
-        #cardCargada .percent-text, #cardCargada h4 { color: var(--ios-green); }
-        #cardDisponible .percent-text, #cardDisponible h4 { color: var(--ios-yellow); }
-        #cardAveriada .percent-text, #cardAveriada h4 { color: var(--ios-red); }
-
-        /* ----------------------------------------------- */
-        /* --- ESTILOS DE HISTORIAL RECIENTE (Gráfica) --- */
-        /* ----------------------------------------------- */
-        .history-card { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-        }
-
-        .history-card { 
-            background-color: var(--ios-card-bg); 
-            border-radius: 10px; 
-            box-shadow: var(--ios-shadow); 
-            padding: 0; 
-            margin: 15px 0 0 0;
-        }
-        
-        #historialReciente li { 
-            display: flex; 
-            align-items: center; 
-            gap: 5px;
-            padding: 10px 15px; 
-            border-bottom: 1px solid var(--ios-separator); 
-            font-size: 14px; 
-            position: relative;
-        }
-        #historialReciente li:last-child { border-bottom: none; } 
-        
-        .status-indicator { 
-            width: 8px; 
-            height: 8px; 
-            border-radius: 50%; 
-            margin-right: 5px; 
-            flex-shrink: 0; /* No se encoge */
-        }
-        .status-indicator.Cargada { background-color: var(--ios-green); }
-        .status-indicator.Vacía { background-color: var(--ios-yellow); } 
-        .status-indicator.Averiada { background-color: var(--ios-red); }
-
-        .historial-matricula { font-weight: 700; flex-grow: 1; margin-right: 10px; }
-        .historial-estado { font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } /* Empuja a la derecha */
-        
-        /* Colores de Badge */
-        .historial-estado.estado-Cargada { background-color: #e6ffec; color: #1e8449; }
-        .historial-estado.estado-Vacía { background-color: #fffde6; color: #b38600; } 
-        .historial-estado.estado-Averiada { background-color: #ffe6e6; color: #c0392b; }
-
-        #advertenciaDuplicado { background-color: #fce8e8; color: #c0392b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; border: 1px solid #f9bdbd; }
-
-        /* Contenedor de botones de Filtro */
-        .filter-buttons {
-            display: flex; 
-            gap: 5px; 
-            margin-top: 10px; 
-            margin-bottom: 15px;
-        }
-        .filter-buttons button {
-            background-color: #e5e5ea; 
-            color: #3c3c43; 
-            font-weight: 500; 
-            flex-grow: 1; 
-            padding: 8px 5px; 
-            margin: 0; 
-            font-size: 14px; 
-            box-shadow: none;
-            overflow: visible; 
-            animation: none !important;
-        }
-        .filter-buttons button::before { content: none; } 
-        
-        .filter-buttons button.filter-active {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
-            color: white !important;
-        }
-        #btnFilterCargada.filter-active { background-color: var(--ios-green); }
-        #btnFilterVacia.filter-active { background-color: var(--ios-yellow); color: #333 !important;}
-        #btnFilterAveriada.filter-active { background-color: var(--ios-red); }
-        #btnFilterAll.filter-active { background-color: var(--ios-blue); }
-
-        /* --- MODAL (Para confirmación y alertas proactivas) --- */
-        .modal-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0, 0, 0, 0.5); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 2000; 
-            opacity: 0; 
-            pointer-events: none; 
-            transition: opacity 0.3s; 
-        }
-        .modal-overlay.open { opacity: 1; pointer-events: all; }
-        .modal-content { 
-            background: var(--ios-card-bg); 
-            border-radius: 14px; 
-            width: 90%; 
-            max-width: 350px; 
-            padding: 20px; 
-            text-align: center; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); 
-            transform: scale(0.9); 
-            transition: transform 0.3s; 
-        }
-        .modal-overlay.open .modal-content { transform: scale(1); }
-        .modal-content h4 { margin-top: 0; font-size: 18px; color: var(--ios-red); }
-        .modal-content p { margin-bottom: 20px; color: var(--dark-text); font-size: 15px; }
-        .modal-buttons { display: flex; gap: 10px; }
-        .modal-buttons button { margin: 0; padding: 12px; font-size: 16px; font-weight: 500; }
-        .btn-modal-cancel { background-color: #e5e5ea; color: #3c3c43; }
-        .btn-modal-confirm-red { background-color: var(--ios-red); }
-        .btn-modal-confirm-blue { background-color: var(--ios-blue); }
-    </style>
-</head>
-<body>
-
-<div class="header-fixed" id="fixedHeader">
-    <div id="logoHeader" class="logo-container">
-        <div class="logo-code" id="logoCode">CODE</div>
-        <div class="logo-xpo" id="logoXPO">XPO</div>
-    </div>
-</div>
-
-<div class="container">
-    
-    <div id="paso1" class="step-content active">
-        <h3><i class="fas fa-barcode"></i> 1. Ingresar Matrícula</h3>
-        <input type="text" id="matriculaInput" placeholder="Matrícula (Escanear o Tipear)" required onkeypress="if(event.key === 'Enter') registrarMatricula()">
-        <button id="paso1-button" onclick="registrarMatricula()"><i class="fas fa-arrow-right"></i> Continuar</button>
-    </div>
-
-    <div id="paso2" class="step-content">
-        <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula"></span></h3>
-        
-        <div id="advertenciaDuplicado" style="display:none;">
-            <i class="fas fa-exclamation-triangle"></i> Esta matrícula ya estaba registrada como **<span id="estadoAnterior"></span>**. Al continuar, se actualizará su estado.
-        </div>
-        
-        <div id="botonesEstado">
-            <button id="btnCargada" onclick="manejarEstado('cargada')">Cargada</button>
-            <button id="btnVacia" onclick="manejarEstado('vacia')">Vacía</button>
-            <button id="btnAveriadaState" onclick="manejarEstado('averiada')">Averiada</button>
-        </div>
-
-        <div id="cargadaDetalles" style="display:none;">
-            <input type="text" id="descCargada" placeholder="Descripción de la carga (Requerido)">
-            <button id="btnGuardarCargada" onclick="guardarRegistro('cargada')" class="btn-confirm-cargada"><i class="fas fa-check-circle"></i> Registrar Carga</button>
-        </div>
-
-        <div id="averiadaDetalles" style="display:none;">
-            <input type="text" id="descAveriada" placeholder="Descripción de la avería (Requerido)">
-            <button id="btnGuardarAveriada" onclick="guardarRegistro('averiada')" class="btn-confirm-averiada"><i class="fas fa-check-circle"></i> Registrar Avería</button>
-        </div>
-
-        <button class="volver-button" onclick="mostrarPaso1(true)"><i class="fas fa-chevron-left"></i> Volver</button>
-    </div>
-    
-    <div id="reportes" class="card-section">
-        <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
-        
-        <div id="contadores">
-            <div id="cardTotal" class="compact-summary card-total">
-                <div class="compact-content">
-                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Total Flota</p>
-                    <h4 id="countTotal" style="margin: 5px 0 0 0; font-size: 24px; color: var(--dark-text); font-weight: 700;">0</h4>
-                </div>
-            </div>
-            <div id="cardCargada" class="compact-summary card-cargada">
-                <div id="fillCargada" class="summary-fill" style="height: 0%;"></div>
-                <div class="compact-content">
-                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Cargadas (<span id="percentCargada" class="percent-text">0%</span>)</p>
-                    <h4 id="countCargada" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
-                </div>
-            </div>
-            <div id="cardDisponible" class="compact-summary card-disponible">
-                <div id="fillDisponible" class="summary-fill" style="height: 0%;"></div>
-                <div class="compact-content">
-                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Vacías (<span id="percentDisponible" class="percent-text">0%</span>)</p>
-                    <h4 id="countDisponible" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
-                </div>
-            </div>
-            <div id="cardAveriada" class="compact-summary card-averiada">
-                <div id="fillAveriada" class="summary-fill" style="height: 0%;"></div>
-                <div class="compact-content">
-                    <p style="margin: 0; font-size: 12px; color: var(--text-light-gray);">Averiadas (<span id="percentAveriada" class="percent-text">0%</span>)</p>
-                    <h4 id="countAveriada" style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700;">0</h4>
-                </div>
-            </div>
-        </div>
-        
-        <button id="btnExportar" style="background-color:#34c759; margin-top: 25px;">
-            <i class="fas fa-file-pdf"></i> Exportar a PDF (Informe Ejecutivo)
-        </button>
-        
-        <h4><i class="fas fa-history"></i> Historial Reciente</h4>
-
-        <div class="filter-buttons">
-            <button id="btnFilterAll" class="filter-active" onclick="filtrarHistorial(null)"><i class="fas fa-list"></i> Todo</button>
-            <button id="btnFilterCargada" onclick="filtrarHistorial('Cargada')"><i class="fas fa-box"></i> Cargadas</button>
-            <button id="btnFilterVacia" onclick="filtrarHistorial('Vacía')"><i class="fas fa-truck-moving"></i> Vacías</button>
-            <button id="btnFilterAveriada" onclick="filtrarHistorial('Averiada')"><i class="fas fa-wrench"></i> Averiadas</button>
-        </div>
-
-        <ul id="historialReciente" class="history-card"></ul>
-        
-        <button id="btnLimpiar" onclick="mostrarModalConfirmacionLimpiar()">
-            <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
-        </button>
-    </div>
-
-</div>
-
-<div id="confirmModal" class="modal-overlay" onclick="cerrarModal(event)">
-    <div class="modal-content">
-        <h4 id="modalTitle">Confirmación Requerida</h4>
-        <p id="modalMessage">¿Estás seguro de que deseas realizar esta acción?</p>
-        <div class="modal-buttons">
-            <button class="btn-modal-cancel" onclick="modalCallback(false)">Cancelar</button>
-            <button class="btn-modal-confirm-blue" id="modalConfirmButton" onclick="modalCallback(true)">Confirmar</button>
-        </div>
-    </div>
-</div>
-
-
 <script>
     let matriculaActual = "";
     let registroDuplicado = null; 
@@ -548,7 +85,7 @@
         if (existente && existente.estado === 'Averiada') {
             abrirModal(
                 '¡Alerta de Avería!',
-                `<i class="fas fa-exclamation-triangle" style="color:var(--ios-red); margin-right:5px;"></i> La matrícula **${matriculaActual}** estaba registrada como **AVERIADA**. ¿Confirma que ha sido reparada y está lista para ser asignada a Carga o Vacía?`,
+                `<i class="fas fa-exclamation-triangle" style="color:var(--ios-red); margin-right:5px;"></i> La matrícula <strong>${matriculaActual}</strong> estaba registrada como **AVERIADA**. ¿Confirma que ha sido reparada y está lista para ser asignada a Carga o Vacía?`,
                 'Confirmar Reparación',
                 'btn-modal-confirm-blue',
                 () => {
@@ -611,7 +148,7 @@
             activeBtnId = 'btnVacia';
             if (!isAutoSelect) {
                 // Si no es una autoselección (es decir, el usuario hizo click), guardamos directamente Vacía.
-                guardarRegistro('vacia', 'Vacía');
+                guardarRegistro('vacia', 'Lista para cargar');
             }
         }
         
@@ -650,7 +187,7 @@
             buttonElement.classList.remove(confirmClass);
             buttonElement.disabled = false; 
             
-            mostrarConfirmacion(`¡${estado} registrado!`);
+            mostrarConfirmacion(`¡${matriculaActual} registrado!`);
             mostrarPaso1(true); 
         }, 800); 
     }
@@ -670,7 +207,7 @@
             btnElement = document.getElementById('btnGuardarAveriada');
             estadoDisplay = 'Averiada'; 
         } else if (estado === 'vacia') {
-             descripcion = 'Vacía'; // Asegurar que en el JSON se guarda 'Vacía'
+             descripcion = 'Lista para cargar';
              btnElement = document.getElementById('btnVacia');
              estadoDisplay = 'Vacía'; 
         }
@@ -729,15 +266,20 @@
         document.getElementById('countDisponible').textContent = counts.Vacía; 
         document.getElementById('countAveriada').textContent = counts.Averiada;
 
+        // CORRECCIÓN: Se actualiza la función para interpolar correctamente la variable 'state'
         const updateCompactCard = (state, count) => {
             const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
+            // FIX: Se usa la interpolación de template literal
             const percentText = `${percentValue}%`;
             
+            // FIX: Se usa la interpolación para el ID correcto
             const percentElement = document.getElementById(`percent${state}`);
             if(percentElement) percentElement.textContent = percentText;
             
             // AJUSTE: Altura del relleno de fondo
+            // FIX: Se usa la interpolación para el ID correcto
             const fillElement = document.getElementById(`fill${state}`);
+            // FIX: La altura se basa en el porcentaje
             if(fillElement) fillElement.style.height = percentText;
         };
         
@@ -798,7 +340,8 @@
         registros.sort((a, b) => b.timestamp - a.timestamp);
         
         // Mostrar solo los 5 más recientes del conjunto filtrado
-        const ultimosRegistros = historialFiltro ? registros : registros.slice(0, 5);
+        // CORRECCIÓN: Se actualiza para mostrar 5 si el filtro es 'Todo', o todos los filtrados
+        const ultimosRegistros = historialFiltro === null ? registros.slice(0, 5) : registros; 
         
         ultimosRegistros.forEach(reg => {
             const dateObj = new Date(reg.timestamp);
@@ -852,10 +395,10 @@
 
     function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
         console.log(`[Notificación] ${mensaje}`);
-        // Implementación simple de notificación (podría ser un toast)
+        // Aquí podríamos disparar un toast o un modal de notificación si fuera una app completa.
     }
     
-    // --- EXPORTACIÓN PDF (FUNCIÓN CORREGIDA) ---
+    // --- EXPORTACIÓN PDF (Mismo código que antes, solo actualizado) ---
     function hexToRgb(hex) {
         let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace(shorthandRegex, function(m, r, g, b) {
@@ -872,15 +415,11 @@
     function exportarPDF() {
         const registros = cargarRegistros();
 
-        // ** CORRECCIÓN CLAVE: Acceder al constructor jsPDF correctamente **
-        const PDFConstructor = window.jsPDF; 
-        
-        if (typeof PDFConstructor === 'undefined' || !PDFConstructor.API || !PDFConstructor.API.autoTable) {
-            mostrarConfirmacion("Error: El generador de PDF (jsPDF o AutoTable) no se ha cargado. Revisa las librerías.", "fas fa-exclamation-triangle");
-            console.error("jsPDF object:", window.jsPDF);
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined' || !window.jspdf.jsPDF.API.autoTable) {
+            mostrarConfirmacion("Error: El generador de PDF (jsPDF) no se ha cargado completamente. Inténtalo de nuevo.", "fas fa-exclamation-triangle");
+            console.error("jsPDF object:", window.jspdf);
             return;
         }
-        // ***************************************************************
 
         if (registros.length === 0) {
             mostrarConfirmacion("No hay registros para exportar.", "fas fa-info-circle");
@@ -888,7 +427,8 @@
         }
 
         try {
-           const doc = new PDFConstructor('p', 'mm', 'a4');
+           const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
             const margin = 10;
             let yPos = margin;
             const pageWidth = doc.internal.pageSize.width;
@@ -902,16 +442,15 @@
                 YELLOW_VACIA: hexToRgb('#FFCC00'),
                 HEADER_FILL: [255, 255, 255] 
             };
-            const LIGHT_GRAY_APPLE = [249, 249, 249]; // Gris suave para tablas
             
-            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS (Vacías ahora es 'Vacía') ---
+            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS ---
             const registrosCargadas = registros
                 .filter(reg => reg.estado === 'Cargada')
                 .map(reg => [reg.matricula, reg.descripcion]); 
             
             const registrosVacías = registros
                 .filter(reg => reg.estado === 'Vacía')
-                .map(reg => [reg.matricula, 'Vacía']); // "Vacía" en lugar de "Lista para cargar"
+                .map(reg => [reg.matricula, reg.descripcion || 'Lista para cargar']); 
             
             const registrosAveriadas = registros
                 .filter(reg => reg.estado === 'Averiada')
@@ -924,7 +463,7 @@
                     Total: registros.length
                 };
             
-            // --- 3. IMPLEMENTAR ENCABEZADO XPO LOGISTICS Y CODE CORPORATIVO ---
+            // --- 3. IMPLEMENTAR ENCABEZADO Y LOGO (Diseño Tipográfico Simple) ---
             const headerCardHeight = 25;
             const headerCardY = yPos;
             const headerCardX = margin;
@@ -939,45 +478,29 @@
             const logoY = headerCardY + headerCardHeight / 2;
             doc.setFont("helvetica", "bold");
             
-            // LOGO XPO Logistics (Centered)
-            doc.setFontSize(22); 
+            doc.setFontSize(18);
+            const codeText = "CODE";
+            const codeWidth = doc.getStringUnitWidth(codeText) * doc.getFontSize() / doc.internal.scaleFactor;
+            
+            doc.setFontSize(18);
             const xpoText = "XPO";
-            const logiText = " LOGISTICS"; 
-            
-            // Medición
-            doc.setFontSize(22);
             const xpoWidth = doc.getStringUnitWidth(xpoText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const logiWidth = doc.getStringUnitWidth(logiText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const totalWidth = xpoWidth + logiWidth;
             
-            const xpoStartX = (pageWidth / 2) - (totalWidth / 2);
-            const logiStartX = xpoStartX + xpoWidth;
+            const gap = 3; 
+            const totalWidth = codeWidth + xpoWidth + gap;
             
-            // XPO (Red, Bold)
-            doc.setTextColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
-            doc.text(xpoText, xpoStartX, logoY + 1, { align: 'left', baseline: 'middle' }); 
+            const codeStartX = (pageWidth / 2) - (totalWidth / 2);
+            const xpoStartX = codeStartX + codeWidth + gap;
             
-            // Logistics (Black, Bold)
             doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-            doc.text(logiText, logiStartX, logoY + 1, { align: 'left', baseline: 'middle' });
+            doc.text(codeText, codeStartX, logoY, { align: 'left', baseline: 'middle' });
             
-            // "CODE" Corporate Look & Report Title
-            doc.setFontSize(8);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
-            
-            const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
-            const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-            
-            // Izquierda: Corporate "CODE" y Fecha
-            doc.text(`CODE | ${currentDay}, ${currentDate}`, margin + 2, headerCardY + headerCardHeight - 4); 
-            
-            // Derecha: Título del Reporte
-            doc.text(`REPORTE EJECUTIVO DE FLOTA`, pageWidth - margin - 2, headerCardY + headerCardHeight - 4, { align: 'right' }); 
+            doc.setTextColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
+            doc.text(xpoText, xpoStartX, logoY, { align: 'left', baseline: 'middle' });
             
             yPos = headerCardY + headerCardHeight + margin; 
             
-            // --- 4. IMPLEMENTAR BADGES SEMITRANSPARENTES DE RESUMEN (Size 10) ---
+            // --- 4. IMPLEMENTAR BADGES SEMITRANSPARENTES DE RESUMEN ---
             
             const badgeHeight = 10; 
             const badgeMargin = 5;
@@ -1003,27 +526,26 @@
                 doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD'); 
                 doc.setGState(new doc.GState({ opacity: 1 }));
                 
-                // Relleno suave (Efecto Progresivo)
                 doc.setFillColor(badge.color[0], badge.color[1], badge.color[2]);
                 doc.setGState(new doc.GState({ opacity: 0.2 }));
                 doc.roundedRect(badge.x, badgeY, fillWidth, badgeHeight, 1.5, 1.5, 'F'); 
                 doc.setGState(new doc.GState({ opacity: 1 }));
                 
-                // Textos
-                doc.setFontSize(7); // Tamaño para etiqueta
+                doc.setFontSize(6);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
                 doc.text(badge.label, badge.x + badgeWidth / 2, badgeY + 3.5, { align: 'center' });
 
-                doc.setFontSize(10); // Tamaño principal (10pt)
+                doc.setFontSize(9);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
-                doc.text(` (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 3.5, { align: 'center' });
+                // CORRECCIÓN: Se agrega la etiqueta y se interpola el porcentaje
+                doc.text(`${badge.count} (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 3.5, { align: 'center' });
             });
             
             yPos = badgeY + badgeHeight + 15; 
 
-            // --- 5. APLICAR DISEÑO DE TABLAS (Tipo Apple Pages: Filas Alternas Blanco/Gris) ---
+            // --- 5. APLICAR DISEÑO DE TABLAS ---
             
             const tableMarginX = 5; 
             const halfWidth = (pageWidth - 2 * margin - tableMarginX) / 2;
@@ -1034,14 +556,16 @@
             doc.setFont("helvetica", "bold");
             doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
             
+            // CORRECCIÓN: Se interpola el conteo de Cargadas
             doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
             
             const xPosVacias = margin + halfWidth + tableMarginX;
+            // CORRECCIÓN: Se interpola el conteo de Vacías
             doc.text(`PLATAFORMAS VACÍAS (${counts.Vacía})`, xPosVacias, startYDoubleColumn); 
             
             startYDoubleColumn += 5; 
             
-            // Estilos de la Tabla (Apple Pages Look: Base Blanco, Alterna Gris Suave)
+            // Estilos de la Tabla (Apple Pages Look)
             const styles = { 
                 fontSize: 9, 
                 cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }, 
@@ -1050,21 +574,19 @@
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 lineColor: APPLE_COLORS.MEDIUM_GRAY, 
                 lineWidth: 0.05, 
-                fontStyle: 'normal',
-                fillColor: [255, 255, 255] // Base Blanca
+                fontStyle: 'normal' 
             };
             
             const headStyles = { 
-                fillColor: LIGHT_GRAY_APPLE, // Gris Suave para el encabezado
+                fillColor: [249, 249, 249], 
                 textColor: APPLE_COLORS.DARK_TEXT, 
                 fontStyle: 'bold', 
                 lineWidth: { top: 0, right: 0, bottom: 0.15, left: 0 }, 
                 cellPadding: 3 
             };
             
-            // Filas pares (0, 2, 4...) en Blanco (del styles base), Filas impares (1, 3, 5...) en Gris Suave
             const alternateRowStyles = { 
-                fillColor: LIGHT_GRAY_APPLE // Gris Suave
+                fillColor: [255, 255, 255] 
             };
             
             const tableOptions = {
@@ -1079,29 +601,29 @@
                 }
             };
 
-            // --- Tabla de Cargadas (Sin colores en celdas) ---
+            // --- Tabla de Cargadas ---
             doc.autoTable({
                 head: [['MATRÍCULA', 'CONTENIDO']],
                 body: registrosCargadas,
                 margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
-                    1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
+                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [240, 255, 240], textColor: APPLE_COLORS.GREEN_CARGADA }, 
+                    1: { cellWidth: 'auto' }
                 },
                 ...tableOptions
             });
             let finalYCargadas = doc.autoTable.previous.finalY;
 
-            // --- Tabla de Vacías (Sin colores en celdas) ---
+            // --- Tabla de Vacías ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'ESTADO']], // Cambio el título de columna
+                head: [['MATRÍCULA', 'DESCRIPCIÓN']],
                 body: registrosVacías,
                 margin: { left: xPosVacias, right: margin }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 25, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
-                    1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
+                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 255, 240], textColor: APPLE_COLORS.YELLOW_VACIA }, 
+                    1: { cellWidth: 'auto' }
                 },
                 ...tableOptions
             });
@@ -1109,7 +631,7 @@
 
             let finalY = Math.max(finalYCargadas, finalYVacías); 
             
-            // --- Tabla de Averíadas (Full Width, Sin colores en celdas) ---
+            // --- Tabla de Averíadas (Full Width) ---
             if (counts.Averiada > 0) {
                 
                 if (finalY + 20 > doc.internal.pageSize.height - margin) {
@@ -1123,6 +645,7 @@
                 doc.setFontSize(12);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+                // CORRECCIÓN: Se interpola el conteo de Averíadas
                 doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
                 
                 doc.autoTable({
@@ -1131,8 +654,8 @@
                     startY: finalY + 10,
                     margin: { left: margin, right: margin },
                     columnStyles: {
-                        0: { cellWidth: 30, fontStyle: 'bold', textColor: APPLE_COLORS.DARK_TEXT }, 
-                        1: { cellWidth: 'auto', textColor: APPLE_COLORS.DARK_TEXT }
+                        0: { cellWidth: 30, fontStyle: 'bold', fillColor: [255, 240, 240], textColor: APPLE_COLORS.RED_XPO }, 
+                        1: { cellWidth: 'auto' }
                     },
                     ...tableOptions
                 });
@@ -1154,6 +677,7 @@
                 doc.text(`© ${new Date().getFullYear()} XPO LOGISTICS - Informe interno`, margin, footerY);
                 
                 // Conteo de Páginas
+                // CORRECCIÓN: Se interpolan i y pageCount
                 doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
                 
                 // Línea divisoria sutil para el footer
@@ -1161,24 +685,22 @@
                 doc.setLineWidth(0.1);
                 doc.line(margin, footerY - 2, pageWidth - margin, footerY - 2);
                 
-                // Nota: El título del reporte y la fecha ya están en el Header principal (i === 1)
+                // Título del reporte e información de la fecha
+                if (i === 1) {
+                    const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+                    const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(8);
+                    doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
+                    // CORRECCIÓN: Se interpolan currentDay y currentDate
+                    doc.text(`REPORTE EJECUTIVO DE FLOTA | ${currentDay}, ${currentDate}`, margin, headerCardY + headerCardHeight + margin - 2); 
+                }
             }
             
-            // ----------------------------------------------------------------
-            // ** Generar Blob y Forzar Descarga **
-            // ----------------------------------------------------------------
-
-            const pdfBlob = doc.output('blob');
-            const blobUrl = URL.createObjectURL(pdfBlob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = 'Reporte_XPO_Ejecutivo.pdf'; 
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
-
-            mostrarConfirmacion("PDF generado. La descarga ha comenzado.", "fas fa-file-pdf");
+            // Abrimos el PDF en una nueva pestaña
+            doc.output('dataurlnewwindow', {filename: 'Reporte_XPO_Ejecutivo.pdf'});
+            mostrarConfirmacion("PDF generado. Se ha abierto en una nueva pestaña (o la descarga ha comenzado).", "fas fa-file-pdf");
 
         } catch (e) {
             console.error("Error al generar PDF:", e);
@@ -1238,6 +760,7 @@
         actualizarContadores();
         actualizarHistorialReciente(); 
         
+        // El botón de paso 1 ya tiene un ID en el HTML.
         document.getElementById('btnExportar').addEventListener('click', exportarPDF);
         
         document.getElementById('paso1').style.display = 'block';
@@ -1253,6 +776,3 @@
         document.getElementById('btnFilterAll').classList.add('filter-active');
     });
 </script>
-
-</body>
-</html>
