@@ -7,7 +7,6 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- Librerías de PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -211,7 +210,7 @@
         .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
         
         /* ----------------------------------------------- */
-        /* --- ESTILOS DE RESUMEN DE FLOTA (COMPACTOS) --- */
+        /* --- ESTILOS DE RESUMEN DE FLOTA (COMPACTOS/WIDGETS) --- */
         /* ----------------------------------------------- */
         #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
         
@@ -240,7 +239,7 @@
             z-index: 1;
         }
         
-        /* Colores de relleno */
+        /* Colores de relleno (SUAVES) */
         #cardCargada .summary-fill { background-color: var(--fill-green); }
         #cardDisponible .summary-fill { background-color: var(--fill-yellow); }
         #cardAveriada .summary-fill { background-color: var(--fill-red); }
@@ -297,10 +296,10 @@
         .historial-estado { font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
         .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } 
         
-        /* Colores de Badge */
-        .historial-estado.estado-Cargada { background-color: #e6ffec; color: #1e8449; }
-        .historial-estado.estado-Vacía { background-color: #fffde6; color: #b38600; } 
-        .historial-estado.estado-Averiada { background-color: #ffe6e6; color: #c0392b; }
+        /* Colores de Badge (SUAVES) */
+        .historial-estado.estado-Cargada { background-color: var(--fill-green); color: var(--ios-green); }
+        .historial-estado.estado-Vacía { background-color: var(--fill-yellow); color: #B2A200; } /* Un poco más oscuro para contraste */
+        .historial-estado.estado-Averiada { background-color: var(--fill-red); color: var(--ios-red); }
 
         #advertenciaDuplicado { background-color: #fce8e8; color: #c0392b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; border: 1px solid #f9bdbd; }
 
@@ -376,7 +375,6 @@
 
 <div class="header-fixed" id="fixedHeader">
     <div id="logoHeader" class="logo-container">
-        <!-- Logo CODE Corporativo y Branding XPO LOGISTICS -->
         <span class="logo-corporate-code">CODE</span>
         <span class="logo-xpo-red">XPO</span>
         <span class="logo-logistics-black">LOGISTICS</span>
@@ -421,7 +419,6 @@
         <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
         
         <div id="contadores">
-            <!-- Tarjetas de resumen (más compactas) -->
             <div id="cardTotal" class="compact-summary card-total">
                 <div class="compact-content">
                     <p>Total Flota</p>
@@ -673,7 +670,7 @@
             buttonElement.classList.remove(confirmClass);
             buttonElement.disabled = false; 
             
-            mostrarConfirmacion(`¡${estado.toLowerCase()} registrado!`);
+            mostrarConfirmacion(`¡${matriculaActual} registrado!`);
             mostrarPaso1(true); 
         }, 800); 
     }
@@ -700,7 +697,7 @@
         }
 
         if ((estadoDisplay === 'Cargada' || estadoDisplay === 'Averiada') && !descripcion.trim()) {
-            mostrarConfirmacion(`Necesita una descripción para ${estadoDisplay.toLowerCase()}.`, "fas fa-exclamation-triangle");
+            mostrarConfirmacion(`Necesita una descripción para ${estadoDisplay}.`, "fas fa-exclamation-triangle");
             return;
         }
 
@@ -880,7 +877,7 @@
         // Aquí podríamos disparar un toast o un modal de notificación si fuera una app completa.
     }
     
-    // --- EXPORTACIÓN PDF (Estilo Apple Pages/Alternando Columnas) ---
+    // --- EXPORTACIÓN PDF (Estilo Apple Pages/Alternando Columnas COMPACTO) ---
     
     /**
      * Función auxiliar para convertir colores HEX a RGB para jsPDF.
@@ -900,14 +897,13 @@
     
     /**
      * Genera y descarga un archivo PDF con el historial de la flota aplicando un diseño
-     * limpio y estilo Apple Pages.
+     * ultra-minimalista estilo Apple Pages, eliminando elementos decorativos.
      */
     function exportarPDF() {
         const registros = cargarRegistros();
 
         if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined' || !window.jspdf.jsPDF.API.autoTable) {
             mostrarConfirmacion("Error: El generador de PDF (jsPDF) no se ha cargado completamente. Inténtalo de nuevo.", "fas fa-exclamation-triangle");
-            console.error("jsPDF object:", window.jspdf);
             return;
         }
 
@@ -918,31 +914,33 @@
 
         try {
            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const margin = 10;
+            const doc = new jsPDF('p', 'mm', 'a4'); 
+            const margin = 15; // Margen ligeramente aumentado para aire visual
             let yPos = margin;
             const pageWidth = doc.internal.pageSize.width;
             
-            // --- 1. CONFIGURACIÓN DE COLORES TIPO APPLE ---
+            // --- 1. CONFIGURACIÓN DE COLORES MINIMALISTAS ---
             const APPLE_COLORS = {
+                // Colores Corporativos sutiles
                 RED_XPO: hexToRgb('#FF3B30'),
                 DARK_TEXT: hexToRgb('#1C1C1E'),
-                MEDIUM_GRAY: hexToRgb('#D1D1D6'),
-                LIGHT_GRAY_BG: hexToRgb('#F9F9F9'), 
+                MEDIUM_GRAY: hexToRgb('#D1D1D6'), // Líneas divisorias
+                SOFT_GRAY_TEXT: hexToRgb('#8E8E93'), // Texto secundario
+                // Colores de estado
                 GREEN_CARGADA: hexToRgb('#34C759'),
                 YELLOW_VACIA: hexToRgb('#FFCC00'),
-                HEADER_FILL: [255, 255, 255],
-                SOFT_COLUMN_GRAY: hexToRgb('#F7F7F7') // Gris suave para columnas alternas
+                // Fondo de la tarjeta Matrícula
+                LIGHT_GRAY_BG: hexToRgb('#F7F7FA') 
             };
             
-            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS ---
+            // --- 2. PREPARACIÓN DE DATOS ---
             const registrosCargadas = registros
                 .filter(reg => reg.estado === 'Cargada')
                 .map(reg => [reg.matricula, reg.descripcion]); 
             
             const registrosVacías = registros
                 .filter(reg => reg.estado === 'Vacía')
-                .map(reg => [reg.matricula, reg.descripcion || '']); // Descripcion es string vacío.
+                .map(reg => [reg.matricula, 'Disponible (Sin Carga)']); // Descripción estática para Vacía
             
             const registrosAveriadas = registros
                 .filter(reg => reg.estado === 'Averiada')
@@ -955,63 +953,31 @@
                     Total: registros.length
                 };
             
-            // --- 3. IMPLEMENTAR ENCABEZADO Y LOGO (XPO LOGISTICS) ---
-            const headerCardHeight = 25;
-            const headerCardY = yPos;
-            const headerCardX = margin;
-            const headerCardWidth = pageWidth - 2 * margin;
+            // --- 3. ENCABEZADO TIPO DOCUMENTO (Pages/Notes) ---
             
-            // Dibujar tarjeta de fondo limpia
-            doc.setFillColor(APPLE_COLORS.HEADER_FILL[0], APPLE_COLORS.HEADER_FILL[1], APPLE_COLORS.HEADER_FILL[2]);
-            doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
-            doc.setGState(new doc.GState({ opacity: 0.95 })); 
-            doc.roundedRect(headerCardX, headerCardY, headerCardWidth, headerCardHeight, 3, 3, 'FD'); 
-            doc.setGState(new doc.GState({ opacity: 1 })); 
+            // Título Principal
+            doc.setFontSize(24);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
+            doc.text("Reporte Ejecutivo de Flota", margin, yPos);
             
-            const logoY = headerCardY + headerCardHeight / 2;
+            yPos += 8;
             
-            // 3.1 LOGO CODE (Stylized corporate icon in top-left)
+            // Subtítulo/Fecha
+            const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' });
+            const currentDate = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+            
             doc.setFontSize(10);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-            doc.text("CODE", margin + 3, logoY - 5, { align: 'left' });
-            doc.setDrawColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
-            doc.setLineWidth(1);
-            doc.line(margin + 3, logoY - 4, margin + 3 + 12, logoY - 4);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(APPLE_COLORS.SOFT_GRAY_TEXT[0], APPLE_COLORS.SOFT_GRAY_TEXT[1], APPLE_COLORS.SOFT_GRAY_TEXT[2]);
+            doc.text(`${currentDay}, ${currentDate} | Total: ${counts.Total} registros`, margin, yPos);
             
-            // 3.2 XPO LOGISTICS branding (Centered, Red/Black Bold)
-            const xpoText = "XPO";
-            doc.setFontSize(22);
-            const xpoWidth = doc.getStringUnitWidth(xpoText) * doc.getFontSize() / doc.internal.scaleFactor;
+            yPos += 15; // Espacio después del encabezado
             
-            const logisticsText = "LOGISTICS";
-            doc.setFontSize(18); 
-            const logisticsWidth = doc.getStringUnitWidth(logisticsText) * doc.getFontSize() / doc.internal.scaleFactor;
+            // --- 4. BADGES TIPO TARJETA MINIMALISTA (Focus en el Conteo) ---
             
-            const gap = 2; 
-            const totalWidth = xpoWidth + logisticsWidth + gap;
-            
-            const xpoStartX = (pageWidth / 2) - (totalWidth / 2);
-            const logisticsStartX = xpoStartX + xpoWidth + gap;
-            
-            // XPO (Red, Bold)
-            doc.setFontSize(22);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(APPLE_COLORS.RED_XPO[0], APPLE_COLORS.RED_XPO[1], APPLE_COLORS.RED_XPO[2]);
-            doc.text(xpoText, xpoStartX, logoY, { align: 'left', baseline: 'middle' });
-            
-            // LOGISTICS (Black, Bold)
-            doc.setFontSize(18);
-            doc.setFont("helvetica", "bold"); // Mantener bold para corporativo, pero más pequeño.
-            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-            doc.text(logisticsText, logisticsStartX, logoY, { align: 'left', baseline: 'middle' });
-            
-            yPos = headerCardY + headerCardHeight + margin; 
-            
-            // --- 4. IMPLEMENTAR BADGES MÁS PEQUEÑOS Y COMPACTOS ---
-            
-            const badgeHeight = 8; 
-            const badgeMargin = 4; 
+            const badgeHeight = 12; // Un poco más alto para mejor lectura
+            const badgeMargin = 5; 
             const badgeWidth = (pageWidth - 2 * margin - 2 * badgeMargin) / 3;
             const badgeY = yPos;
             
@@ -1023,70 +989,60 @@
 
             badges.forEach(badge => {
                 const percentage = counts.Total > 0 ? (badge.count / counts.Total) : 0;
-                const fillWidth = badgeWidth * percentage;
                 
-                // Fondo de tarjeta
-                doc.setFillColor(APPLE_COLORS.LIGHT_GRAY_BG[0], APPLE_COLORS.LIGHT_GRAY_BG[1], APPLE_COLORS.LIGHT_GRAY_BG[2]);
+                // Dibujar tarjeta (Fondo blanco, sin borde)
+                doc.setFillColor(255, 255, 255);
                 doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
-                doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD'); 
+                doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 3, 3, 'F'); 
                 
-                // Barra de llenado (efecto progresivo, color suave)
-                doc.setFillColor(badge.color[0], badge.color[1], badge.color[2]);
-                doc.setGState(new doc.GState({ opacity: 0.15 })); 
-                doc.roundedRect(badge.x, badgeY, fillWidth, badgeHeight, 1.5, 1.5, 'F'); 
-                doc.setGState(new doc.GState({ opacity: 1 }));
-                
-                // Texto: Label (pequeño)
-                doc.setFontSize(6); 
+                // Texto: Label (muy pequeño y gris suave)
+                doc.setFontSize(7); 
                 doc.setFont("helvetica", "normal");
-                doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-                doc.text(badge.label, badge.x + badgeWidth / 2, badgeY + 3, { align: 'center' }); 
+                doc.setTextColor(APPLE_COLORS.SOFT_GRAY_TEXT[0], APPLE_COLORS.SOFT_GRAY_TEXT[1], APPLE_COLORS.SOFT_GRAY_TEXT[2]);
+                doc.text(badge.label, badge.x + 2, badgeY + 4); 
 
-                // Texto: Conteo (prominente, compacto)
-                doc.setFontSize(8); 
+                // Texto: Conteo (grande, audaz y coloreado)
+                doc.setFontSize(14); // Más grande para el número
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
-                doc.text(`${badge.count} (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 2.5, { align: 'center' }); 
+                doc.text(`${badge.count}`, badge.x + 2, badgeY + badgeHeight - 2); 
+                
+                // Texto: Porcentaje (pequeño y audaz)
+                doc.setFontSize(7); 
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(APPLE_COLORS.SOFT_GRAY_TEXT[0], APPLE_COLORS.SOFT_GRAY_TEXT[1], APPLE_COLORS.SOFT_GRAY_TEXT[2]);
+                doc.text(`${(percentage * 100).toFixed(0)}%`, badge.x + badgeWidth - 2, badgeY + badgeHeight - 2, { align: 'right' });
             });
             
-            yPos = badgeY + badgeHeight + 10; 
-
-            // --- 5. APLICAR DISEÑO DE TABLAS (Alternando Columnas y Estilo Apple Pages) ---
+            yPos = badgeY + badgeHeight + 12; 
+            
+            // --- 5. APLICAR DISEÑO DE TABLAS (Estilo Apple Notes/Ultra-Compacto) ---
             
             const tableMarginX = 5; 
             const halfWidth = (pageWidth - 2 * margin - tableMarginX) / 2;
             let startYDoubleColumn = yPos;
             
-            // Títulos de Sección
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-            
-            doc.text(`PLATAFORMAS CARGADAS (${counts.Cargada})`, margin, startYDoubleColumn); 
-            
-            const xPosVacias = margin + halfWidth + tableMarginX;
-            doc.text(`PLATAFORMAS VACÍAS (${counts.Vacía})`, xPosVacias, startYDoubleColumn); 
-            
-            startYDoubleColumn += 5; 
-            
             // Estilos de la Tabla (Minimalista y Compacto)
             const styles = { 
-                fontSize: 8, 
-                cellPadding: { top: 1.5, right: 2, bottom: 1.5, left: 2 }, 
+                fontSize: 7, 
+                cellPadding: 1.5, // Padding ligeramente mejorado
                 valign: 'middle', 
                 font: "helvetica", 
                 textColor: APPLE_COLORS.DARK_TEXT, 
+                // Eliminar bordes de la tabla
                 lineColor: APPLE_COLORS.MEDIUM_GRAY, 
-                lineWidth: 0.05, 
+                lineWidth: 0, 
                 fontStyle: 'normal' 
             };
             
             const headStyles = { 
-                fillColor: APPLE_COLORS.LIGHT_GRAY_BG, 
-                textColor: APPLE_COLORS.DARK_TEXT, 
-                fontStyle: 'bold', 
+                fillColor: [255, 255, 255], // Fondo blanco
+                textColor: APPLE_COLORS.SOFT_GRAY_TEXT, 
+                fontStyle: 'normal', 
+                fontSize: 8,
+                // Solo línea divisoria en el fondo (como Notes)
                 lineWidth: { top: 0, right: 0, bottom: 0.15, left: 0 }, 
-                cellPadding: 3 
+                cellPadding: 2 
             };
             
             const alternateRowStyles = { 
@@ -1099,108 +1055,124 @@
                 styles: styles,
                 headStyles: headStyles,
                 alternateRowStyles: alternateRowStyles, 
+                margin: { top: 0, bottom: 0, left: margin, right: margin },
+                // *** IMPLEMENTACIÓN CLAVE: Envolver texto en la segunda columna ***
+                columnStyles: {
+                    1: { cellWidth: 70, overflow: 'linebreak' } // Columna 1 (Contenido/Avería) ancho fijo y forzar salto de línea
+                },
                 didParseCell: (data) => {
                     if (data.row.section === 'body') {
-                        data.cell.styles.minCellHeight = 5; 
-                        // Aplicar color de relleno de columna: Columna 0 (Matrícula) = Gris Suave
+                        data.cell.styles.minCellHeight = 5; // Altura mínima de celda compacta
+
+                        // Estilo Apple: Columna de clave (Matrícula) ligeramente resaltada
                         if (data.column.index === 0) {
-                            data.cell.styles.fillColor = APPLE_COLORS.SOFT_COLUMN_GRAY;
+                            data.cell.styles.fillColor = APPLE_COLORS.LIGHT_GRAY_BG;
+                            data.cell.styles.fontStyle = 'bold'; // Matrícula destacada (SF Pro Semibold)
+                            data.cell.styles.textColor = APPLE_COLORS.DARK_TEXT;
                         } else {
-                            data.cell.styles.fillColor = [255, 255, 255]; // Columna 1 = Blanco
+                            data.cell.styles.fillColor = [255, 255, 255]; 
+                            data.cell.styles.fontStyle = 'normal'; 
                         }
-                        // Asegurar que el texto sea negro/dark para todo el cuerpo
-                        data.cell.styles.textColor = APPLE_COLORS.DARK_TEXT;
-                        data.cell.styles.fontStyle = 'normal';
+                        
+                        // Línea divisoria SOLO debajo de las filas
+                        data.cell.styles.lineWidth = { top: 0, right: 0, bottom: 0.05, left: 0 }; 
+                    }
+                    if (data.row.index === data.table.body.length - 1) {
+                         // Eliminar la línea divisoria de la última fila
+                         data.cell.styles.lineWidth = { top: 0, right: 0, bottom: 0, left: 0 }; 
                     }
                 }
             };
-
-            // --- Tabla de Cargadas ---
-            doc.autoTable({
-                head: [['MATRÍCULA', 'CONTENIDO']],
-                body: registrosCargadas,
-                margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
-                tableWidth: halfWidth,
-                ...tableOptions
-            });
-            let finalYCargadas = doc.autoTable.previous.finalY;
-
-            // --- Tabla de Vacías ---
-            doc.autoTable({
-                head: [['MATRÍCULA', 'PLATAFORMA']], // Columna de descripción renombrada a 'Plataforma'
-                body: registrosVacías, // La descripción es un string vacío, cumpliendo el requisito.
-                margin: { left: xPosVacias, right: margin }, 
-                tableWidth: halfWidth,
-                ...tableOptions
-            });
-            let finalYVacías = doc.autoTable.previous.finalY;
-
-            let finalY = Math.max(finalYCargadas, finalYVacías); 
             
-            // --- Tabla de Averíadas (Full Width) ---
-            if (counts.Averiada > 0) {
-                
-                // Manejo de página si no cabe
-                if (finalY + 20 > doc.internal.pageSize.height - margin) {
-                    doc.addPage();
-                    finalY = margin;
-                } else {
-                     finalY += 10; 
-                }
-
-                // Título de Sección Averiada
-                doc.setFontSize(12);
+            // Función para dibujar el título de sección con espacio
+            const drawSectionTitle = (title, currentY) => {
+                doc.setFontSize(14); 
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-                doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
-                
+                doc.text(title, margin, currentY + 6);
+                return currentY + 10;
+            };
+
+            // --- TABLAS DE CONTENIDO (una columna completa) ---
+            
+            // Cargadas
+            startYDoubleColumn = drawSectionTitle(`Plataformas Cargadas (${counts.Cargada})`, startYDoubleColumn);
+            if (counts.Cargada > 0) {
+                doc.autoTable({
+                    head: [['MATRÍCULA', 'CONTENIDO']],
+                    body: registrosCargadas,
+                    ...tableOptions,
+                    startY: startYDoubleColumn
+                });
+                startYDoubleColumn = doc.autoTable.previous.finalY;
+            } else { startYDoubleColumn += 10; }
+
+
+            // Vacías / Disponibles
+            // Manejo de página si no cabe
+            if (startYDoubleColumn + 20 > doc.internal.pageSize.height - margin) { 
+                doc.addPage();
+                startYDoubleColumn = margin;
+            } else {
+                 startYDoubleColumn += 10; // Espacio entre secciones
+            }
+
+            startYDoubleColumn = drawSectionTitle(`Plataformas Vacías / Disponibles (${counts.Vacía})`, startYDoubleColumn);
+            if (counts.Vacía > 0) {
+                doc.autoTable({
+                    head: [['MATRÍCULA', 'ESTADO']], 
+                    body: registrosVacías,
+                    ...tableOptions,
+                    startY: startYDoubleColumn
+                });
+                startYDoubleColumn = doc.autoTable.previous.finalY;
+            } else { startYDoubleColumn += 10; }
+
+
+            // Averíadas
+            if (counts.Averiada > 0) {
+                // Manejo de página si no cabe
+                if (startYDoubleColumn + 20 > doc.internal.pageSize.height - margin) { 
+                    doc.addPage();
+                    startYDoubleColumn = margin;
+                } else {
+                     startYDoubleColumn += 10;
+                }
+
+                startYDoubleColumn = drawSectionTitle(`Plataformas Averíadas (${counts.Averiada})`, startYDoubleColumn);
                 doc.autoTable({
                     head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
                     body: registrosAveriadas,
-                    startY: finalY + 10,
-                    margin: { left: margin, right: margin },
-                    ...tableOptions
+                    ...tableOptions,
+                    startY: startYDoubleColumn
                 });
-                finalY = doc.autoTable.previous.finalY;
+                startYDoubleColumn = doc.autoTable.previous.finalY;
             }
 
-            // --- Pie de Página (Footer) ---
-            const footerY = doc.internal.pageSize.height - 5;
-            
-            doc.setFontSize(8);
-            doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
-            doc.setFont("helvetica", "normal");
+            // --- Pie de Página (Footer Sutil) ---
+            const footerY = doc.internal.pageSize.height - 8;
             
             const pageCount = doc.internal.getNumberOfPages();
             for(let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
+                doc.setPage(i); 
+
+                doc.setFontSize(8); 
+                doc.setTextColor(APPLE_COLORS.SOFT_GRAY_TEXT[0], APPLE_COLORS.SOFT_GRAY_TEXT[1], APPLE_COLORS.SOFT_GRAY_TEXT[2]);
+                doc.setFont("helvetica", "normal");
                 
-                // Texto de derechos de autor
-                doc.text(`© ${new Date().getFullYear()} XPO LOGISTICS - Informe interno`, margin, footerY);
-                
-                // Conteo de Páginas
-                doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
-                
-                // Línea divisoria sutil para el footer
+                // Línea divisoria sutil
                 doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
                 doc.setLineWidth(0.1);
-                doc.line(margin, footerY - 2, pageWidth - margin, footerY - 2);
+                doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5); 
                 
-                // Título del reporte e información de la fecha
-                if (i === 1) {
-                    const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
-                    const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-                    
-                    doc.setFont("helvetica", "normal");
-                    doc.setFontSize(8);
-                    doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]); 
-                    doc.text(`REPORTE EJECUTIVO DE FLOTA | ${currentDay}, ${currentDate}`, margin, headerCardY + headerCardHeight + margin - 2); 
-                }
+                // Texto de derechos de autor y Página
+                doc.text(`© ${new Date().getFullYear()} XPO LOGISTICS - Reporte interno`, margin, footerY);
+                doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
             }
             
-            // Abrimos el PDF en una nueva pestaña
-            doc.output('dataurlnewwindow', {filename: 'Reporte_XPO_Ejecutivo.pdf'});
-            mostrarConfirmacion("PDF generado. Se ha abierto en una nueva pestaña (o la descarga ha comenzado).", "fas fa-file-pdf");
+            doc.save('Reporte_Pages_XPO.pdf'); 
+            
+            mostrarConfirmacion("PDF generado con estilo Apple Pages Minimalista. La descarga ha comenzado.", "fas fa-file-pdf");
 
         } catch (e) {
             console.error("Error al generar PDF:", e);
@@ -1250,4 +1222,3 @@
 
 </body>
 </html>
-
