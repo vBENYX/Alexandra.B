@@ -349,38 +349,6 @@
         .btn-modal-cancel { background-color: #e5e5ea; color: #3c3c43; }
         .btn-modal-confirm-red { background-color: var(--ios-red); }
         .btn-modal-confirm-blue { background-color: var(--ios-blue); }
-        
-        /* --- NUEVO: TOAST DE NOTIFICACIÓN (Estilo iOS) --- */
-        .toast-notification {
-            position: fixed;
-            top: 60px; /* Debajo del encabezado fijo */
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px); /* Oculto arriba */
-            background-color: rgba(50, 50, 50, 0.95); /* Gris oscuro */
-            color: white;
-            padding: 10px 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 2500;
-            opacity: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-            max-width: 90%;
-            text-align: center;
-        }
-
-        .toast-notification.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0); /* Muestra en posición */
-        }
-        
-        .toast-notification i {
-            font-size: 16px;
-        }
     </style>
 </head>
 <body>
@@ -492,11 +460,6 @@
     </div>
 </div>
 
-<div id="toastNotification" class="toast-notification">
-    <i id="toastIcon" class="fas"></i>
-    <span id="toastMessage"></span>
-</div>
-
 
 <script>
     let matriculaActual = "";
@@ -571,9 +534,7 @@
     // --- LÓGICA CLAVE: REGISTRO/ESTADO Y ALERTA INTELIGENTE ---
     
     function registrarMatricula() {
-        // CORRECCIÓN: Limpiar espacios extra y forzar mayúsculas
-        matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().replace(/\s/g, '').trim(); 
-        
+        matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
         if (!matriculaActual) {
             mostrarConfirmacion("Ingrese la matrícula.", "fas fa-exclamation-triangle");
             return;
@@ -649,10 +610,8 @@
         } else if (estado === 'vacia') { 
             activeBtnId = 'btnVacia';
             if (!isAutoSelect) {
-                // CORRECCIÓN: Guardamos el texto original del botón para restaurarlo después del feedback
-                const btnVacia = document.getElementById('btnVacia');
-                const originalText = btnVacia.innerHTML; 
-                guardarRegistro('vacia', 'Lista para cargar', originalText);
+                // Si no es una autoselección (es decir, el usuario hizo click), guardamos directamente Vacía.
+                guardarRegistro('vacia', 'Lista para cargar');
             }
         }
         
@@ -661,9 +620,8 @@
         }
     }
     
-    // CORRECCIÓN: Función microInteraccionBoton ajustada
-    function microInteraccionBoton(buttonElement, estado, originalBtnHtml = null) {
-        const originalText = originalBtnHtml || buttonElement.innerHTML;
+    function microInteraccionBoton(buttonElement, estado) {
+        const originalText = buttonElement.innerHTML;
         buttonElement.disabled = true; 
         
         let confirmText = '';
@@ -684,19 +642,21 @@
         buttonElement.innerHTML = confirmText;
         buttonElement.classList.add(confirmClass);
         
+        // ** NOTA: La animación Siri Wave se gestiona puramente por CSS y no necesita ser manipulada aquí, evitando el efecto de "bloqueo". **
+
         setTimeout(() => {
             // Restaurar estado
             buttonElement.innerHTML = originalText;
             buttonElement.classList.remove(confirmClass);
             buttonElement.disabled = false; 
             
-            mostrarConfirmacion(`¡${estado} registrado!`); 
+            mostrarConfirmacion(`¡${estado} registrado!`);
             mostrarPaso1(true); 
         }, 800); 
     }
 
-    // CORRECCIÓN: Función guardarRegistro ajustada para el botón 'Vacía'
-    function guardarRegistro(estado, descripcionManual = '', originalBtnHtml = null) {
+
+    function guardarRegistro(estado, descripcionManual = '') {
         let descripcion = descripcionManual;
         let btnElement = null;
         let estadoDisplay = '';
@@ -711,7 +671,7 @@
             estadoDisplay = 'Averiada'; 
         } else if (estado === 'vacia') {
              descripcion = 'Lista para cargar';
-             btnElement = null; // No tiene botón de Guardar aparte
+             btnElement = document.getElementById('btnVacia');
              estadoDisplay = 'Vacía'; 
         }
 
@@ -723,7 +683,7 @@
         const nuevoRegistro = {
             matricula: matriculaActual,
             estado: estadoDisplay,
-            descripcion: descripcion.trim() || (estadoDisplay === 'Vacía' ? 'Lista para cargar' : 'N/A'),
+            descripcion: descripcion.trim() || 'N/A',
             timestamp: new Date().getTime() 
         };
 
@@ -741,11 +701,11 @@
         actualizarHistorialReciente();
 
         if (btnElement) {
-            // Animación y transición visual para botones de Guardar (Cargada/Averiada)
+            // Animación y transición visual
             microInteraccionBoton(btnElement, estadoDisplay);
         } else if (estado === 'vacia') {
-             // Usamos el botón Vacía para la animación de guardado, pasando el HTML original
-             microInteraccionBoton(document.getElementById('btnVacia'), estadoDisplay, originalBtnHtml);
+             // Ya que el botón Vacia no tiene un botón de 'Guardar' aparte
+             microInteraccionBoton(document.getElementById('btnVacia'), estadoDisplay);
         }
     }
 
@@ -773,9 +733,10 @@
             const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
             const percentText = `${percentValue}%`;
             
-            const percentElement = document.getElementById(`percent${state}`); 
+            const percentElement = document.getElementById(`percent${state}`);
             if(percentElement) percentElement.textContent = percentText;
             
+            // AJUSTE: Altura del relleno de fondo
             const fillElement = document.getElementById(`fill${state}`);
             if(fillElement) fillElement.style.height = percentText;
         };
@@ -814,35 +775,30 @@
         actualizarHistorialReciente();
     }
 
-    // CORRECCIÓN DE LA FUNCIÓN: Asegura que el historial se muestre correctamente
     function actualizarHistorialReciente() {
         let registros = cargarRegistros();
         const ul = document.getElementById('historialReciente');
         ul.innerHTML = ''; 
 
         // 1. Filtrar si es necesario
-        let registrosAmostrar = [...registros]; // Clonar el array
         if (historialFiltro) {
-            registrosAmostrar = registrosAmostrar.filter(reg => reg.estado === historialFiltro);
+            registros = registros.filter(reg => reg.estado === historialFiltro);
         }
         
-        if (registrosAmostrar.length === 0) {
+        if (registros.length === 0) {
             let message = 'Aún no hay movimientos registrados.';
             if (historialFiltro) {
-                message = `No hay matrículas registradas como **${historialFiltro}**.`;
+                message = `No hay matrículas registradas como "${historialFiltro}".`;
             }
             ul.innerHTML = `<li style="justify-content:center; color: var(--text-light-gray); border-bottom: none;">${message}</li>`;
-            ul.classList.remove('history-card'); 
             return;
         }
-        
-        ul.classList.add('history-card'); 
 
         // 2. Ordenar por timestamp (más reciente primero)
-        registrosAmostrar.sort((a, b) => b.timestamp - a.timestamp);
+        registros.sort((a, b) => b.timestamp - a.timestamp);
         
         // Mostrar solo los 5 más recientes del conjunto filtrado
-        const ultimosRegistros = historialFiltro ? registrosAmostrar : registrosAmostrar.slice(0, 5);
+        const ultimosRegistros = historialFiltro ? registros : registros.slice(0, 5);
         
         ultimosRegistros.forEach(reg => {
             const dateObj = new Date(reg.timestamp);
@@ -851,18 +807,12 @@
             const estadoDisplay = reg.estado;
             const estadoClass = `estado-${estadoDisplay}`;
             
-            // CORRECCIÓN: Aseguramos que la descripción sea válida y luego la cortamos.
-            const descripcion = reg.descripcion || (estadoDisplay === 'Vacía' ? 'Lista para cargar' : 'Sin Descripción');
-            const descripcionCorta = descripcion.length > 25 ? descripcion.substring(0, 22) + '...' : descripcion;
-
             const li = document.createElement('li');
             li.innerHTML = `
                 <span class="status-indicator ${estadoDisplay}"></span>
                 <span class="historial-matricula">${reg.matricula}</span>
-                <span class="historial-estado ${estadoClass}" title="${descripcion}">
-                    ${estadoDisplay}
-                </span>
-                <span class="historial-time">${hora} | ${descripcionCorta}</span>
+                <span class="historial-estado ${estadoClass}">${estadoDisplay}</span>
+                <span class="historial-time">${hora}</span>
             `;
             ul.appendChild(li);
         });
@@ -900,32 +850,12 @@
         );
     }
 
-    // CORRECCIÓN: Implementación real del Toast de Notificación
     function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
-        const toast = document.getElementById('toastNotification');
-        const toastIcon = document.getElementById('toastIcon');
-        const toastMessage = document.getElementById('toastMessage');
-
-        // Limpiar animaciones previas
-        toast.classList.remove('show');
-        
-        // Actualizar contenido
-        toastIcon.className = icono;
-        toastMessage.textContent = mensaje;
-
-        // Mostrar el toast
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 50); // Pequeño retraso para asegurar el reset
-
-        // Ocultar el toast después de 3 segundos
-        clearTimeout(toast.timer);
-        toast.timer = setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000); 
+        console.log(`[Notificación] ${mensaje}`);
+        // Implementación simple de notificación (podría ser un toast)
     }
     
-    // --- EXPORTACIÓN PDF MEJORADA (Incluye fecha/hora en la preparación) ---
+    // --- EXPORTACIÓN PDF (FUNCIÓN MODIFICADA) ---
     function hexToRgb(hex) {
         let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace(shorthandRegex, function(m, r, g, b) {
@@ -970,25 +900,18 @@
                 HEADER_FILL: [255, 255, 255] 
             };
             
-            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS (MEJORADO: Añadimos Fecha y Hora) ---
-            const mapRegistroToPDF = (reg) => {
-                const dateObj = new Date(reg.timestamp);
-                const fechaHora = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ' ' + dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-                const descripcion = reg.descripcion || (reg.estado === 'Vacía' ? 'Lista para cargar' : 'N/A');
-                return [reg.matricula, descripcion, fechaHora];
-            };
-
+            // --- 2. PREPARACIÓN DE DATOS Y CONTEOS ---
             const registrosCargadas = registros
                 .filter(reg => reg.estado === 'Cargada')
-                .map(mapRegistroToPDF); 
+                .map(reg => [reg.matricula, reg.descripcion]); 
             
             const registrosVacías = registros
                 .filter(reg => reg.estado === 'Vacía')
-                .map(mapRegistroToPDF); 
+                .map(reg => [reg.matricula, reg.descripcion || 'Lista para cargar']); 
             
             const registrosAveriadas = registros
                 .filter(reg => reg.estado === 'Averiada')
-                .map(mapRegistroToPDF);
+                .map(reg => [reg.matricula, reg.descripcion]);
                 
             const counts = {
                     Cargada: registrosCargadas.length,
@@ -1073,7 +996,7 @@
                 doc.setFontSize(9);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
-                doc.text(`${badge.count} (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 3.5, { align: 'center' });
+                doc.text(` (${(percentage * 100).toFixed(0)}%)`, badge.x + badgeWidth / 2, badgeY + badgeHeight - 3.5, { align: 'center' });
             });
             
             yPos = badgeY + badgeHeight + 15; 
@@ -1134,14 +1057,13 @@
 
             // --- Tabla de Cargadas ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'CONTENIDO', 'REGISTRO']],
+                head: [['MATRÍCULA', 'CONTENIDO']],
                 body: registrosCargadas,
                 margin: { left: margin, right: pageWidth - (margin + halfWidth) }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 20, fontStyle: 'bold', fillColor: [240, 255, 240], textColor: APPLE_COLORS.GREEN_CARGADA }, 
-                    1: { cellWidth: 'auto' },
-                    2: { cellWidth: 20, fontSize: 7, textColor: APPLE_COLORS.MEDIUM_GRAY } // Columna de Fecha/Hora
+                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [240, 255, 240], textColor: APPLE_COLORS.GREEN_CARGADA }, 
+                    1: { cellWidth: 'auto' }
                 },
                 ...tableOptions
             });
@@ -1149,14 +1071,13 @@
 
             // --- Tabla de Vacías ---
             doc.autoTable({
-                head: [['MATRÍCULA', 'DESCRIPCIÓN', 'REGISTRO']],
+                head: [['MATRÍCULA', 'DESCRIPCIÓN']],
                 body: registrosVacías,
                 margin: { left: xPosVacias, right: margin }, 
                 tableWidth: halfWidth,
                 columnStyles: {
-                    0: { cellWidth: 20, fontStyle: 'bold', fillColor: [255, 255, 240], textColor: APPLE_COLORS.YELLOW_VACIA }, 
-                    1: { cellWidth: 'auto' },
-                    2: { cellWidth: 20, fontSize: 7, textColor: APPLE_COLORS.MEDIUM_GRAY } // Columna de Fecha/Hora
+                    0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 255, 240], textColor: APPLE_COLORS.YELLOW_VACIA }, 
+                    1: { cellWidth: 'auto' }
                 },
                 ...tableOptions
             });
@@ -1181,14 +1102,13 @@
                 doc.text(`PLATAFORMAS AVERIADAS (${counts.Averiada})`, margin, finalY + 5); 
                 
                 doc.autoTable({
-                    head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA', 'REGISTRO']],
+                    head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
                     body: registrosAveriadas,
                     startY: finalY + 10,
                     margin: { left: margin, right: margin },
                     columnStyles: {
-                        0: { cellWidth: 25, fontStyle: 'bold', fillColor: [255, 240, 240], textColor: APPLE_COLORS.RED_XPO }, 
-                        1: { cellWidth: 'auto' },
-                        2: { cellWidth: 20, fontSize: 7, textColor: APPLE_COLORS.MEDIUM_GRAY } // Columna de Fecha/Hora
+                        0: { cellWidth: 30, fontStyle: 'bold', fillColor: [255, 240, 240], textColor: APPLE_COLORS.RED_XPO }, 
+                        1: { cellWidth: 'auto' }
                     },
                     ...tableOptions
                 });
@@ -1197,9 +1117,7 @@
 
             // --- Pie de Página (Footer) ---
             const footerY = doc.internal.pageSize.height - 5;
-            const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
-            const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-
+            
             doc.setFontSize(8);
             doc.setTextColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
             doc.setFont("helvetica", "normal");
@@ -1221,6 +1139,8 @@
                 
                 // Título del reporte e información de la fecha
                 if (i === 1) {
+                    const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+                    const currentDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
                     
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(8);
@@ -1229,14 +1149,34 @@
                 }
             }
             
-            // Abrimos el PDF en una nueva pestaña
-            doc.output('dataurlnewwindow', {filename: 'Reporte_XPO_Ejecutivo.pdf'});
-            mostrarConfirmacion("PDF generado. Se ha abierto en una nueva pestaña (o la descarga ha comenzado).", "fas fa-file-pdf");
+            // ----------------------------------------------------------------
+            // ** CAMBIO CLAVE: Generar Blob y Forzar Descarga **
+            // ----------------------------------------------------------------
+
+            // 1. Obtener el Blob
+            const pdfBlob = doc.output('blob');
+
+            // 2. Crear un objeto URL para el Blob
+            const blobUrl = URL.createObjectURL(pdfBlob);
+
+            // 3. Crear un enlace temporal para la descarga
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = 'Reporte_XPO_Ejecutivo.pdf'; // Nombre de archivo para compartir
+
+            // 4. Simular el clic para iniciar la descarga
+            document.body.appendChild(a);
+            a.click();
+
+            // 5. Limpiar y revocar el objeto URL
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+
+            mostrarConfirmacion("PDF generado. La descarga ha comenzado.", "fas fa-file-pdf");
 
         } catch (e) {
             console.error("Error al generar PDF:", e);
-            // CORRECCIÓN DE ERROR: Mostrar un mensaje más detallado si la generación falla.
-            mostrarConfirmacion(`Error al generar el PDF: ${e.message}. Revisa la consola.`, "fas fa-exclamation-triangle");
+            mostrarConfirmacion("Error al generar el PDF. Revisa la consola para más detalles.", "fas fa-exclamation-triangle");
         }
     }
 
@@ -1292,6 +1232,7 @@
         actualizarContadores();
         actualizarHistorialReciente(); 
         
+        // El botón de paso 1 ya tiene un ID en el HTML.
         document.getElementById('btnExportar').addEventListener('click', exportarPDF);
         
         document.getElementById('paso1').style.display = 'block';
@@ -1299,6 +1240,7 @@
         document.getElementById('paso1').classList.add('active');
         document.getElementById('matriculaInput').focus();
         
+        // --- ACTIVAR EL MANEJO DE SCROLL PARA EL EFECTO DINÁMICO ---
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
