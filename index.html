@@ -2,227 +2,157 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>XPO Logistics — Registro de Plataformas</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
-
 <style>
-:root {
-  --bg: linear-gradient(180deg,#fff,#f8f9fb 40%,#f3f4f6 100%);
-  --card: rgba(255,255,255,.9);
-  --ink: #1d1d1f;
-  --muted: #86868b;
-  --line: rgba(0,0,0,.08);
-  --shadow: 0 10px 30px rgba(0,0,0,.06);
-  --radius: 18px;
-  --bezier: cubic-bezier(.25,.8,.25,1);
-  --cargada:#a7e6b0;
-  --vacia:#a8c8f9;
-  --averiada:#f8b4b4;
+:root{
+ --bg:linear-gradient(180deg,#fff,#f8f9fb 40%,#f3f4f6 100%);
+ --card:rgba(255,255,255,.9);
+ --ink:#1d1d1f;
+ --muted:#86868b;
+ --line:rgba(0,0,0,.08);
+ --shadow:0 10px 30px rgba(0,0,0,.06);
+ --radius:18px;
+ --bezier:cubic-bezier(.25,.8,.25,1);
+ --cargada:#a7e6b0;
+ --vacia:#a8c8f9;
+ --averiada:#f8b4b4;
 }
-
-body {
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",sans-serif;
-  color:var(--ink);
-  background:var(--bg);
-  overflow-x:hidden;
-  -webkit-tap-highlight-color:transparent;
-}
+body{margin:0;font-family:-apple-system,Inter,sans-serif;color:var(--ink);background:var(--bg);}
 *{box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-
-/* Header */
-header {
-  position:sticky;top:0;z-index:20;
-  backdrop-filter:blur(20px) saturate(180%);
-  background:rgba(255,255,255,.75);
-  border-bottom:1px solid rgba(255,255,255,.4);
-}
-.header-inner{width:min(1100px,94%);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.brand{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.8);border-radius:14px;border:1px solid rgba(0,0,0,.05);box-shadow:0 4px 10px rgba(0,0,0,.04);}
-.logo-code{background:#111;color:#fff;padding:4px 10px;border-radius:12px;font-weight:800;}
+header{position:sticky;top:0;background:rgba(255,255,255,.8);backdrop-filter:blur(12px);border-bottom:1px solid #eee;}
+.header-inner{width:min(1100px,94%);margin:auto;display:flex;justify-content:space-between;align-items:center;padding:12px 0;}
+.brand{display:flex;align-items:center;gap:8px;padding:8px 14px;background:white;border-radius:12px;box-shadow:var(--shadow);}
+.logo-code{background:#111;color:#fff;padding:2px 8px;border-radius:10px;font-weight:800;}
 .logo-xpo{font-weight:800;color:#e11d48;}
-
-main{width:min(1100px,94%);margin:24px auto 100px;}
-
-/* Steps */
-.steps{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;}
+main{width:min(1100px,94%);margin:20px auto 100px;}
+.steps{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.progress-dots{display:flex;gap:6px;justify-content:center;margin-bottom:12px;}
+.dot{width:10px;height:10px;border-radius:50%;background:#ccc;}
+.dot.on{background:#111;}
 .step{display:none;}
-.step.active{display:block;animation:fadeUp .4s var(--bezier);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-.progress-dots{display:flex;gap:8px;justify-content:center;margin-bottom:12px;}
-.dot{width:10px;height:10px;border-radius:999px;background:#d1d5db;transition:.35s;}
-.dot.on{background:#111;transform:scale(1.3);}
-.row{display:flex;gap:12px;align-items:center;}
+.step.active{display:block;}
+.row{display:flex;gap:10px;align-items:center;}
 @media(max-width:560px){.row{flex-direction:column;}}
-
-input,textarea{width:100%;padding:16px;border-radius:16px;border:1px solid var(--line);background:#fff;font-size:17px;}
-input:focus,textarea:focus{border-color:#0071e3;box-shadow:0 0 0 8px rgba(0,113,227,.12);}
-textarea{min-height:120px;resize:vertical;}
-
-/* Buttons */
-.btn{border:0;border-radius:14px;padding:14px 22px;font-weight:700;background:linear-gradient(180deg,#111,#2c2c2e);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.2);font-size:16px;transition:all .25s;}
-.btn:hover{transform:translateY(-1px);}
-.btn.ghost{background:#fff;color:#111;border:1px solid #ddd;box-shadow:none;}
-
-/* Chips */
-.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
-.chip{padding:12px 16px;border-radius:16px;background:#fff;border:1px solid var(--line);font-weight:800;min-width:110px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);transition:all .25s;}
-.chip:hover{transform:translateY(-2px);}
-
-/* Stats */
-.stats{display:grid;gap:14px;grid-template-columns:repeat(4,1fr);margin-top:20px;}
+input,textarea{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;font-size:16px;}
+textarea{min-height:100px;resize:vertical;}
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:700;background:#111;color:#fff;cursor:pointer;}
+.btn.ghost{background:#fff;color:#111;border:1px solid #ccc;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.chip{padding:10px 14px;background:#fff;border:1px solid #ddd;border-radius:12px;font-weight:700;cursor:pointer;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px;}
 @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);}}
-.stat{background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);}
+.stat{background:var(--card);padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);}
 .stat .label{color:var(--muted);font-size:13px;}
-.stat .value{font-size:24px;font-weight:800;}
-.progress{height:6px;background:#eee;border-radius:10px;margin-top:6px;overflow:hidden;}
-.fill{height:100%;width:0%;border-radius:10px;transition:width .8s var(--bezier);}
+.stat .value{font-size:22px;font-weight:800;}
+.progress{height:5px;background:#eee;border-radius:10px;margin-top:6px;overflow:hidden;}
+.fill{height:100%;width:0%;transition:width .8s;}
 .fill.c{background:var(--cargada);}
 .fill.v{background:var(--vacia);}
 .fill.a{background:var(--averiada);}
-
-/* ---- Panel inteligente ---- */
-.analytics {
-  margin-top: 20px;
-  background: rgba(255,255,255,.7);
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.05);
-  backdrop-filter: blur(14px) saturate(180%);
-  padding: 20px;
-}
-.analytics-header {display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.analytics-header h3 {margin:0;font-weight:700;font-size:17px;color:#1d1d1f;}
-#aiHint {color:#666;font-size:14px;font-style:italic;transition:opacity .4s;}
-.analytics-body {text-align:center;}
-#chartResumen {max-width:350px;margin:auto;}
-.dock {display:flex;justify-content:center;gap:16px;margin-top:14px;}
-.dock button {background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.05);border-radius:16px;font-size:20px;padding:10px 14px;cursor:pointer;transition:transform .25s, box-shadow .25s;box-shadow:0 6px 14px rgba(0,0,0,.08);}
-.dock button:hover {transform:scale(1.15);box-shadow:0 10px 20px rgba(0,0,0,.15);}
-
-/* Lists */
-.search{margin:18px 0;}
-.lists{display:grid;gap:14px;grid-template-columns:repeat(3,1fr);}
-@media(max-width:900px){.lists{grid-template-columns:1fr;}}
-.panel{background:var(--card);border-radius:16px;box-shadow:var(--shadow);}
-.panel header{padding:12px 14px;border-bottom:1px solid #eee;background:rgba(255,255,255,.9);}
-.item{padding:14px 16px;display:grid;grid-template-columns:1fr auto;border-bottom:1px solid #f1f1f1;background:#fff;}
-.meta{color:var(--muted);font-size:12px;margin-top:4px;}
-.item button{border:0;background:none;color:#e11d48;cursor:pointer;font-weight:600;}
-
-/* Toasts */
-.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;display:flex;flex-direction:column;gap:8px;z-index:60;}
-.toast{background:#111;color:#fff;padding:12px 16px;border-radius:16px;box-shadow:var(--shadow);animation:toastIn .3s forwards;}
-@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-.floatbar{position:fixed;right:16px;bottom:16px;display:flex;gap:10px;z-index:40;}
-.fab{border:0;border-radius:999px;padding:14px 18px;background:#111;color:#fff;font-weight:900;box-shadow:0 12px 30px rgba(0,0,0,.25);}
+.analytics{margin-top:20px;background:rgba(255,255,255,.7);border-radius:16px;box-shadow:var(--shadow);padding:16px;}
+.analytics-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+#aiHint{font-style:italic;color:#555;font-size:14px;}
+.analytics-body{text-align:center;}
+#chartResumen{max-width:320px;margin:auto;}
+.dock{display:flex;justify-content:center;gap:12px;margin-top:8px;}
+.dock button{background:white;border:1px solid #ddd;border-radius:12px;padding:8px 12px;cursor:pointer;font-size:18px;transition:transform .2s;}
+.dock button:hover{transform:scale(1.15);}
+.panel{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
+.panel header{padding:10px 14px;border-bottom:1px solid #eee;font-weight:700;background:rgba(255,255,255,.9);}
+.item{padding:12px 14px;display:flex;justify-content:space-between;border-bottom:1px solid #f3f3f3;}
+.meta{font-size:12px;color:#777;margin-top:3px;}
+.item button{border:0;background:none;color:#e11d48;font-weight:600;cursor:pointer;}
+.search{margin:14px 0;}
+.toasts{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;}
+.toast{background:#111;color:#fff;padding:10px 14px;border-radius:12px;}
 </style>
 </head>
 <body>
-
-<header id="hdr">
-  <div class="header-inner">
-    <div class="brand"><span class="logo-code">CODE</span><span class="logo-xpo">XPO Logistics</span></div>
-    <small style="color:var(--muted)">Panel de registro</small>
-  </div>
-</header>
+<header><div class="header-inner"><div class="brand"><span class="logo-code">CODE</span><span class="logo-xpo">XPO Logistics</span></div><small style="color:#666">Panel de registro</small></div></header>
 
 <main>
-  <section class="steps">
-    <div class="progress-dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
-    <div class="step active" id="step1">
-      <div class="row">
-        <input id="matricula" placeholder="Introduce matrícula (ej: 1234-ABC)">
-        <button class="btn" id="toStep2">Continuar</button>
-      </div>
-    </div>
-    <div class="step" id="step2">
-      <div style="font-weight:900">Matrícula: <span id="matPreview"></span></div>
-      <div class="chips">
-        <button class="chip" data-estado="CARGADA">CARGADA</button>
-        <button class="chip" data-estado="VACÍA">VACÍA</button>
-        <button class="chip" data-estado="AVERIADA">AVERIADA</button>
-      </div>
-      <div style="margin-top:10px"><button class="btn ghost" id="back1">Volver</button></div>
-    </div>
-    <div class="step" id="step3">
-      <textarea id="contenido" placeholder="Contenido o incidencia…"></textarea>
-      <div style="display:flex;gap:10px;margin-top:10px;">
-        <button class="btn" id="registrar">Registrar</button>
-        <button class="btn ghost" id="back2">Volver</button>
-      </div>
-    </div>
-  </section>
+<section class="steps">
+ <div class="progress-dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+ <div class="step active" id="step1">
+   <div class="row">
+     <input id="matricula" placeholder="Introduce matrícula (ej: 1234-ABC)">
+     <button class="btn" id="toStep2">Continuar</button>
+   </div>
+ </div>
+ <div class="step" id="step2">
+   <div style="font-weight:700">Matrícula: <span id="matPreview"></span></div>
+   <div class="chips">
+     <div class="chip" data-estado="CARGADA">CARGADA</div>
+     <div class="chip" data-estado="VACÍA">VACÍA</div>
+     <div class="chip" data-estado="AVERIADA">AVERIADA</div>
+   </div>
+   <div style="margin-top:10px"><button class="btn ghost" id="back1">Volver</button></div>
+ </div>
+ <div class="step" id="step3">
+   <textarea id="contenido" placeholder="Contenido o incidencia…"></textarea>
+   <div style="display:flex;gap:10px;margin-top:10px;">
+     <button class="btn" id="registrar">Registrar</button>
+     <button class="btn ghost" id="back2">Volver</button>
+   </div>
+ </div>
+</section>
 
-  <section class="stats">
-    <div class="stat"><div class="label">Total</div><div class="value" id="total">0</div></div>
-    <div class="stat"><div class="label">Cargadas</div><div class="value" id="valC">0</div><div class="progress"><div class="fill c" id="barC"></div></div></div>
-    <div class="stat"><div class="label">Vacías</div><div class="value" id="valV">0</div><div class="progress"><div class="fill v" id="barV"></div></div></div>
-    <div class="stat"><div class="label">Averiadas</div><div class="value" id="valA">0</div><div class="progress"><div class="fill a" id="barA"></div></div></div>
-  </section>
+<section class="stats">
+ <div class="stat"><div class="label">Total</div><div class="value" id="total">0</div></div>
+ <div class="stat"><div class="label">Cargadas</div><div class="value" id="valC">0</div><div class="progress"><div class="fill c" id="barC"></div></div></div>
+ <div class="stat"><div class="label">Vacías</div><div class="value" id="valV">0</div><div class="progress"><div class="fill v" id="barV"></div></div></div>
+ <div class="stat"><div class="label">Averiadas</div><div class="value" id="valA">0</div><div class="progress"><div class="fill a" id="barA"></div></div></div>
+</section>
 
-  <!-- PANEL INTELIGENTE -->
-  <section class="analytics">
-    <div class="analytics-header">
-      <h3>📊 Análisis rápido</h3>
-      <div id="aiHint">Analizando datos locales...</div>
-    </div>
-    <div class="analytics-body">
-      <canvas id="chartResumen" height="120"></canvas>
-    </div>
-    <div class="dock">
-      <button title="Actualizar" id="btnRefresh">🔄</button>
-      <button title="Exportar PDF" id="btnPDF2">📄</button>
-      <button title="Ver tendencias" id="btnAI">🧠</button>
-    </div>
-  </section>
+<section class="analytics">
+ <div class="analytics-header"><h3>📊 Análisis rápido</h3><div id="aiHint">Analizando datos locales...</div></div>
+ <div class="analytics-body"><canvas id="chartResumen" height="120"></canvas></div>
+ <div class="dock">
+   <button id="btnRefresh" title="Actualizar">🔄</button>
+   <button id="btnAI" title="Ver tendencias">🧠</button>
+ </div>
+</section>
 
-  <div class="search"><input id="buscador" placeholder="Buscar por matrícula o contenido…"></div>
-  <section class="lists">
-    <article class="panel"><header><strong>Cargadas</strong></header><div id="listC"></div></article>
-    <article class="panel"><header><strong>Vacías</strong></header><div id="listV"></div></article>
-    <article class="panel"><header><strong>Averiadas</strong></header><div id="listA"></div></article>
-  </section>
-
-  <div style="margin-top:12px;display:flex;justify-content:flex-end">
-    <button class="btn ghost" id="limpiar">Limpiar registros</button>
-  </div>
-</main>
-
-<div class="floatbar"><button class="fab" id="btnPDF">PDF <span class="label">diario</span></button></div>
+<div class="search"><input id="buscador" placeholder="Buscar…"></div>
+<section class="lists">
+ <div class="panel"><header>Cargadas</header><div id="listC"></div></div>
+ <div class="panel"><header>Vacías</header><div id="listV"></div></div>
+ <div class="panel"><header>Averiadas</header><div id="listA"></div></div>
+</section>
 <div class="toasts" id="toasts"></div>
+</main>
 
 <script>
 (function(){
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
-const input=$("#matricula"),matPreview=$("#matPreview"),contenido=$("#contenido");
-const steps=$$(".step"),dots=$$(".dot");
-const toStep2=$("#toStep2"),back1=$("#back1"),back2=$("#back2"),registrar=$("#registrar");
-const buscador=$("#buscador"),listC=$("#listC"),listV=$("#listV"),listA=$("#listA");
-const valC=$("#valC"),valV=$("#valV"),valA=$("#valA"),total=$("#total");
-const barC=$("#barC"),barV=$("#barV"),barA=$("#barA"),toasts=$("#toasts"),btnPDF=$("#btnPDF"),limpiar=$("#limpiar");
-const aiHint=$("#aiHint"),btnRefresh=$("#btnRefresh"),btnAI=$("#btnAI"),btnPDF2=$("#btnPDF2");
-let chart,current={},LS="plataformas-data";
-
-function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;toasts.appendChild(t);setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.remove(),300);},1800);}
-function setStep(n){steps.forEach((s,i)=>s.classList.toggle("active",i===n-1));dots.forEach((d,i)=>d.classList.toggle("on",i<n));}
-function fmt(v){v=v.toUpperCase().replace(/[^A-Z0-9]/g,"");const n=v.replace(/[^0-9]/g,"").slice(0,4);const l=v.replace(/[^A-Z]/g,"").slice(0,3);return n+(l?"-"+l:"");}
+const LS="plataformas";
+let current={},chart;
+const step1=$("#step1"),step2=$("#step2"),step3=$("#step3"),dots=$$(".dot");
+function setStep(n){[step1,step2,step3].forEach((s,i)=>s.classList.toggle("active",i===n-1));dots.forEach((d,i)=>d.classList.toggle("on",i<n));}
+function toast(t){const e=document.createElement("div");e.className="toast";e.textContent=t;$("#toasts").appendChild(e);setTimeout(()=>{e.remove();},2000);}
+function fmt(v){v=v.toUpperCase().replace(/[^A-Z0-9]/g,"");return v.replace(/(.{4})(.{0,3})/,"$1-$2");}
 function valid(v){return /^[0-9]{4}-[A-Z]{3}$/.test(v);}
-input.oninput=()=>{const f=fmt(input.value);input.value=f;input.classList.remove("ok","bad");if(f.length>=6)input.classList.add(valid(f)?"ok":"bad");};
-toStep2.onclick=()=>{const v=input.value.trim().toUpperCase();if(!valid(v)){toast("Formato inválido (####-XXX)");return;}current.matricula=v;matPreview.textContent=v;setStep(2);};
-back1.onclick=()=>setStep(1);back2.onclick=()=>setStep(2);
-$$(".chip").forEach(ch=>ch.onclick=()=>{const e=ch.dataset.estado;current.estado=e;if(e==="VACÍA"){save(current.matricula,"VACÍA","—");toast("Registrada como VACÍA");reset();return;}setStep(3);});
-registrar.onclick=()=>{const txt=contenido.value.trim();if(!txt){toast("Contenido requerido");return;}save(current.matricula,current.estado,txt);toast("Registro guardado");reset();};
-limpiar.onclick=()=>{if(confirm("¿Borrar todos los registros?")){localStorage.removeItem(LS);render();toast("Registros eliminados");}};
-btnPDF.onclick=()=>exportPDF();
-
-/* ---- Guardar y renderizar ---- */
-function save(m,e,c){const data=load();data.unshift({matricula:m,estado:e,contenido:c,timestamp:Date.now()});localStorage.setItem(LS,JSON.stringify(data));render();}
-function reset(){input.value="";contenido.value="";input.classList.remove("ok","bad");current={};setStep(1);}
-function load(){try{return JSON.parse(localStorage.getItem(LS)||"[]");}catch(_){return[];}}
-function render(){const q=buscador.value.toLowerCase();const data=load().filter(x=>!q||x.matricula.toLowerCase().includes(q)||x.contenido.toLowerCase().includes(q));const g={CARGADA:data.filter(x=>x.estado==="CARGADA"),VACÍA:data.filter(x=>x.estado==="VACÍA"),AVERIADA:data.filter(x=>x.estado==="AVERIADA")};draw(listC,g.CARGADA);draw(listV,g.VACÍA);draw(listA,g.AVERIADA);valC.textContent=g.CARGADA.length;valV.textContent=g.VACÍA.length;valA.textContent=g.AVERIADA.length;total.textContent=data.length;const tot=data.length||1;barC.style.width=(g.CARGADA.length/tot*100)+"%";barV.style.width=(g.VACÍA.length/tot*100)+"%";barA.style.width=(g.AVERIADA.length/t
+function load(){try{return JSON.parse(localStorage.getItem(LS)||"[]");}catch(e){return[];}}
+function saveAll(a){localStorage.setItem(LS,JSON.stringify(a));render();}
+function saveItem(m,e,c){const d=load();d.unshift({matricula:m,estado:e,contenido:c||"—",timestamp:Date.now()});saveAll(d);}
+function draw(container,items){container.innerHTML=items.length?items.map(x=>`<div class="item"><div><b>${x.matricula}</b><div class="meta">${x.contenido}</div></div><button data-id="${x.timestamp}">🗑️</button></div>`).join(""):"<div class='meta'>Sin registros…</div>";container.querySelectorAll("button").forEach(b=>b.onclick=()=>{let data=load().filter(i=>i.timestamp!=b.dataset.id);saveAll(data);toast("Eliminado");});}
+function render(){const data=load(),q=$("#buscador").value.toLowerCase();const g={CARGADA:data.filter(x=>x.estado==="CARGADA"),VACÍA:data.filter(x=>x.estado==="VACÍA"),AVERIADA:data.filter(x=>x.estado==="AVERIADA")};draw($("#listC"),g.CARGADA.filter(x=>!q||x.matricula.toLowerCase().includes(q)));draw($("#listV"),g.VACÍA.filter(x=>!q||x.matricula.toLowerCase().includes(q)));draw($("#listA"),g.AVERIADA.filter(x=>!q||x.matricula.toLowerCase().includes(q)));$("#total").textContent=data.length;$("#valC").textContent=g.CARGADA.length;$("#valV").textContent=g.VACÍA.length;$("#valA").textContent=g.AVERIADA.length;const t=data.length||1;$("#barC").style.width=(g.CARGADA.length/t*100)+"%";$("#barV").style.width=(g.VACÍA.length/t*100)+"%";$("#barA").style.width=(g.AVERIADA.length/t*100)+"%";renderChart(g.CARGADA.length,g.VACÍA.length,g.AVERIADA.length);analyze();}
+function renderChart(c,v,a){const ctx=$("#chartResumen");const total=c+v+a;if(total===0){if(chart){chart.destroy();chart=null;}return;}const data={labels:["Cargadas","Vacías","Averiadas"],datasets:[{data:[c,v,a],backgroundColor:["#a7e6b0","#a8c8f9","#f8b4b4"],borderWidth:0}]} ;const opts={plugins:{legend:{display:true,labels:{color:"#333"}}},cutout:"65%"};if(chart){chart.data=data;chart.update();}else{chart=new Chart(ctx,{type:"doughnut",data,options:opts});}}
+function analyze(){const d=load();if(d.length===0){$("#aiHint").textContent="Sin registros recientes — agrega nuevas plataformas.";return;}const c=d.filter(x=>x.estado==="CARGADA").length,v=d.filter(x=>x.estado==="VACÍA").length,a=d.filter(x=>x.estado==="AVERIADA").length;if(c>v&&c>a)$("#aiHint").textContent="Alta actividad de carga — flujo óptimo.";else if(v>c&&v>a)$("#aiHint").textContent="Más vacías — posible baja en movimiento.";else if(a>0)$("#aiHint").textContent="Atención: incidencias detectadas.";else $("#aiHint").textContent="Tendencia estable — sigue así 🚛";}
+$("#toStep2").onclick=()=>{const val=$("#matricula").value.trim().toUpperCase();if(!valid(val)){toast("Formato inválido ####-XXX");return;}current.matricula=val;$("#matPreview").textContent=val;setStep(2);}
+$("#back1").onclick=()=>setStep(1);$("#back2").onclick=()=>setStep(2);
+$$(".chip").forEach(ch=>ch.onclick=()=>{const e=ch.dataset.estado;current.estado=e;if(e==="VACÍA"){saveItem(current.matricula,"VACÍA","—");toast("Registrada VACÍA");reset();return;}setStep(3);});
+$("#registrar").onclick=()=>{const c=$("#contenido").value.trim();if(!c){toast("Falta contenido");return;}saveItem(current.matricula,current.estado,c);toast("Registro guardado");reset();}
+function reset(){current={};$("#matricula").value="";$("#contenido").value="";setStep(1);render();}
+$("#buscador").oninput=()=>render();
+$("#btnRefresh").onclick=()=>{render();toast("Gráfico actualizado");};
+$("#btnAI").onclick=()=>{analyze();toast("Análisis actualizado 🧠");};
+render();
+})();
+</script>
+</body>
+</html>
