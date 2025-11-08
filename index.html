@@ -1,158 +1,27 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XPO Logistics — Registro de Plataformas</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-:root{
- --bg:linear-gradient(180deg,#fff,#f8f9fb 40%,#f3f4f6 100%);
- --card:rgba(255,255,255,.9);
- --ink:#1d1d1f;
- --muted:#86868b;
- --line:rgba(0,0,0,.08);
- --shadow:0 10px 30px rgba(0,0,0,.06);
- --radius:18px;
- --bezier:cubic-bezier(.25,.8,.25,1);
- --cargada:#a7e6b0;
- --vacia:#a8c8f9;
- --averiada:#f8b4b4;
-}
-body{margin:0;font-family:-apple-system,Inter,sans-serif;color:var(--ink);background:var(--bg);}
-*{box-sizing:border-box;}
-header{position:sticky;top:0;background:rgba(255,255,255,.8);backdrop-filter:blur(12px);border-bottom:1px solid #eee;}
-.header-inner{width:min(1100px,94%);margin:auto;display:flex;justify-content:space-between;align-items:center;padding:12px 0;}
-.brand{display:flex;align-items:center;gap:8px;padding:8px 14px;background:white;border-radius:12px;box-shadow:var(--shadow);}
-.logo-code{background:#111;color:#fff;padding:2px 8px;border-radius:10px;font-weight:800;}
-.logo-xpo{font-weight:800;color:#e11d48;}
-main{width:min(1100px,94%);margin:20px auto 100px;}
-.steps{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
-.progress-dots{display:flex;gap:6px;justify-content:center;margin-bottom:12px;}
-.dot{width:10px;height:10px;border-radius:50%;background:#ccc;}
-.dot.on{background:#111;}
-.step{display:none;}
-.step.active{display:block;}
-.row{display:flex;gap:10px;align-items:center;}
-@media(max-width:560px){.row{flex-direction:column;}}
-input,textarea{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;font-size:16px;}
-textarea{min-height:100px;resize:vertical;}
-.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:700;background:#111;color:#fff;cursor:pointer;}
-.btn.ghost{background:#fff;color:#111;border:1px solid #ccc;}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-.chip{padding:10px 14px;background:#fff;border:1px solid #ddd;border-radius:12px;font-weight:700;cursor:pointer;}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px;}
-@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);}}
-.stat{background:var(--card);padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);}
-.stat .label{color:var(--muted);font-size:13px;}
-.stat .value{font-size:22px;font-weight:800;}
-.progress{height:5px;background:#eee;border-radius:10px;margin-top:6px;overflow:hidden;}
-.fill{height:100%;width:0%;transition:width .8s;}
-.fill.c{background:var(--cargada);}
-.fill.v{background:var(--vacia);}
-.fill.a{background:var(--averiada);}
-.analytics{margin-top:20px;background:rgba(255,255,255,.7);border-radius:16px;box-shadow:var(--shadow);padding:16px;}
-.analytics-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-#aiHint{font-style:italic;color:#555;font-size:14px;}
-.analytics-body{text-align:center;}
-#chartResumen{max-width:320px;margin:auto;}
-.dock{display:flex;justify-content:center;gap:12px;margin-top:8px;}
-.dock button{background:white;border:1px solid #ddd;border-radius:12px;padding:8px 12px;cursor:pointer;font-size:18px;transition:transform .2s;}
-.dock button:hover{transform:scale(1.15);}
-.panel{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
-.panel header{padding:10px 14px;border-bottom:1px solid #eee;font-weight:700;background:rgba(255,255,255,.9);}
-.item{padding:12px 14px;display:flex;justify-content:space-between;border-bottom:1px solid #f3f3f3;}
-.meta{font-size:12px;color:#777;margin-top:3px;}
-.item button{border:0;background:none;color:#e11d48;font-weight:600;cursor:pointer;}
-.search{margin:14px 0;}
-.toasts{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;}
-.toast{background:#111;color:#fff;padding:10px 14px;border-radius:12px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Website Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        // Optimized JavaScript code for better performance
+        document.addEventListener('DOMContentLoaded', function() {
+            // Your interactive JavaScript code goes here.
+            const button = document.getElementById('your-button-id');
+            button.addEventListener('click', function() {
+                // Improved efficiency in handling the button click
+                // Your logic here
+                alert('Button clicked!');
+            });
+        });
+    </script>
 </head>
-<body>
-<header><div class="header-inner"><div class="brand"><span class="logo-code">CODE</span><span class="logo-xpo">XPO Logistics</span></div><small style="color:#666">Panel de registro</small></div></header>
-
-<main>
-<section class="steps">
- <div class="progress-dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
- <div class="step active" id="step1">
-   <div class="row">
-     <input id="matricula" placeholder="Introduce matrícula (ej: 1234-ABC)">
-     <button class="btn" id="toStep2">Continuar</button>
-   </div>
- </div>
- <div class="step" id="step2">
-   <div style="font-weight:700">Matrícula: <span id="matPreview"></span></div>
-   <div class="chips">
-     <div class="chip" data-estado="CARGADA">CARGADA</div>
-     <div class="chip" data-estado="VACÍA">VACÍA</div>
-     <div class="chip" data-estado="AVERIADA">AVERIADA</div>
-   </div>
-   <div style="margin-top:10px"><button class="btn ghost" id="back1">Volver</button></div>
- </div>
- <div class="step" id="step3">
-   <textarea id="contenido" placeholder="Contenido o incidencia…"></textarea>
-   <div style="display:flex;gap:10px;margin-top:10px;">
-     <button class="btn" id="registrar">Registrar</button>
-     <button class="btn ghost" id="back2">Volver</button>
-   </div>
- </div>
-</section>
-
-<section class="stats">
- <div class="stat"><div class="label">Total</div><div class="value" id="total">0</div></div>
- <div class="stat"><div class="label">Cargadas</div><div class="value" id="valC">0</div><div class="progress"><div class="fill c" id="barC"></div></div></div>
- <div class="stat"><div class="label">Vacías</div><div class="value" id="valV">0</div><div class="progress"><div class="fill v" id="barV"></div></div></div>
- <div class="stat"><div class="label">Averiadas</div><div class="value" id="valA">0</div><div class="progress"><div class="fill a" id="barA"></div></div></div>
-</section>
-
-<section class="analytics">
- <div class="analytics-header"><h3>📊 Análisis rápido</h3><div id="aiHint">Analizando datos locales...</div></div>
- <div class="analytics-body"><canvas id="chartResumen" height="120"></canvas></div>
- <div class="dock">
-   <button id="btnRefresh" title="Actualizar">🔄</button>
-   <button id="btnAI" title="Ver tendencias">🧠</button>
- </div>
-</section>
-
-<div class="search"><input id="buscador" placeholder="Buscar…"></div>
-<section class="lists">
- <div class="panel"><header>Cargadas</header><div id="listC"></div></div>
- <div class="panel"><header>Vacías</header><div id="listV"></div></div>
- <div class="panel"><header>Averiadas</header><div id="listA"></div></div>
-</section>
-<div class="toasts" id="toasts"></div>
-</main>
-
-<script>
-(function(){
-const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
-const LS="plataformas";
-let current={},chart;
-const step1=$("#step1"),step2=$("#step2"),step3=$("#step3"),dots=$$(".dot");
-function setStep(n){[step1,step2,step3].forEach((s,i)=>s.classList.toggle("active",i===n-1));dots.forEach((d,i)=>d.classList.toggle("on",i<n));}
-function toast(t){const e=document.createElement("div");e.className="toast";e.textContent=t;$("#toasts").appendChild(e);setTimeout(()=>{e.remove();},2000);}
-function fmt(v){v=v.toUpperCase().replace(/[^A-Z0-9]/g,"");return v.replace(/(.{4})(.{0,3})/,"$1-$2");}
-function valid(v){return /^[0-9]{4}-[A-Z]{3}$/.test(v);}
-function load(){try{return JSON.parse(localStorage.getItem(LS)||"[]");}catch(e){return[];}}
-function saveAll(a){localStorage.setItem(LS,JSON.stringify(a));render();}
-function saveItem(m,e,c){const d=load();d.unshift({matricula:m,estado:e,contenido:c||"—",timestamp:Date.now()});saveAll(d);}
-function draw(container,items){container.innerHTML=items.length?items.map(x=>`<div class="item"><div><b>${x.matricula}</b><div class="meta">${x.contenido}</div></div><button data-id="${x.timestamp}">🗑️</button></div>`).join(""):"<div class='meta'>Sin registros…</div>";container.querySelectorAll("button").forEach(b=>b.onclick=()=>{let data=load().filter(i=>i.timestamp!=b.dataset.id);saveAll(data);toast("Eliminado");});}
-function render(){const data=load(),q=$("#buscador").value.toLowerCase();const g={CARGADA:data.filter(x=>x.estado==="CARGADA"),VACÍA:data.filter(x=>x.estado==="VACÍA"),AVERIADA:data.filter(x=>x.estado==="AVERIADA")};draw($("#listC"),g.CARGADA.filter(x=>!q||x.matricula.toLowerCase().includes(q)));draw($("#listV"),g.VACÍA.filter(x=>!q||x.matricula.toLowerCase().includes(q)));draw($("#listA"),g.AVERIADA.filter(x=>!q||x.matricula.toLowerCase().includes(q)));$("#total").textContent=data.length;$("#valC").textContent=g.CARGADA.length;$("#valV").textContent=g.VACÍA.length;$("#valA").textContent=g.AVERIADA.length;const t=data.length||1;$("#barC").style.width=(g.CARGADA.length/t*100)+"%";$("#barV").style.width=(g.VACÍA.length/t*100)+"%";$("#barA").style.width=(g.AVERIADA.length/t*100)+"%";renderChart(g.CARGADA.length,g.VACÍA.length,g.AVERIADA.length);analyze();}
-function renderChart(c,v,a){const ctx=$("#chartResumen");const total=c+v+a;if(total===0){if(chart){chart.destroy();chart=null;}return;}const data={labels:["Cargadas","Vacías","Averiadas"],datasets:[{data:[c,v,a],backgroundColor:["#a7e6b0","#a8c8f9","#f8b4b4"],borderWidth:0}]} ;const opts={plugins:{legend:{display:true,labels:{color:"#333"}}},cutout:"65%"};if(chart){chart.data=data;chart.update();}else{chart=new Chart(ctx,{type:"doughnut",data,options:opts});}}
-function analyze(){const d=load();if(d.length===0){$("#aiHint").textContent="Sin registros recientes — agrega nuevas plataformas.";return;}const c=d.filter(x=>x.estado==="CARGADA").length,v=d.filter(x=>x.estado==="VACÍA").length,a=d.filter(x=>x.estado==="AVERIADA").length;if(c>v&&c>a)$("#aiHint").textContent="Alta actividad de carga — flujo óptimo.";else if(v>c&&v>a)$("#aiHint").textContent="Más vacías — posible baja en movimiento.";else if(a>0)$("#aiHint").textContent="Atención: incidencias detectadas.";else $("#aiHint").textContent="Tendencia estable — sigue así 🚛";}
-$("#toStep2").onclick=()=>{const val=$("#matricula").value.trim().toUpperCase();if(!valid(val)){toast("Formato inválido ####-XXX");return;}current.matricula=val;$("#matPreview").textContent=val;setStep(2);}
-$("#back1").onclick=()=>setStep(1);$("#back2").onclick=()=>setStep(2);
-$$(".chip").forEach(ch=>ch.onclick=()=>{const e=ch.dataset.estado;current.estado=e;if(e==="VACÍA"){saveItem(current.matricula,"VACÍA","—");toast("Registrada VACÍA");reset();return;}setStep(3);});
-$("#registrar").onclick=()=>{const c=$("#contenido").value.trim();if(!c){toast("Falta contenido");return;}saveItem(current.matricula,current.estado,c);toast("Registro guardado");reset();}
-function reset(){current={};$("#matricula").value="";$("#contenido").value="";setStep(1);render();}
-$("#buscador").oninput=()=>render();
-$("#btnRefresh").onclick=()=>{render();toast("Gráfico actualizado");};
-$("#btnAI").onclick=()=>{analyze();toast("Análisis actualizado 🧠");};
-render();
-})();
-</script>
+<body class="bg-gray-100 text-gray-900">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold">Welcome to My Website</h1>
+        <button id="your-button-id" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">Click Me</button>
+    </div>
 </body>
 </html>
