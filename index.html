@@ -20,69 +20,95 @@
     --radius:18px;
     --bezier:cubic-bezier(.25,.8,.25,1);
     /* Colores funcionales (no cambiar) */
-    --cargada:#22c55e;
-    --vacia:#3b82f6;
-    --averiada:#ef4444;
+    --cargada:#22c55e; /* CARGADA */
+    --vacia:#3b82f6;   /* VACÍA  */
+    --averiada:#ef4444;/* AVERIADA */
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;
+    margin:0; background:var(--bg); color:var(--ink);
     font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color:var(--ink); background:var(--bg);
-    -webkit-tap-highlight-color: transparent;
-    overflow-x:hidden;
+    -webkit-tap-highlight-color:transparent; overflow-x:hidden;
   }
 
-  /* Header con parallax suave */
+  /* Barra progreso de scroll + parallax decorativo */
+  .scrollbar{position:fixed; inset:0 0 auto 0; height:3px; z-index:60; pointer-events:none}
+  .scrollbar .bar{height:100%; width:0%; background:linear-gradient(90deg,#111,#9aa0a6); transition:width .12s linear}
+  .decor{
+    position:absolute; inset:-140px -40px auto -40px; height:240px;
+    background:radial-gradient(1200px 260px at 50% 0, #eef2ff 0%, transparent 65%);
+    transform:translateZ(0); will-change:transform; z-index:0;
+  }
+
+  /* Header con parallax y compactado al hacer scroll */
   header{
-    position:sticky; top:0; z-index:20;
-    background:linear-gradient(180deg,#fff, #f7f8fb);
+    position:sticky; top:0; z-index:50;
+    background:linear-gradient(180deg,#fff,#f7f8fb);
     border-bottom:1px solid #ececec; padding:14px 0;
-    backdrop-filter:blur(16px) saturate(140%);
-    transition: padding .25s var(--bezier), box-shadow .25s var(--bezier);
+    backdrop-filter:blur(14px) saturate(140%);
+    transition:padding .25s var(--bezier), box-shadow .25s var(--bezier);
   }
   header.compact{ padding:10px 0; box-shadow:0 10px 24px rgba(0,0,0,.06) }
-  .header-inner{ width:min(1100px,94%); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px }
+  .header-inner{ width:min(1100px,94%); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative; z-index:1 }
   .brand{
     display:flex; align-items:center; gap:10px;
     padding:10px 14px; background:white; border-radius:14px; box-shadow:var(--shadow);
-    transform:translateZ(0); will-change:transform; transition: transform .25s var(--bezier);
+    transform:translateZ(0); will-change:transform; transition:transform .25s var(--bezier);
   }
   .logo-code{ background:#111; color:#fff; padding:4px 10px; border-radius:12px; font-weight:800 }
   .logo-xpo{ font-weight:800; color:#e11d48 }
 
-  main{ width:min(1100px,94%); margin:16px auto 100px; }
+  main{ width:min(1100px,94%); margin:16px auto 100px; position:relative; z-index:1 }
 
-  /* Pasos */
-  .steps{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+  /* Tarjeta pasos */
+  .card{
+    background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px;
+    animation:fade-in .4s var(--bezier) both;
+  }
+  @keyframes fade-in{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
+
+  /* Progreso visual (3 puntos) */
   .progress-dots{ display:flex; gap:8px; justify-content:center; margin-bottom:12px }
   .dot{ width:10px; height:10px; border-radius:999px; background:#d1d5db; transition:.35s var(--bezier) }
-  .dot.on{ background:#111; transform:scale(1.2) }
-  .step{ display:none; animation:step .35s var(--bezier) both }
+  .dot.on{ background:#111; transform:scale(1.18) }
+
+  /* Pasos animados */
+  .step{ display:none; animation:step-in .35s var(--bezier) both }
   .step.active{ display:block }
-  @keyframes step{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+  @keyframes step-in{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
 
   /* Inputs */
   .row{ display:flex; gap:12px; align-items:center }
   @media(max-width:560px){ .row{ flex-direction:column } }
   input, textarea{
     width:100%; padding:16px; border-radius:16px; border:1px solid var(--line); background:#fafafa; font-size:17px;
-    transition:.25s var(--bezier);
+    transition:.25s var(--bezier); -webkit-appearance:none; appearance:none;
   }
   input:focus, textarea:focus{ border-color:#c7d2fe; box-shadow:0 0 0 8px rgba(59,130,246,.12) }
   textarea{ min-height:120px; resize:vertical }
 
-  /* Botones */
-  .btn{ position:relative; overflow:hidden; border:0; border-radius:16px; padding:14px 18px; font-weight:800; background:#111; color:#fff; box-shadow:0 12px 30px rgba(0,0,0,.18); font-size:16px; }
+  /* Botones con micro-interacciones */
+  .btn{
+    position:relative; overflow:hidden; border:0; border-radius:16px;
+    padding:14px 18px; font-weight:800; background:#111; color:#fff; font-size:16px;
+    box-shadow:0 12px 30px rgba(0,0,0,.18); transition:transform .08s ease, box-shadow .25s var(--bezier);
+  }
   .btn:active{ transform:translateY(1px) scale(.985) }
   .btn.ghost{ background:#f1f2f3; color:#111; box-shadow:none }
-  .ripple{ position:absolute; border-radius:50%; transform:scale(0); animation:rip .6s linear; background:rgba(255,255,255,.35); pointer-events:none }
-  @keyframes rip{ to{ transform:scale(4); opacity:0 } }
+  .btn.lg{ padding:16px 22px; font-size:17px }
+  .btn .ripple{ position:absolute; border-radius:50%; transform:scale(0); animation:ripple .6s linear; background:rgba(255,255,255,.35); pointer-events:none }
+  @keyframes ripple{ to{ transform:scale(4); opacity:0 } }
+  .btn.magnet:hover{ transform:translateY(-1px) } /* efecto suave en desktop */
 
   /* Chips estado */
   .chips{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px }
-  .chip{ padding:12px 16px; border-radius:16px; background:white; border:1px solid var(--line); box-shadow:var(--shadow); font-weight:800; min-width:110px; text-align:center }
+  .chip{
+    padding:12px 16px; border-radius:16px; background:white; border:1px solid var(--line);
+    box-shadow:var(--shadow); font-weight:800; min-width:110px; text-align:center;
+    transition: transform .18s var(--bezier), box-shadow .25s var(--bezier);
+  }
+  .chip:active{ transform:scale(.98) }
   .chip[data-estado="CARGADA"]{ border-color: color-mix(in srgb, var(--cargada) 40%, #ddd) }
   .chip[data-estado="VACÍA"]{ border-color: color-mix(in srgb, var(--vacia) 40%, #ddd) }
   .chip[data-estado="AVERIADA"]{ border-color: color-mix(in srgb, var(--averiada) 40%, #ddd) }
@@ -103,10 +129,16 @@
   .lists{ display:grid; gap:12px; grid-template-columns:repeat(3,1fr) }
   @media(max-width:900px){ .lists{ grid-template-columns:1fr } }
   .panel{ background:white; border-radius:16px; box-shadow:var(--shadow); overflow:hidden }
-  .panel header{ padding:12px 14px; border-bottom:1px solid #eee; position:sticky; top:56px; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); z-index:1 }
+  .panel header{
+    padding:12px 14px; border-bottom:1px solid #eee;
+    position:sticky; top:56px; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); z-index:1
+  }
   .list{ display:flex; flex-direction:column }
-  .item{ padding:14px 16px; display:grid; grid-template-columns:1fr auto; border-bottom:1px solid #f1f1f1; background:linear-gradient(0deg,#fff, #fdfdfd);
-         transition: transform .2s var(--bezier) }
+  .item{
+    padding:14px 16px; display:grid; grid-template-columns:1fr auto; gap:10px;
+    border-bottom:1px solid #f1f1f1; background:linear-gradient(0deg,#fff,#fdfdfd);
+    transition:transform .2s var(--bezier), box-shadow .25s var(--bezier)
+  }
   .item:active{ transform:scale(.995) }
   .pill{ font-size:12px; font-weight:900; color:#fff; padding:6px 10px; border-radius:999px; margin-left:8px }
   .pill[data-type="CARGADA"]{ background:var(--cargada) }
@@ -114,22 +146,30 @@
   .pill[data-type="AVERIADA"]{ background:var(--averiada) }
   .meta{ color:var(--muted); font-size:12px; margin-top:4px }
 
-  /* Barra flotante */
-  .floatbar{ position:fixed; right:16px; bottom:16px; display:flex; gap:10px; z-index:40 }
-  .fab{ border:0; border-radius:999px; padding:14px 16px; background:#111; color:#fff; font-weight:900; box-shadow:0 12px 30px rgba(0,0,0,.25) }
+  /* Barra flotante PDF */
+  .floatbar{ position:fixed; right:16px; bottom:16px; display:flex; gap:10px; z-index:50 }
+  .fab{ border:0; border-radius:999px; padding:14px 16px; background:#111; color:#fff; font-weight:900; box-shadow:0 12px 30px rgba(0,0,0,.25); transition:transform .12s ease, box-shadow .25s var(--bezier) }
+  .fab:active{ transform:translateY(1px) scale(.98) }
   .fab .label{ display:inline }
   @media(max-width:520px){ .fab .label{ display:none } }
 
   /* Toasts */
-  .toasts{ position:fixed; left:50%; transform:translateX(-50%); bottom:90px; display:flex; flex-direction:column; gap:8px; z-index:60 }
+  .toasts{ position:fixed; left:50%; transform:translateX(-50%); bottom:90px; display:flex; flex-direction:column; gap:8px; z-index:70 }
   .toast{ background:#111; color:#fff; padding:12px 16px; border-radius:16px; box-shadow:var(--shadow) }
 
   /* Validación matrícula */
   .ok{ outline:0; box-shadow:0 0 0 8px rgba(34,197,94,.12) !important; border-color: color-mix(in srgb, var(--cargada) 55%, #bbb) !important }
   .bad{ outline:0; box-shadow:0 0 0 8px rgba(239,68,68,.12) !important; border-color: color-mix(in srgb, var(--averiada) 55%, #bbb) !important }
+
+  /* Efecto reveal (scroll) */
+  .reveal{ opacity:.001; transform:translateY(16px) scale(.985); filter:saturate(.92) }
+  .reveal.inview{ opacity:1; transform:translateY(0) scale(1); filter:saturate(1); transition:opacity .5s var(--bezier), transform .5s var(--bezier), filter .5s var(--bezier) }
 </style>
 </head>
 <body>
+
+<div class="scrollbar" aria-hidden="true"><div class="bar" id="scrollBar"></div></div>
+<div class="decor" id="decor"></div>
 
 <header id="hdr">
   <div class="header-inner">
@@ -143,7 +183,7 @@
 
 <main>
   <!-- Pasos -->
-  <section class="steps" aria-label="Flujo de registro">
+  <section class="card reveal" aria-label="Flujo de registro">
     <div class="progress-dots" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1">
       <div class="dot on" data-s="1"></div>
       <div class="dot" data-s="2"></div>
@@ -154,9 +194,9 @@
     <div class="step active" id="step1">
       <div class="row">
         <input id="matricula" placeholder="Introduce matrícula (ej: 1234-ABC)" autocomplete="off" inputmode="latin-prose" aria-label="Matrícula">
-        <button class="btn" id="toStep2">Continuar</button>
+        <button class="btn lg magnet" id="toStep2">Continuar</button>
       </div>
-      <div class="meta" style="margin-top:6px">Escribe sin guiones ni espacios; se formatea a ####-XXX.</div>
+      <div class="meta" style="margin-top:6px">Escribe sin guiones ni espacios; se formatea a ####-XXX automáticamente.</div>
     </div>
 
     <!-- Paso 2 -->
@@ -168,21 +208,21 @@
         <button class="chip" data-estado="AVERIADA">AVERIADA</button>
       </div>
       <div class="meta">Elegir <b>VACÍA</b> registrará directamente sin pasar por el paso 3.</div>
-      <div style="margin-top:10px"><button class="btn ghost" id="back1">Volver</button></div>
+      <div style="margin-top:10px"><button class="btn ghost magnet" id="back1">Volver</button></div>
     </div>
 
     <!-- Paso 3 -->
     <div class="step" id="step3">
       <textarea id="contenido" placeholder="Contenido / incidencia…" aria-label="Contenido"></textarea>
       <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
-        <button class="btn" id="registrar">Registrar</button>
-        <button class="btn ghost" id="back2">Volver</button>
+        <button class="btn magnet" id="registrar">Registrar</button>
+        <button class="btn ghost magnet" id="back2">Volver</button>
       </div>
     </div>
   </section>
 
   <!-- Estadísticas -->
-  <section class="stats" aria-label="Resumen del día">
+  <section class="stats reveal" aria-label="Resumen del día">
     <div class="stat" id="stTotal"><div class="label">Total</div><div class="value">0</div></div>
     <div class="stat" id="stC"><div class="label">Cargadas</div><div class="value">0</div></div>
     <div class="stat" id="stV"><div class="label">Vacías</div><div class="value">0</div></div>
@@ -190,34 +230,34 @@
   </section>
 
   <!-- Buscador -->
-  <div class="search" role="search">
+  <div class="search reveal" role="search">
     <input id="buscador" placeholder="Buscar por matrícula o contenido…" aria-label="Buscar">
   </div>
 
   <!-- Listas -->
   <section class="lists" aria-label="Listas de plataformas">
-    <article class="panel">
+    <article class="panel reveal">
       <header><strong>Cargadas</strong> <span class="meta" id="cntC">0</span></header>
       <div class="list" id="listC"></div>
     </article>
-    <article class="panel">
+    <article class="panel reveal">
       <header><strong>Vacías</strong> <span class="meta" id="cntV">0</span></header>
       <div class="list" id="listV"></div>
     </article>
-    <article class="panel">
+    <article class="panel reveal">
       <header><strong>Averiadas</strong> <span class="meta" id="cntA">0</span></header>
       <div class="list" id="listA"></div>
     </article>
   </section>
 
-  <div style="margin-top:12px; display:flex; justify-content:flex-end">
-    <button class="btn ghost" id="limpiar">Limpiar registros</button>
+  <div class="reveal" style="margin-top:12px; display:flex; justify-content:flex-end">
+    <button class="btn ghost magnet" id="limpiar">Limpiar registros</button>
   </div>
 </main>
 
 <!-- Botón flotante PDF -->
 <div class="floatbar">
-  <button class="fab" id="btnPDF" title="Generar PDF">PDF <span class="label">diario</span></button>
+  <button class="fab magnet" id="btnPDF" title="Generar PDF">PDF <span class="label">diario</span></button>
 </div>
 
 <!-- Toasts -->
@@ -228,8 +268,36 @@
   const LS_KEY="plataformas-global";
   const $=s=>document.querySelector(s); const $$=s=>document.querySelectorAll(s);
 
-  // Elementos
-  const hdr=$("#hdr"), brand=$("#brand");
+  /* ===== Parallax+scroll bar ===== */
+  const hdr=$("#hdr"), brand=$("#brand"), bar=$("#scrollBar"), decor=$("#decor");
+  const onScroll=()=>{
+    const doc=document.documentElement, sTop=doc.scrollTop||document.body.scrollTop;
+    const sHeight=doc.scrollHeight-doc.clientHeight, p=sHeight>0?(sTop/sHeight)*100:0;
+    bar.style.width=p+"%";
+    hdr.classList.toggle("compact", sTop>8);
+    brand.style.transform=`translateY(${Math.min(12, sTop*0.05)}px)`;
+    decor.style.transform=`translateY(${Math.min(80, sTop*0.25)}px)`;
+  };
+  document.addEventListener("scroll", onScroll, {passive:true}); onScroll();
+
+  /* ===== Reveal on scroll ===== */
+  const io=new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("inview"); io.unobserve(e.target);} });
+  },{threshold:.12});
+  $$(".reveal").forEach(el=> io.observe(el));
+
+  /* ===== Ripple (botones/chips) ===== */
+  document.addEventListener("click",(e)=>{
+    const t=e.target.closest(".btn,.chip,.fab"); if(!t) return;
+    const r=document.createElement("span"); r.className="ripple";
+    const rect=t.getBoundingClientRect(), size=Math.max(rect.width, rect.height);
+    r.style.width=r.style.height=size+"px";
+    r.style.left=(e.clientX-rect.left-size/2)+"px";
+    r.style.top=(e.clientY-rect.top-size/2)+"px";
+    t.appendChild(r); setTimeout(()=>r.remove(), 600);
+  },{passive:true});
+
+  /* ===== Elementos / estado ===== */
   const step1=$("#step1"), step2=$("#step2"), step3=$("#step3");
   const dots=$$(".dot");
   const inputMat=$("#matricula"), matPreview=$("#matPreview");
@@ -241,64 +309,43 @@
   const vTotal=$("#stTotal .value"), vC=$("#stC .value"), vV=$("#stV .value"), vA=$("#stA .value");
   const btnPDF=$("#btnPDF");
   const toasts=$("#toasts");
-
   let current={ matricula:"", estado:null };
 
-  // Header parallax + compacto
-  document.addEventListener("scroll", ()=>{
-    const st = document.documentElement.scrollTop || document.body.scrollTop;
-    hdr.classList.toggle("compact", st>8);
-    brand.style.transform = `translateY(${Math.min(12, st*0.05)}px)`;
-  }, { passive:true });
+  /* ===== LS utils ===== */
+  const load=()=>{ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"[]")}catch(_){return[]} };
+  const saveAll=(a)=>{ localStorage.setItem(LS_KEY, JSON.stringify(a)); bounce(); render(); };
 
-  // Ripple para botones/chips
-  document.addEventListener("click", e=>{
-    const t=e.target.closest(".btn, .chip, .fab");
-    if(!t) return;
-    const r=document.createElement("span"); r.className="ripple";
-    const rect=t.getBoundingClientRect(); const size=Math.max(rect.width, rect.height);
-    r.style.width=r.style.height=size+'px';
-    r.style.left=(e.clientX-rect.left-size/2)+'px'; r.style.top=(e.clientY-rect.top-size/2)+'px';
-    t.appendChild(r); setTimeout(()=>r.remove(), 600);
-  }, { passive:true });
-
-  // Utils LS
-  const load = ()=>{ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"[]") }catch(_){ return [] } };
-  const saveAll = a => { localStorage.setItem(LS_KEY, JSON.stringify(a)); bounce(); render(); };
-
-  // Validación y formato de matrícula ####-XXX
+  /* ===== Matrícula (formato y validación) ####-XXX ===== */
   function fmt(v){
-    v = v.toUpperCase().replace(/[^A-Z0-9]/g,"");
-    const n = v.replace(/[^0-9]/g,"").slice(0,4);
-    const l = v.replace(/[^A-Z]/g,"").slice(0,3);
-    return n + (l ? "-" + l : "");
+    v=v.toUpperCase().replace(/[^A-Z0-9]/g,"");
+    const n=v.replace(/[^0-9]/g,"").slice(0,4);
+    const l=v.replace(/[^A-Z]/g,"").slice(0,3);
+    return n + (l?("-"+l):"");
   }
-  function valid(v){ return /^[0-9]{4}-[A-Z]{3}$/.test(v); }
-  inputMat.addEventListener("input", ()=>{
-    const f = fmt(inputMat.value);
-    inputMat.value = f;
-    inputMat.classList.remove("ok","bad");
-    if(f.length>=6){ inputMat.classList.add(valid(f)?"ok":"bad"); }
+  const valid=v=>/^[0-9]{4}-[A-Z]{3}$/.test(v);
+  inputMat.addEventListener("input",()=>{
+    const f=fmt(inputMat.value); inputMat.value=f;
+    inputMat.classList.remove("ok","bad"); if(f.length>=6){ inputMat.classList.add(valid(f)?"ok":"bad"); }
   });
 
-  // Navegación de pasos
-  function setStep(n){
-    [step1,step2,step3].forEach((el,i)=> el.classList.toggle("active",(i+1)===n));
-    dots.forEach((d,i)=> d.classList.toggle("on",(i+1)<=n));
+  /* ===== Pasos ===== */
+  const setStep=n=>{
+    [step1,step2,step3].forEach((el,i)=>el.classList.toggle("active",(i+1)===n));
+    dots.forEach((d,i)=>d.classList.toggle("on",(i+1)<=n));
     $(".progress-dots").setAttribute("aria-valuenow", String(n));
-  }
+  };
 
-  toStep2.addEventListener("click", ()=>{
+  toStep2.addEventListener("click",()=>{
     const v=inputMat.value.trim().toUpperCase();
     if(!valid(v)){ toast("Matrícula inválida (formato ####-XXX)"); inputMat.focus(); return; }
     current.matricula=v; matPreview.textContent=v; setStep(2);
   });
-  back1.addEventListener("click", ()=> setStep(1));
-  back2.addEventListener("click", ()=> setStep(2));
+  back1.addEventListener("click",()=> setStep(1));
+  back2.addEventListener("click",()=> setStep(2));
 
-  // Selección estado
+  /* ===== Selección de estado ===== */
   $$(".chip").forEach(ch=>{
-    ch.addEventListener("click", ()=>{
+    ch.addEventListener("click",()=>{
       const estado=ch.dataset.estado; current.estado=estado;
       if(estado==="VACÍA"){
         const data=load();
@@ -314,53 +361,51 @@
     });
   });
 
-  registrar.addEventListener("click", ()=>{
+  /* ===== Registrar (CARGADA / AVERIADA requieren contenido) ===== */
+  registrar.addEventListener("click",()=>{
     const txt=contenido.value.trim();
     if(current.estado!=="CARGADA" && current.estado!=="AVERIADA"){ toast("Selecciona un estado"); return; }
     if(!txt){ toast("Contenido requerido para "+current.estado); contenido.focus(); return; }
     const data=load();
-    data.unshift(makeItem(current.matricula, current.estado, txt));
+    data.unshift(makeItem(current.matricula,current.estado,txt));
     saveAll(data);
     reset(true);
     toast("Registro guardado");
   });
 
-  function reset(clear){
-    if(clear){ inputMat.value=""; contenido.value=""; inputMat.classList.remove("ok","bad"); }
-    current={ matricula:"", estado:null };
-    setStep(1); inputMat.focus({preventScroll:true});
-  }
-
   function makeItem(matricula, estado, contenido){
-    return { id: Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+    return { id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),
              matricula, estado, contenido, timestamp:new Date().toISOString() };
   }
+  function reset(clear){
+    if(clear){ inputMat.value=""; contenido.value=""; inputMat.classList.remove("ok","bad"); }
+    current={ matricula:"", estado:null }; setStep(1); inputMat.focus({preventScroll:true});
+  }
 
-  // Render
+  /* ===== Render ===== */
   function render(){
-    const q = buscador.value.trim().toLowerCase();
-    const data = load();
-    const groups = {
-      CARGADA: data.filter(x=>x.estado==="CARGADA"),
-      "VACÍA": data.filter(x=>x.estado==="VACÍA"),
-      AVERIADA: data.filter(x=>x.estado==="AVERIADA"),
+    const q=buscador.value.trim().toLowerCase();
+    const data=load();
+    const groups={
+      CARGADA:data.filter(x=>x.estado==="CARGADA"),
+      "VACÍA":data.filter(x=>x.estado==="VACÍA"),
+      AVERIADA:data.filter(x=>x.estado==="AVERIADA"),
     };
-    const fil = x => !q || x.matricula.toLowerCase().includes(q) || x.contenido.toLowerCase().includes(q);
+    const fil=x=> !q || x.matricula.toLowerCase().includes(q) || x.contenido.toLowerCase().includes(q);
 
     draw(listC, groups.CARGADA.filter(fil));
     draw(listV, groups["VACÍA"].filter(fil));
     draw(listA, groups.AVERIADA.filter(fil));
 
-    cntC.textContent = groups.CARGADA.length;
-    cntV.textContent = groups["VACÍA"].length;
-    cntA.textContent = groups.AVERIADA.length;
+    cntC.textContent=groups.CARGADA.length;
+    cntV.textContent=groups["VACÍA"].length;
+    cntA.textContent=groups.AVERIADA.length;
 
-    vTotal.textContent = data.length;
-    vC.textContent = groups.CARGADA.length;
-    vV.textContent = groups["VACÍA"].length;
-    vA.textContent = groups.AVERIADA.length;
+    vTotal.textContent=data.length;
+    vC.textContent=groups.CARGADA.length;
+    vV.textContent=groups["VACÍA"].length;
+    vA.textContent=groups.AVERIADA.length;
   }
-
   function draw(container, items){
     container.innerHTML="";
     if(items.length===0){
@@ -368,23 +413,24 @@
     }
     items.sort((a,b)=> b.timestamp.localeCompare(a.timestamp));
     items.forEach(x=>{
-      const row=document.createElement("div"); row.className="item"; row.dataset.id=x.id;
+      const row=document.createElement("div"); row.className="item reveal"; row.dataset.id=x.id;
       const left=document.createElement("div");
-      left.innerHTML = `<div><b>${x.matricula}</b><span class="pill" data-type="${x.estado}">${x.estado}</span></div>
-                        <div class="meta">${x.contenido} • ${new Date(x.timestamp).toLocaleString()}</div>`;
+      left.innerHTML=`<div><b>${x.matricula}</b><span class="pill" data-type="${x.estado}">${x.estado}</span></div>
+                      <div class="meta">${x.contenido} • ${new Date(x.timestamp).toLocaleString()}</div>`;
       const right=document.createElement("div");
-      const del=document.createElement("button"); del.className="btn ghost"; del.textContent="Eliminar"; del.title="Eliminar";
-      del.addEventListener("click", ()=>{
+      const del=document.createElement("button"); del.className="btn ghost magnet"; del.textContent="Eliminar"; del.title="Eliminar";
+      del.addEventListener("click",()=>{
         const arr=load().filter(y=>y.id!==x.id);
-        saveAll(arr);
-        toast("Registro eliminado");
+        saveAll(arr); toast("Registro eliminado");
       });
       right.appendChild(del);
       row.appendChild(left); row.appendChild(right);
       container.appendChild(row);
+      io.observe(row); // animación de entrada para cada item
     });
   }
 
+  /* ===== Bounce en estadísticas ===== */
   function bounce(){
     ["#stTotal","#stC","#stV","#stA"].forEach(sel=>{
       const el=document.querySelector(sel);
@@ -392,28 +438,25 @@
     });
   }
 
-  // Buscador en tiempo real
+  /* ===== Buscador ===== */
   buscador.addEventListener("input", render);
 
-  // Limpiar registros
-  $("#limpiar").addEventListener("click", ()=>{
+  /* ===== Limpiar registros ===== */
+  $("#limpiar").addEventListener("click",()=>{
     if(confirm("¿Seguro que quieres borrar todos los registros?")){
-      localStorage.removeItem(LS_KEY);
-      render();
-      toast("Registros eliminados");
+      localStorage.removeItem(LS_KEY); render(); toast("Registros eliminados");
     }
   });
 
-  // PDF
-  btnPDF.addEventListener("click", ()=>{
+  /* ===== PDF ===== */
+  btnPDF.addEventListener("click",()=>{
     const data=load();
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit:"pt", format:"a4" });
+    const doc=new jsPDF({unit:"pt", format:"a4"});
 
     doc.setFont("helvetica","bold"); doc.setFontSize(18);
-    doc.text("CODE", 40, 40);
-    doc.setFontSize(14); doc.text("+ XPO Logistics", 100, 40);
-    doc.setFontSize(10); doc.setTextColor(120); doc.text(new Date().toLocaleString(), 40, 58); doc.setTextColor(0);
+    doc.text("CODE",40,40); doc.setFontSize(14); doc.text("+ XPO Logistics",100,40);
+    doc.setFontSize(10); doc.setTextColor(120); doc.text(new Date().toLocaleString(),40,58); doc.setTextColor(0);
 
     const s=[
       ["Total", String(data.length)],
@@ -422,7 +465,11 @@
       ["Averiadas", String(data.filter(x=>x.estado==='AVERIADA').length)],
     ];
     let x=40,y=80;
-    s.forEach(([k,v])=>{ doc.setDrawColor(230); doc.roundedRect(x,y-14,120,22,6,6); doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.text(`${k}: ${v}`, x+10, y); x+=130; });
+    s.forEach(([k,v])=>{
+      doc.setDrawColor(230); doc.roundedRect(x,y-14,120,22,6,6);
+      doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.text(`${k}: ${v}`, x+10, y);
+      x+=130;
+    });
 
     const sections=[
       { t:"CARGADAS", color:[34,197,94], rows:data.filter(x=>x.estado==="CARGADA") },
@@ -431,30 +478,30 @@
     ];
     let startY=130;
     sections.forEach(sec=>{
-      doc.setTextColor(...sec.color); doc.setFontSize(13); doc.setFont("helvetica","bold"); doc.text(sec.t, 40, startY); doc.setTextColor(0);
-      const body = sec.rows.map(r=>[r.matricula, r.contenido, new Date(r.timestamp).toLocaleString()]);
-      doc.autoTable({ head:[["Matrícula","Contenido","Fecha/Hora"]], body, startY:startY+10, margin:{left:40, right:40}, styles:{font:"helvetica", fontSize:10}, headStyles:{ fillColor:sec.color }, theme:"striped" });
+      doc.setTextColor(...sec.color); doc.setFontSize(13); doc.setFont("helvetica","bold"); doc.text(sec.t,40,startY); doc.setTextColor(0);
+      const body=sec.rows.map(r=>[r.matricula, r.contenido, new Date(r.timestamp).toLocaleString()]);
+      doc.autoTable({ head:[["Matrícula","Contenido","Fecha/Hora"]], body, startY:startY+10, margin:{left:40,right:40}, styles:{font:"helvetica",fontSize:10}, headStyles:{ fillColor:sec.color }, theme:"striped" });
       startY = doc.lastAutoTable.finalY + 24;
-      if(startY > 720){ doc.addPage(); startY = 60; }
+      if(startY>720){ doc.addPage(); startY=60; }
     });
 
     const pages=doc.internal.getNumberOfPages();
     for(let i=1;i<=pages;i++){
       doc.setPage(i); doc.setFontSize(9); doc.setTextColor(120);
-      doc.text("Generado desde el registro local", 40, doc.internal.pageSize.getHeight() - 30);
-      doc.text(String(i)+" / "+String(pages), doc.internal.pageSize.getWidth() - 60, doc.internal.pageSize.getHeight() - 30);
+      doc.text("Generado desde el registro local",40,doc.internal.pageSize.getHeight()-30);
+      doc.text(String(i)+" / "+String(pages), doc.internal.pageSize.getWidth()-60, doc.internal.pageSize.getHeight()-30);
     }
     doc.save("registro-plataformas.pdf");
   });
 
-  // Toast
+  /* ===== Toast ===== */
   function toast(msg, t=1800){
     const el=document.createElement("div"); el.className="toast"; el.textContent=msg;
     toasts.appendChild(el);
     setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; setTimeout(()=> el.remove(), 280); }, t);
   }
 
-  // Init
+  /* ===== Init ===== */
   render();
   inputMat.focus({preventScroll:true});
 })();
