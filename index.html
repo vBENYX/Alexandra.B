@@ -1,564 +1,229 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <title>XPO Logistics — Registro de Plataformas</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-  :root{
-    --bg:#f6f7f9;
-    --paper:#ffffff;
-    --ink:#0f0f10;
-    --muted:#6b7280;
-    --line:#e5e7eb;
-    --shadow:0 12px 30px rgba(0,0,0,.08);
-    --shadow-lg:0 24px 60px rgba(0,0,0,.10);
-    --radius:18px;
-    --bezier:cubic-bezier(.25,.8,.25,1);
-    /* Colores funcionales (no tocar) */
-    --cargada:#22c55e;  /* CARGADA */
-    --vacia:#3b82f6;    /* VACÍA  */
-    --averiada:#ef4444; /* AVERIADA */
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color:var(--ink);
-    background:
-      radial-gradient(900px 300px at 50% -10%, #eef2ff 0%, #ffffff 50%, transparent 60%),
-      linear-gradient(180deg,#ffffff 0%, #f7f8fb 45%, #f4f6fb 100%);
-    overflow-x:hidden;
-    -webkit-tap-highlight-color: transparent;
-  }
+:root {
+  --bg: linear-gradient(180deg,#fff,#f8f9fb 40%,#f3f4f6 100%);
+  --card: rgba(255,255,255,.9);
+  --ink: #1d1d1f;
+  --muted: #86868b;
+  --line: rgba(0,0,0,.08);
+  --shadow: 0 10px 30px rgba(0,0,0,.06);
+  --radius: 18px;
+  --bezier: cubic-bezier(.25,.8,.25,1);
+  --cargada:#a7e6b0;
+  --vacia:#a8c8f9;
+  --averiada:#f8b4b4;
+}
+body {
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+  overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;
+  animation:fadeIn 1s ease both;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
 
-  /* Barra progreso scroll */
-  .scrollbar{position:fixed; top:0; left:0; width:100%; height:3px; z-index:100; pointer-events:none}
-  .scrollbar .bar{height:100%; width:0%; background:linear-gradient(90deg,#111,#9ca3af); transition:width .15s linear}
+/* Header */
+header {
+  position:sticky;top:0;z-index:20;
+  backdrop-filter:blur(20px) saturate(180%);
+  background:rgba(255,255,255,.75);
+  border-bottom:1px solid rgba(255,255,255,.4);
+  transition:all .35s var(--bezier);
+}
+header.compact{background:rgba(255,255,255,.9);box-shadow:0 6px 18px rgba(0,0,0,.06);}
+.header-inner{width:min(1100px,94%);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.brand{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.8);border-radius:14px;border:1px solid rgba(0,0,0,.05);box-shadow:0 4px 10px rgba(0,0,0,.04);transition:transform .3s;}
+.brand:hover{transform:translateY(-2px);}
+.logo-code{background:#111;color:#fff;padding:4px 10px;border-radius:12px;font-weight:800;}
+.logo-xpo{font-weight:800;color:#e11d48;}
 
-  /* Parallax decor */
-  .para{
-    position:fixed; inset:auto; left:-15%; right:-15%; top:-120px; height:220px;
-    background:radial-gradient(60% 100% at 50% 0, #dbeafe66 0%, transparent 70%);
-    filter:blur(6px); transform:translateY(0); z-index:0; pointer-events:none;
-    will-change: transform;
-  }
+main{width:min(1100px,94%);margin:24px auto 100px;}
 
-  /* Header sticky + compact */
-  header{
-    position:sticky; top:0; z-index:90;
-    background:rgba(255,255,255,.8);
-    backdrop-filter:saturate(160%) blur(16px);
-    border-bottom:1px solid #ececec;
-    transition: padding .25s var(--bezier), box-shadow .25s var(--bezier), background .25s var(--bezier);
-    padding:14px 0;
-  }
-  header.compact{ padding:10px 0; box-shadow:0 10px 24px rgba(0,0,0,.06); background:rgba(255,255,255,.9) }
-  .header-inner{
-    width:min(1100px,94%); margin:0 auto;
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-  }
-  .brand{
-    display:flex; align-items:center; gap:10px;
-    padding:10px 14px; background:#fff; border-radius:14px; box-shadow:var(--shadow);
-    transform:translateZ(0); transition: transform .3s var(--bezier)
-  }
-  .logo-code{ background:#111; color:#fff; padding:4px 10px; border-radius:12px; font-weight:800; letter-spacing:.02em }
-  .logo-xpo{ font-weight:800; color:#e11d48; letter-spacing:.02em }
+/* Steps */
+.steps{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:24px;border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(12px);
+}
+.step{display:none;}
+.step.active{display:block;animation:fadeUp .4s var(--bezier);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.progress-dots{display:flex;gap:8px;justify-content:center;margin-bottom:12px;}
+.dot{width:10px;height:10px;border-radius:999px;background:#d1d5db;transition:.35s;}
+.dot.on{background:#111;transform:scale(1.3);}
+.row{display:flex;gap:12px;align-items:center;}
+@media(max-width:560px){.row{flex-direction:column;}}
 
-  main{ width:min(1100px,94%); margin:16px auto 100px; position:relative; z-index:1 }
+input,textarea{
+  width:100%;padding:16px;border-radius:16px;border:1px solid var(--line);
+  background:#fff;font-size:17px;transition:border-color .25s, box-shadow .25s;
+}
+input:focus,textarea:focus{border-color:#0071e3;box-shadow:0 0 0 8px rgba(0,113,227,.12);}
+textarea{min-height:120px;resize:vertical;}
 
-  /* Tarjetas / secciones */
-  .card{
-    background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow);
-    padding:18px; margin-bottom:14px; animation:fade .35s var(--bezier) both;
-  }
-  @keyframes fade{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+/* Buttons */
+.btn{border:0;border-radius:14px;padding:14px 22px;font-weight:700;background:linear-gradient(180deg,#111,#2c2c2e);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.2);font-size:16px;transition:all .25s;}
+.btn:hover{transform:translateY(-1px);}
+.btn:active{transform:scale(.98);}
+.btn.ghost{background:#fff;color:#111;border:1px solid #ddd;box-shadow:none;}
 
-  /* Separador suavemente degradado */
-  .sep{ height:1px; background:linear-gradient(90deg, transparent, #eaeaea, transparent); margin:18px 0 }
+/* Chips */
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+.chip{padding:12px 16px;border-radius:16px;background:#fff;border:1px solid var(--line);font-weight:800;min-width:110px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);transition:all .25s;}
+.chip:hover{transform:translateY(-2px);}
 
-  /* Reveal on scroll */
-  .reveal{ opacity:0; transform:translateY(14px) scale(.98); filter:saturate(.9) }
-  .reveal.in{ opacity:1; transform:translateY(0) scale(1); filter:saturate(1); transition:opacity .5s var(--bezier), transform .5s var(--bezier), filter .5s var(--bezier)}
+/* Stats */
+.stats{display:grid;gap:14px;grid-template-columns:repeat(4,1fr);margin-top:20px;}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.5);backdrop-filter:blur(8px);}
+.stat .label{color:var(--muted);font-size:13px;}
+.stat .value{font-size:24px;font-weight:800;}
+.progress{height:6px;background:#eee;border-radius:10px;margin-top:6px;overflow:hidden;}
+.fill{height:100%;width:0%;border-radius:10px;transition:width .8s var(--bezier);}
+.fill.c{background:var(--cargada);}
+.fill.v{background:var(--vacia);}
+.fill.a{background:var(--averiada);}
 
-  /* Pasos */
-  .steps{ position:relative; overflow:hidden }
-  .progress-dots{ display:flex; gap:8px; justify-content:center; margin-bottom:12px }
-  .dot{ width:10px; height:10px; border-radius:999px; background:#d1d5db; transition:.35s var(--bezier) }
-  .dot.on{ background:#111; transform:scale(1.2) }
-  .step{ display:none; animation:step .35s var(--bezier) both }
-  .step.active{ display:block }
-  @keyframes step{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+/* Chart container */
+.chartbox{margin-top:20px;background:var(--card);padding:20px;border-radius:16px;box-shadow:var(--shadow);backdrop-filter:blur(10px);}
 
-  .row{ display:flex; gap:12px; align-items:center }
-  @media(max-width:560px){ .row{ flex-direction:column } }
+/* Lists */
+.search{margin:18px 0;}
+.lists{display:grid;gap:14px;grid-template-columns:repeat(3,1fr);}
+@media(max-width:900px){.lists{grid-template-columns:1fr;}}
+.panel{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;}
+.panel header{padding:12px 14px;border-bottom:1px solid #eee;background:rgba(255,255,255,.9);}
+.item{padding:14px 16px;display:grid;grid-template-columns:1fr auto;border-bottom:1px solid #f1f1f1;background:#fff;}
+.meta{color:var(--muted);font-size:12px;margin-top:4px;}
 
-  input, textarea{
-    width:100%; padding:16px; border-radius:16px; border:1px solid var(--line); background:#fafafa; font-size:17px;
-    transition: border-color .25s var(--bezier), box-shadow .25s var(--bezier), transform .16s var(--bezier);
-  }
-  input:focus, textarea:focus{ border-color:#c7d2fe; box-shadow:0 0 0 8px rgba(59,130,246,.12) }
-  textarea{ min-height:120px; resize:vertical }
+/* Toasts */
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;display:flex;flex-direction:column;gap:8px;z-index:60;}
+.toast{background:#111;color:#fff;padding:12px 16px;border-radius:16px;box-shadow:var(--shadow);animation:toastIn .3s forwards;}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 
-  /* Botones: ripple + tilt */
-  .btn{
-    position:relative; overflow:hidden; border:0; border-radius:16px;
-    padding:14px 18px; font-weight:800; background:#111; color:#fff;
-    box-shadow:0 12px 30px rgba(0,0,0,.18); font-size:16px;
-    transition: transform .08s ease, box-shadow .25s var(--bezier);
-    touch-action:manipulation;
-  }
-  .btn:active{ transform:translateY(1px) scale(.985) }
-  .btn.ghost{ background:#f1f2f3; color:#111; box-shadow:none }
-  .ripple{ position:absolute; border-radius:50%; transform:scale(0); animation:rip .6s linear; background:rgba(255,255,255,.35); pointer-events:none }
-  @keyframes rip{ to{ transform:scale(4); opacity:0 } }
-  /* Tilt en touch */
-  .tilt{ transform:perspective(800px) rotateX(var(--rx,0)) rotateY(var(--ry,0)) scale(1); transition:transform .12s ease }
-  .tilt:active{ transform:perspective(800px) rotateX(0deg) rotateY(0deg) scale(.985) }
-
-  /* Elección estado */
-  .chips{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px }
-  .chip{
-    padding:12px 16px; border-radius:16px; background:#fff; border:1px solid var(--line);
-    box-shadow:var(--shadow); font-weight:800; min-width:110px; text-align:center;
-    transition: transform .18s var(--bezier), box-shadow .25s var(--bezier)
-  }
-  .chip:active{ transform:scale(.98) }
-  .chip[data-estado="CARGADA"]{ border-color: color-mix(in srgb, var(--cargada) 40%, #ddd) }
-  .chip[data-estado="VACÍA"]{ border-color: color-mix(in srgb, var(--vacia) 40%, #ddd) }
-  .chip[data-estado="AVERIADA"]{ border-color: color-mix(in srgb, var(--averiada) 40%, #ddd) }
-
-  /* Estadísticas */
-  .stats{ display:grid; gap:12px; grid-template-columns:repeat(4,1fr); margin-top:14px }
-  @media(max-width:760px){ .stats{ grid-template-columns:repeat(2,1fr) } }
-  .stat{ background:#fff; border-radius:16px; padding:12px 14px; box-shadow:var(--shadow) }
-  .stat .label{ color:var(--muted); font-size:13px }
-  .stat .value{ font-size:24px; font-weight:800 }
-  .bounce{ animation:b .5s ease }
-  @keyframes b{ 0%{transform:scale(1)} 35%{transform:scale(1.06)} 70%{transform:scale(.98)} 100%{transform:scale(1)} }
-
-  .search{ margin:14px 0 }
-
-  /* Listas */
-  .lists{ display:grid; gap:12px; grid-template-columns:repeat(3,1fr) }
-  @media(max-width:900px){ .lists{ grid-template-columns:1fr } }
-  .panel{ background:#fff; border-radius:16px; box-shadow:var(--shadow); overflow:hidden }
-  .panel header{
-    padding:12px 14px; border-bottom:1px solid #eee;
-    position:sticky; top:60px; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); z-index:1
-  }
-  .list{ display:flex; flex-direction:column }
-  .item{
-    padding:14px 16px; display:grid; grid-template-columns:1fr auto;
-    border-bottom:1px solid #f1f1f1; background:linear-gradient(0deg,#fff, #fdfdfd);
-    transition: transform .2s var(--bezier), box-shadow .25s var(--bezier);
-  }
-  .item:active{ transform:scale(.995) }
-  .pill{ font-size:12px; font-weight:900; color:#fff; padding:6px 10px; border-radius:999px; margin-left:8px }
-  .pill[data-type="CARGADA"]{ background:var(--cargada) }
-  .pill[data-type="VACÍA"]{ background:var(--vacia) }
-  .pill[data-type="AVERIADA"]{ background:var(--averiada) }
-  .meta{ color:var(--muted); font-size:12px; margin-top:4px }
-
-  /* Barra flotante PDF */
-  .floatbar{ position:fixed; right:16px; bottom:16px; display:flex; gap:10px; z-index:95 }
-  .fab{ border:0; border-radius:999px; padding:14px 16px; background:#111; color:#fff; font-weight:900; box-shadow:var(--shadow-lg) }
-  .fab .label{ display:inline }
-  @media(max-width:520px){ .fab .label{ display:none } }
-
-  /* Toasts */
-  .toasts{ position:fixed; left:50%; transform:translateX(-50%); bottom:90px; display:flex; flex-direction:column; gap:8px; z-index:120 }
-  .toast{ background:#111; color:#fff; padding:12px 16px; border-radius:16px; box-shadow:var(--shadow) }
-
-  /* Estados de validación matrícula */
-  .ok{ outline:0; box-shadow:0 0 0 8px rgba(34,197,94,.12) !important; border-color: color-mix(in srgb, var(--cargada) 55%, #bbb) !important }
-  .bad{ outline:0; box-shadow:0 0 0 8px rgba(239,68,68,.12) !important; border-color: color-mix(in srgb, var(--averiada) 55%, #bbb) !important }
+/* Validation */
+.ok{border-color:#a7e6b0!important;}
+.bad{border-color:#f8b4b4!important;}
 </style>
 </head>
 <body>
 
-<div class="scrollbar" aria-hidden="true"><div class="bar" id="scrollBar"></div></div>
-<div class="para" id="para"></div>
-
-<header id="hdr">
+<header>
   <div class="header-inner">
-    <div class="brand tilt" id="brand">
-      <span class="logo-code">CODE</span>
-      <span class="logo-xpo">XPO Logistics</span>
-    </div>
-    <small style="color:var(--muted)">Uso móvil optimizado</small>
+    <div class="brand"><span class="logo-code">CODE</span><span class="logo-xpo">XPO Logistics</span></div>
+    <small style="color:var(--muted)">Panel de registro</small>
   </div>
 </header>
 
 <main>
-  <!-- PASOS -->
-  <section class="card steps reveal" aria-label="Flujo de registro">
-    <div class="progress-dots" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1">
-      <div class="dot on" data-s="1"></div>
-      <div class="dot" data-s="2"></div>
-      <div class="dot" data-s="3"></div>
-    </div>
-
-    <!-- Paso 1 -->
+  <section class="steps">
+    <div class="progress-dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
     <div class="step active" id="step1">
       <div class="row">
-        <input id="matricula" placeholder="Introduce matrícula (ej: 1234-ABC)" autocomplete="off" inputmode="latin-prose" aria-label="Matrícula">
-        <button class="btn tilt" id="toStep2">Continuar</button>
+        <input id="matricula" placeholder="Introduce matrícula (ej: 1234-ABC)">
+        <button class="btn" id="toStep2">Continuar</button>
       </div>
-      <div class="meta" style="margin-top:6px">Escribe sin guiones ni espacios; se formatea a <b>####-XXX</b>.</div>
+      <div class="meta" style="margin-top:6px">Formato automático ####-XXX</div>
     </div>
-
-    <!-- Paso 2 -->
     <div class="step" id="step2">
       <div style="font-weight:900">Matrícula: <span id="matPreview"></span></div>
       <div class="chips">
-        <button class="chip tilt" data-estado="CARGADA">CARGADA</button>
-        <button class="chip tilt" data-estado="VACÍA">VACÍA</button>
-        <button class="chip tilt" data-estado="AVERIADA">AVERIADA</button>
+        <button class="chip" data-estado="CARGADA">CARGADA</button>
+        <button class="chip" data-estado="VACÍA">VACÍA</button>
+        <button class="chip" data-estado="AVERIADA">AVERIADA</button>
       </div>
-      <div class="meta">Elegir <b>VACÍA</b> registrará directamente sin pasar por el paso 3.</div>
-      <div style="margin-top:10px"><button class="btn ghost tilt" id="back1">Volver</button></div>
+      <div style="margin-top:10px"><button class="btn ghost" id="back1">Volver</button></div>
     </div>
-
-    <!-- Paso 3 -->
     <div class="step" id="step3">
-      <textarea id="contenido" placeholder="Contenido / incidencia…" aria-label="Contenido"></textarea>
-      <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
-        <button class="btn tilt" id="registrar">Registrar</button>
-        <button class="btn ghost tilt" id="back2">Volver</button>
-      </div>
+      <textarea id="contenido" placeholder="Contenido o incidencia…"></textarea>
+      <div style="display:flex;gap:10px;margin-top:10px;"><button class="btn" id="registrar">Registrar</button><button class="btn ghost" id="back2">Volver</button></div>
     </div>
   </section>
 
-  <div class="sep reveal"></div>
-
-  <!-- ESTADÍSTICAS -->
-  <section class="stats reveal" aria-label="Resumen del día">
-    <div class="stat" id="stTotal"><div class="label">Total</div><div class="value">0</div></div>
-    <div class="stat" id="stC"><div class="label">Cargadas</div><div class="value">0</div></div>
-    <div class="stat" id="stV"><div class="label">Vacías</div><div class="value">0</div></div>
-    <div class="stat" id="stA"><div class="label">Averiadas</div><div class="value">0</div></div>
-  </section>
-
-  <!-- BUSCADOR -->
-  <div class="search reveal" role="search">
-    <input id="buscador" placeholder="Buscar por matrícula o contenido…" aria-label="Buscar">
+  <div class="chartbox">
+    <canvas id="chartResumen" height="180"></canvas>
   </div>
 
-  <!-- LISTAS -->
-  <section class="lists" aria-label="Listas de plataformas">
-    <article class="panel reveal">
-      <header><strong>Cargadas</strong> <span class="meta" id="cntC">0</span></header>
-      <div class="list" id="listC" aria-live="polite"></div>
-    </article>
-    <article class="panel reveal">
-      <header><strong>Vacías</strong> <span class="meta" id="cntV">0</span></header>
-      <div class="list" id="listV" aria-live="polite"></div>
-    </article>
-    <article class="panel reveal">
-      <header><strong>Averiadas</strong> <span class="meta" id="cntA">0</span></header>
-      <div class="list" id="listA" aria-live="polite"></div>
-    </article>
+  <section class="stats">
+    <div class="stat"><div class="label">Total</div><div class="value" id="total">0</div></div>
+    <div class="stat"><div class="label">Cargadas</div><div class="value" id="valC">0</div><div class="progress"><div class="fill c" id="barC"></div></div></div>
+    <div class="stat"><div class="label">Vacías</div><div class="value" id="valV">0</div><div class="progress"><div class="fill v" id="barV"></div></div></div>
+    <div class="stat"><div class="label">Averiadas</div><div class="value" id="valA">0</div><div class="progress"><div class="fill a" id="barA"></div></div></div>
   </section>
 
-  <div class="reveal" style="margin-top:12px; display:flex; justify-content:flex-end">
-    <button class="btn ghost tilt" id="limpiar">Limpiar registros</button>
-  </div>
+  <div class="search"><input id="buscador" placeholder="Buscar por matrícula o contenido…"></div>
+  <section class="lists">
+    <article class="panel"><header><strong>Cargadas</strong></header><div id="listC"></div></article>
+    <article class="panel"><header><strong>Vacías</strong></header><div id="listV"></div></article>
+    <article class="panel"><header><strong>Averiadas</strong></header><div id="listA"></div></article>
+  </section>
 </main>
 
-<!-- Botón flotante PDF -->
-<div class="floatbar">
-  <button class="fab tilt" id="btnPDF" title="Generar PDF">PDF <span class="label">diario</span></button>
-</div>
-
-<!-- Toasts -->
-<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="toasts" id="toasts"></div>
 
 <script>
-(function(){
-  const LS_KEY = "plataformas-global";
-  const $ = s => document.querySelector(s);
-  const $$ = s => document.querySelectorAll(s);
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const inputMat=$("#matricula"),matPreview=$("#matPreview"),contenido=$("#contenido");
+const steps=$$(".step"),dots=$$(".dot"),toastBox=$("#toasts");
+const listC=$("#listC"),listV=$("#listV"),listA=$("#listA");
+const valC=$("#valC"),valV=$("#valV"),valA=$("#valA"),total=$("#total");
+const barC=$("#barC"),barV=$("#barV"),barA=$("#barA");
+const buscador=$("#buscador");
+let chart;const LS_KEY="plataformas-data";
+let current={};
 
-  // ===== Parallax + Scrollbar + Header compact =====
-  const bar = $("#scrollBar"), para = $("#para"), hdr = $("#hdr"), brand = $("#brand");
-  const onScroll = () => {
-    const doc = document.documentElement;
-    const st = doc.scrollTop || document.body.scrollTop;
-    const sh = doc.scrollHeight - doc.clientHeight;
-    bar.style.width = (sh>0 ? (st/sh)*100 : 0) + "%";
-    hdr.classList.toggle("compact", st>8);
-    para.style.transform = `translateY(${Math.min(60, st*0.18)}px)`;
-    brand.style.transform = `translateY(${Math.min(10, st*0.05)}px)`;
-  };
-  document.addEventListener("scroll", onScroll, {passive:true}); onScroll();
+function toast(t){const el=document.createElement("div");el.className="toast";el.textContent=t;toastBox.appendChild(el);setTimeout(()=>{el.style.opacity="0";setTimeout(()=>el.remove(),300);},2000);}
+function setStep(n){steps.forEach((e,i)=>e.classList.toggle("active",i===n-1));dots.forEach((d,i)=>d.classList.toggle("on",i<n));}
+function fmt(v){v=v.toUpperCase().replace(/[^A-Z0-9]/g,"");const n=v.replace(/[^0-9]/g,"").slice(0,4);const l=v.replace(/[^A-Z]/g,"").slice(0,3);return n+(l?"-"+l:"");}
+function valid(v){return /^[0-9]{4}-[A-Z]{3}$/.test(v);}
+inputMat.oninput=()=>{const f=fmt(inputMat.value);inputMat.value=f;inputMat.classList.remove("ok","bad");if(f.length>=6)inputMat.classList.add(valid(f)?"ok":"bad");};
 
-  // ===== Reveal on scroll =====
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} });
-  },{ threshold:.12 });
-  $$(".reveal").forEach(el=> io.observe(el));
+$("#toStep2").onclick=()=>{const v=inputMat.value.trim();if(!valid(v)){toast("Formato inválido");return;}current.matricula=v;matPreview.textContent=v;setStep(2);}
+$("#back1").onclick=()=>setStep(1);$("#back2").onclick=()=>setStep(2);
 
-  // ===== Ripple universal =====
-  document.addEventListener("click", (e)=>{
-    const t = e.target.closest(".btn, .chip, .fab");
-    if(!t) return;
-    const r = document.createElement("span");
-    r.className = "ripple";
-    const rect = t.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    r.style.width = r.style.height = size + "px";
-    r.style.left = (e.clientX - rect.left - size/2) + "px";
-    r.style.top  = (e.clientY - rect.top  - size/2) + "px";
-    t.appendChild(r); setTimeout(()=> r.remove(), 600);
-  }, {passive:true});
+$$(".chip").forEach(ch=>ch.onclick=()=>{const e=ch.dataset.estado;current.estado=e;if(e==="VACÍA"){save(v="—");toast("Registrada como VACÍA");return;}setStep(3);});
+$("#registrar").onclick=()=>{if(!contenido.value.trim()){toast("Contenido requerido");return;}save(contenido.value.trim());toast("Registro guardado");};
 
-  // ===== Micro-tilt (press tilt) =====
-  const tilts = $$(".tilt");
-  tilts.forEach(el=>{
-    const max = 6; // grados
-    const set = (x,y,rect)=>{
-      const px = (x - rect.left)/rect.width;
-      const py = (y - rect.top)/rect.height;
-      const ry = (px - .5) * max * 2;
-      const rx = -(py - .5) * max * 2;
-      el.style.setProperty("--rx", rx.toFixed(2)+"deg");
-      el.style.setProperty("--ry", ry.toFixed(2)+"deg");
-    };
-    el.addEventListener("pointermove",(e)=>{ const r=el.getBoundingClientRect(); set(e.clientX,e.clientY,r); });
-    el.addEventListener("pointerleave",()=>{ el.style.setProperty("--rx","0deg"); el.style.setProperty("--ry","0deg"); });
-  });
+function save(txt){const data=load();data.unshift({matricula:current.matricula,estado:current.estado,contenido:txt,timestamp:Date.now()});localStorage.setItem(LS_KEY,JSON.stringify(data));reset();}
+function reset(){inputMat.value="";contenido.value="";inputMat.classList.remove("ok","bad");current={};setStep(1);render();}
+function load(){try{return JSON.parse(localStorage.getItem(LS_KEY)||"[]");}catch(e){return[];}}
 
-  // ===== Elements =====
-  const step1 = $("#step1"), step2 = $("#step2"), step3 = $("#step3");
-  const dots = $$(".dot");
-  const inputMat = $("#matricula"), matPreview = $("#matPreview");
-  const toStep2 = $("#toStep2"), back1 = $("#back1"), back2 = $("#back2");
-  const contenido = $("#contenido"), registrar = $("#registrar");
-  const buscador = $("#buscador");
-  const listC = $("#listC"), listV = $("#listV"), listA = $("#listA");
-  const cntC = $("#cntC"), cntV = $("#cntV"), cntA = $("#cntA");
-  const vTotal = $("#stTotal .value"), vC = $("#stC .value"), vV = $("#stV .value"), vA = $("#stA .value");
-  const btnPDF = $("#btnPDF");
-  const toasts = $("#toasts");
+function render(){
+  const q=buscador.value.toLowerCase();
+  const data=load().filter(x=>!q||x.matricula.toLowerCase().includes(q)||x.contenido.toLowerCase().includes(q));
+  const groups={CARGADA:data.filter(x=>x.estado==="CARGADA"),VACÍA:data.filter(x=>x.estado==="VACÍA"),AVERIADA:data.filter(x=>x.estado==="AVERIADA")};
+  draw(listC,groups.CARGADA);draw(listV,groups.VACÍA);draw(listA,groups.AVERIADA);
+  valC.textContent=groups.CARGADA.length;valV.textContent=groups.VACÍA.length;valA.textContent=groups.AVERIADA.length;total.textContent=data.length;
+  const tot=data.length||1;
+  barC.style.width=(groups.CARGADA.length/tot*100)+"%";barV.style.width=(groups.VACÍA.length/tot*100)+"%";barA.style.width=(groups.AVERIADA.length/tot*100)+"%";
+  renderChart(groups.CARGADA.length,groups.VACÍA.length,groups.AVERIADA.length);
+}
 
-  let current = { matricula:"", estado:null };
+function draw(c,items){c.innerHTML=items.length?items.map(x=>`<div class='item'><div><b>${x.matricula}</b><div class='meta'>${x.contenido}</div></div></div>`).join(""):"<div class='meta'>Sin registros…</div>";}
 
-  // ===== localStorage utils =====
-  const load = ()=>{ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"[]") }catch(_){ return [] } };
-  const saveAll = arr => { localStorage.setItem(LS_KEY, JSON.stringify(arr)); bounce(); render(); };
-
-  // ===== Matrícula: formato ####-XXX + validación =====
-  function fmt(v){
-    v = v.toUpperCase().replace(/[^A-Z0-9]/g,"");
-    const n = v.replace(/[^0-9]/g,"").slice(0,4);
-    const l = v.replace(/[^A-Z]/g,"").slice(0,3);
-    return n + (l ? "-" + l : "");
-  }
-  function valid(v){ return /^[0-9]{4}-[A-Z]{3}$/.test(v); }
-  inputMat.addEventListener("input", ()=>{
-    const f = fmt(inputMat.value);
-    inputMat.value = f;
-    inputMat.classList.remove("ok","bad");
-    if(f.length>=6) inputMat.classList.add(valid(f)?"ok":"bad");
-  });
-
-  // ===== Navegación de pasos =====
-  function setStep(n){
-    [step1,step2,step3].forEach((el,i)=> el.classList.toggle("active",(i+1)===n));
-    dots.forEach((d,i)=> d.classList.toggle("on",(i+1)<=n));
-    $(".progress-dots").setAttribute("aria-valuenow", String(n));
-  }
-
-  toStep2.addEventListener("click", ()=>{
-    const v = inputMat.value.trim().toUpperCase();
-    if(!valid(v)){ toast("Matrícula inválida (formato ####-XXX)"); inputMat.focus(); return; }
-    current.matricula = v; matPreview.textContent = v; setStep(2);
-  });
-  back1.addEventListener("click", ()=> setStep(1));
-  back2.addEventListener("click", ()=> setStep(2));
-
-  // ===== Elegir estado =====
-  $$(".chip").forEach(ch=>{
-    ch.addEventListener("click", ()=>{
-      const estado = ch.dataset.estado;
-      current.estado = estado;
-
-      if(estado === "VACÍA"){
-        const data = load();
-        const dup = data.some(x=> x.estado==="VACÍA" && x.matricula===current.matricula);
-        if(dup){ toast("Ya existe una VACÍA con esa matrícula"); return; }
-        data.unshift(makeItem(current.matricula, "VACÍA", "—"));
-        saveAll(data);
-        reset(true);
-        toast("Registrada como VACÍA");
-        return;
-      }
-      setStep(3); contenido.focus();
-    });
-  });
-
-  // ===== Registrar (CARGADA/AVERIADA requieren contenido) =====
-  registrar.addEventListener("click", ()=>{
-    const txt = contenido.value.trim();
-    if(current.estado!=="CARGADA" && current.estado!=="AVERIADA"){ toast("Selecciona un estado"); return; }
-    if(!txt){ toast("Contenido requerido para "+current.estado); contenido.focus(); return; }
-    const data = load();
-    data.unshift(makeItem(current.matricula, current.estado, txt));
-    saveAll(data);
-    reset(true);
-    toast("Registro guardado");
-  });
-
-  function makeItem(matricula, estado, contenido){
-    return { id: Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-             matricula, estado, contenido, timestamp:new Date().toISOString() };
-  }
-  function reset(clear){
-    if(clear){ inputMat.value=""; contenido.value=""; inputMat.classList.remove("ok","bad"); }
-    current = { matricula:"", estado:null };
-    setStep(1); inputMat.focus({preventScroll:true});
-  }
-
-  // ===== Render =====
-  function render(){
-    const q = buscador.value.trim().toLowerCase();
-    const data = load();
-    const groups = {
-      CARGADA: data.filter(x=>x.estado==="CARGADA"),
-      "VACÍA": data.filter(x=>x.estado==="VACÍA"),
-      AVERIADA: data.filter(x=>x.estado==="AVERIADA"),
-    };
-    const fil = x => !q || x.matricula.toLowerCase().includes(q) || x.contenido.toLowerCase().includes(q);
-
-    draw(listC, groups.CARGADA.filter(fil));
-    draw(listV, groups["VACÍA"].filter(fil));
-    draw(listA, groups.AVERIADA.filter(fil));
-
-    cntC.textContent = groups.CARGADA.length;
-    cntV.textContent = groups["VACÍA"].length;
-    cntA.textContent = groups.AVERIADA.length;
-
-    vTotal.textContent = data.length;
-    vC.textContent = groups.CARGADA.length;
-    vV.textContent = groups["VACÍA"].length;
-    vA.textContent = groups.AVERIADA.length;
-  }
-
-  function draw(container, items){
-    container.innerHTML="";
-    if(items.length===0){
-      const m = document.createElement("div");
-      m.className = "meta"; m.style.padding="10px"; m.textContent="Sin registros…";
-      container.appendChild(m); return;
-    }
-    items.sort((a,b)=> b.timestamp.localeCompare(a.timestamp));
-    items.forEach(x=>{
-      const row = document.createElement("div"); row.className="item reveal"; row.dataset.id=x.id;
-      const left = document.createElement("div");
-      left.innerHTML = `<div><b>${x.matricula}</b><span class="pill" data-type="${x.estado}">${x.estado}</span></div>
-                        <div class="meta">${x.contenido} • ${new Date(x.timestamp).toLocaleString()}</div>`;
-      const right = document.createElement("div");
-      const del = document.createElement("button"); del.className="btn ghost tilt"; del.textContent="Eliminar"; del.title="Eliminar";
-      del.addEventListener("click", ()=>{
-        const arr = load().filter(y=>y.id!==x.id);
-        saveAll(arr);
-        toast("Registro eliminado");
-      });
-      right.appendChild(del);
-      row.appendChild(left); row.appendChild(right);
-      container.appendChild(row);
-      // revelar cada item
-      io.observe(row);
-    });
-  }
-
-  function bounce(){
-    ["#stTotal","#stC","#stV","#stA"].forEach(sel=>{
-      const el = document.querySelector(sel);
-      el.classList.remove("bounce"); void el.offsetWidth; el.classList.add("bounce");
-    });
-  }
-
-  // ===== Buscador =====
-  buscador.addEventListener("input", render);
-
-  // ===== Limpiar registros =====
-  $("#limpiar").addEventListener("click", ()=>{
-    if(confirm("¿Seguro que quieres borrar todos los registros?")){
-      localStorage.removeItem(LS_KEY);
-      render();
-      toast("Registros eliminados");
-    }
-  });
-
-  // ===== PDF =====
-  btnPDF.addEventListener("click", ()=>{
-    const data = load();
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit:"pt", format:"a4" });
-
-    doc.setFont("helvetica","bold"); doc.setFontSize(18);
-    doc.text("CODE", 40, 40);
-    doc.setFontSize(14); doc.text("+ XPO Logistics", 100, 40);
-    doc.setFontSize(10); doc.setTextColor(120); doc.text(new Date().toLocaleString(), 40, 58); doc.setTextColor(0);
-
-    const s = [
-      ["Total", String(data.length)],
-      ["Cargadas", String(data.filter(x=>x.estado==='CARGADA').length)],
-      ["Vacías", String(data.filter(x=>x.estado==='VACÍA').length)],
-      ["Averiadas", String(data.filter(x=>x.estado==='AVERIADA').length)],
-    ];
-    let x=40, y=80;
-    s.forEach(([k,v])=>{
-      doc.setDrawColor(230); doc.roundedRect(x, y-14, 120, 22, 6,6);
-      doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.text(`${k}: ${v}`, x+10, y);
-      x += 130;
-    });
-
-    const sections = [
-      { t:"CARGADAS", color:[34,197,94], rows:data.filter(x=>x.estado==="CARGADA") },
-      { t:"VACÍAS", color:[59,130,246], rows:data.filter(x=>x.estado==="VACÍA") },
-      { t:"AVERIADAS", color:[239,68,68], rows:data.filter(x=>x.estado==="AVERIADA") },
-    ];
-    let startY = 130;
-    sections.forEach(sec=>{
-      doc.setTextColor(...sec.color); doc.setFontSize(13); doc.setFont("helvetica","bold"); doc.text(sec.t, 40, startY); doc.setTextColor(0);
-      const body = sec.rows.map(r=>[r.matricula, r.contenido, new Date(r.timestamp).toLocaleString()]);
-      doc.autoTable({ head:[["Matrícula","Contenido","Fecha/Hora"]], body, startY:startY+10, margin:{left:40, right:40}, styles:{font:"helvetica", fontSize:10}, headStyles:{ fillColor:sec.color }, theme:"striped" });
-      startY = doc.lastAutoTable.finalY + 24;
-      if(startY > 720){ doc.addPage(); startY = 60; }
-    });
-
-    const pages = doc.internal.getNumberOfPages();
-    for(let i=1;i<=pages;i++){
-      doc.setPage(i); doc.setFontSize(9); doc.setTextColor(120);
-      doc.text("Generado desde el registro local", 40, doc.internal.pageSize.getHeight()-30);
-      doc.text(String(i)+" / "+String(pages), doc.internal.pageSize.getWidth()-60, doc.internal.pageSize.getHeight()-30);
-    }
-    doc.save("registro-plataformas.pdf");
-  });
-
-  // ===== Toast =====
-  function toast(msg, t=1800){
-    const el = document.createElement("div");
-    el.className = "toast"; el.textContent = msg;
-    toasts.appendChild(el);
-    setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; setTimeout(()=> el.remove(), 280); }, t);
-  }
-
-  // ===== Init =====
-  render();
-  inputMat.focus({preventScroll:true});
+function renderChart(c,v,a){
+  const ctx=document.getElementById("chartResumen");
+  const data={labels:["Cargadas","Vacías","Averiadas"],datasets:[{data:[c,v,a],backgroundColor:["#a7e6b0","#a8c8f9","#f8b4b4"],hoverOffset:8,borderWidth:0}]};
+  const opts={plugins:{legend:{display:true,labels:{color:"#444",font:{size:13}}}},cutout:"65%"};
+  if(chart){chart.data=data;chart.update();}else{chart=new Chart(ctx,{type:"doughnut",data,options:opts});}
+}
+buscador.oninput=render;
+render();
 })();
 </script>
-
 </body>
 </html>
