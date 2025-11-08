@@ -87,9 +87,23 @@ textarea{min-height:120px;resize:vertical;}
 .fill.v{background:var(--vacia);}
 .fill.a{background:var(--averiada);}
 
-/* Chart */
-.chartbox{margin-top:20px;background:var(--card);padding:20px;border-radius:16px;box-shadow:var(--shadow);backdrop-filter:blur(10px);position:relative;}
-#chartEmpty{text-align:center;color:#999;font-weight:500;margin-top:60px;}
+/* ---- Panel inteligente ---- */
+.analytics {
+  margin-top: 20px;
+  background: rgba(255,255,255,.7);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.05);
+  backdrop-filter: blur(14px) saturate(180%);
+  padding: 20px;
+}
+.analytics-header {display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.analytics-header h3 {margin:0;font-weight:700;font-size:17px;color:#1d1d1f;}
+#aiHint {color:#666;font-size:14px;font-style:italic;transition:opacity .4s;}
+.analytics-body {text-align:center;}
+#chartResumen {max-width:350px;margin:auto;}
+.dock {display:flex;justify-content:center;gap:16px;margin-top:14px;}
+.dock button {background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.05);border-radius:16px;font-size:20px;padding:10px 14px;cursor:pointer;transition:transform .25s, box-shadow .25s;box-shadow:0 6px 14px rgba(0,0,0,.08);}
+.dock button:hover {transform:scale(1.15);box-shadow:0 10px 20px rgba(0,0,0,.15);}
 
 /* Lists */
 .search{margin:18px 0;}
@@ -105,11 +119,8 @@ textarea{min-height:120px;resize:vertical;}
 .toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;display:flex;flex-direction:column;gap:8px;z-index:60;}
 .toast{background:#111;color:#fff;padding:12px 16px;border-radius:16px;box-shadow:var(--shadow);animation:toastIn .3s forwards;}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-
-/* Floating button */
 .floatbar{position:fixed;right:16px;bottom:16px;display:flex;gap:10px;z-index:40;}
 .fab{border:0;border-radius:999px;padding:14px 18px;background:#111;color:#fff;font-weight:900;box-shadow:0 12px 30px rgba(0,0,0,.25);}
-.fab:hover{transform:translateY(-2px);}
 </style>
 </head>
 <body>
@@ -148,16 +159,27 @@ textarea{min-height:120px;resize:vertical;}
     </div>
   </section>
 
-  <div class="chartbox">
-    <canvas id="chartResumen" height="180"></canvas>
-    <div id="chartEmpty">Aún no hay registros para mostrar</div>
-  </div>
-
   <section class="stats">
     <div class="stat"><div class="label">Total</div><div class="value" id="total">0</div></div>
     <div class="stat"><div class="label">Cargadas</div><div class="value" id="valC">0</div><div class="progress"><div class="fill c" id="barC"></div></div></div>
     <div class="stat"><div class="label">Vacías</div><div class="value" id="valV">0</div><div class="progress"><div class="fill v" id="barV"></div></div></div>
     <div class="stat"><div class="label">Averiadas</div><div class="value" id="valA">0</div><div class="progress"><div class="fill a" id="barA"></div></div></div>
+  </section>
+
+  <!-- PANEL INTELIGENTE -->
+  <section class="analytics">
+    <div class="analytics-header">
+      <h3>📊 Análisis rápido</h3>
+      <div id="aiHint">Analizando datos locales...</div>
+    </div>
+    <div class="analytics-body">
+      <canvas id="chartResumen" height="120"></canvas>
+    </div>
+    <div class="dock">
+      <button title="Actualizar" id="btnRefresh">🔄</button>
+      <button title="Exportar PDF" id="btnPDF2">📄</button>
+      <button title="Ver tendencias" id="btnAI">🧠</button>
+    </div>
   </section>
 
   <div class="search"><input id="buscador" placeholder="Buscar por matrícula o contenido…"></div>
@@ -184,6 +206,7 @@ const toStep2=$("#toStep2"),back1=$("#back1"),back2=$("#back2"),registrar=$("#re
 const buscador=$("#buscador"),listC=$("#listC"),listV=$("#listV"),listA=$("#listA");
 const valC=$("#valC"),valV=$("#valV"),valA=$("#valA"),total=$("#total");
 const barC=$("#barC"),barV=$("#barV"),barA=$("#barA"),toasts=$("#toasts"),btnPDF=$("#btnPDF"),limpiar=$("#limpiar");
+const aiHint=$("#aiHint"),btnRefresh=$("#btnRefresh"),btnAI=$("#btnAI"),btnPDF2=$("#btnPDF2");
 let chart,current={},LS="plataformas-data";
 
 function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;toasts.appendChild(t);setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.remove(),300);},1800);}
@@ -198,27 +221,8 @@ registrar.onclick=()=>{const txt=contenido.value.trim();if(!txt){toast("Contenid
 limpiar.onclick=()=>{if(confirm("¿Borrar todos los registros?")){localStorage.removeItem(LS);render();toast("Registros eliminados");}};
 btnPDF.onclick=()=>exportPDF();
 
+/* ---- Guardar y renderizar ---- */
 function save(m,e,c){const data=load();data.unshift({matricula:m,estado:e,contenido:c,timestamp:Date.now()});localStorage.setItem(LS,JSON.stringify(data));render();}
 function reset(){input.value="";contenido.value="";input.classList.remove("ok","bad");current={};setStep(1);}
 function load(){try{return JSON.parse(localStorage.getItem(LS)||"[]");}catch(_){return[];}}
-function render(){const q=buscador.value.toLowerCase();const data=load().filter(x=>!q||x.matricula.toLowerCase().includes(q)||x.contenido.toLowerCase().includes(q));const g={CARGADA:data.filter(x=>x.estado==="CARGADA"),VACÍA:data.filter(x=>x.estado==="VACÍA"),AVERIADA:data.filter(x=>x.estado==="AVERIADA")};draw(listC,g.CARGADA);draw(listV,g.VACÍA);draw(listA,g.AVERIADA);valC.textContent=g.CARGADA.length;valV.textContent=g.VACÍA.length;valA.textContent=g.AVERIADA.length;total.textContent=data.length;const tot=data.length||1;barC.style.width=(g.CARGADA.length/tot*100)+"%";barV.style.width=(g.VACÍA.length/tot*100)+"%";barA.style.width=(g.AVERIADA.length/tot*100)+"%";renderChart(g.CARGADA.length,g.VACÍA.length,g.AVERIADA.length);}
-function draw(c,items){c.innerHTML=items.length?items.map(x=>`<div class='item'><div><b>${x.matricula}</b><div class='meta'>${x.contenido}</div></div><button data-id='${x.timestamp}'>🗑️</button></div>`).join(""):"<div class='meta'>Sin registros…</div>";c.querySelectorAll("button").forEach(b=>b.onclick=()=>{const data=load().filter(x=>x.timestamp!=b.dataset.id);localStorage.setItem(LS,JSON.stringify(data));toast("Eliminado");render();});}
-
-function renderChart(c,v,a){
-  const ctx=document.getElementById("chartResumen");
-  const empty=$("#chartEmpty");
-  const total=c+v+a;
-  if(total===0){
-    empty.style.display="block";
-    if(chart){chart.destroy();chart=null;}
-    return;
-  }
-  empty.style.display="none";
-  const data={labels:["Cargadas","Vacías","Averiadas"],datasets:[{data:[c,v,a],backgroundColor:["#a7e6b0","#a8c8f9","#f8b4b4"],hoverOffset:8,borderWidth:0}]};
-  const opts={plugins:{legend:{display:true,labels:{color:"#444",font:{size:13}}}},cutout:"65%"};
-  if(chart){chart.data=data;chart.update();}else{chart=new Chart(ctx,{type:"doughnut",data,options:opts});}
-}
-
-function exportPDF(){
-  const data=load();
-  const { jsPDF } = window
+function render(){const q=buscador.value.toLowerCase();const data=load().filter(x=>!q||x.matricula.toLowerCase().includes(q)||x.contenido.toLowerCase().includes(q));const g={CARGADA:data.filter(x=>x.estado==="CARGADA"),VACÍA:data.filter(x=>x.estado==="VACÍA"),AVERIADA:data.filter(x=>x.estado==="AVERIADA")};draw(listC,g.CARGADA);draw(listV,g.VACÍA);draw(listA,g.AVERIADA);valC.textContent=g.CARGADA.length;valV.textContent=g.VACÍA.length;valA.textContent=g.AVERIADA.length;total.textContent=data.length;const tot=data.length||1;barC.style.width=(g.CARGADA.length/tot*100)+"%";barV.style.width=(g.VACÍA.length/tot*100)+"%";barA.style.width=(g.AVERIADA.length/t
