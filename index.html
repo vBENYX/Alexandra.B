@@ -1,1223 +1,528 @@
 <!DOCTYPE html>
 <html lang="es">
-<head> 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>XPO Logistics | Registro Táctil de Flota</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    
-    <style>
-        /* Variables y Reset para Móviles (iOS Theme) */
-        :root {
-            --ios-blue: #007AFF;
-            --ios-green: #34C759;
-            --ios-red: #FF3B30;
-            --ios-yellow: #FFCC00;
-            --ios-gray-bg: #f2f2f7;
-            --ios-card-bg: #ffffff;
-            --ios-separator: #d1d1d6;
-            --ios-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            --transition-duration: 0.35s;
-            --text-light-gray: #6d6d71;
-            --light-gray-apple: #f9f9f9; 
-            --dark-text: #1c1c1e;
-            --vibrant-gradient: linear-gradient(90deg, #007AFF 0%, #34D8A4 100%); 
-            --logo-red: #FF3B30;
-            
-            /* Colores para el relleno de tarjetas (SUAVES) */
-            --fill-green: rgba(52, 199, 89, 0.12); 
-            --fill-yellow: rgba(255, 204, 0, 0.15); 
-            --fill-red: rgba(255, 59, 48, 0.12); 
-            
-            /* Colores para el efecto de Onda Inteligente (Siri/Apple) */
-            --siri-blue: #007AFF;
-            --siri-cyan: #34D8A4; 
-            --siri-violet: #8e44ad; 
-            
-            /* Gradiente base que se animará */
-            --siri-gradient: linear-gradient(
-                135deg, 
-                var(--siri-violet) 0%, 
-                var(--siri-blue) 25%, 
-                var(--siri-cyan) 50%, 
-                var(--siri-blue) 75%,
-                var(--siri-violet) 100%
-            );
-        }
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>XPO Logistics — Registro Móvil</title>
 
-        /* Estilo Base: Fondo de iOS y Tipografía SF Pro */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-            background-color: var(--ios-gray-bg);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            color: var(--dark-text);
-            overflow-x: hidden;
-            padding-top: 75px; 
-        }
-        
-        /* ----------------------------------------------- */
-        /* --- ENCABEZADO FIJO CORPORATIVO --- */
-        /* ----------------------------------------------- */
-        .header-fixed {
-            position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; 
-            padding: 15px 20px 10px 20px; 
-            z-index: 1000;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.95); 
-            -webkit-backdrop-filter: blur(15px); 
-            backdrop-filter: blur(15px); 
-            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05); 
-            display: flex; align-items: center;
-        }
-        .header-fixed.scrolled { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
-        
-        .logo-container { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-        
-        /* Logo CODE (símbolo corporativo minimalista) */
-        .logo-corporate-code { 
-            font-size: 16px; 
-            font-weight: 900; 
-            line-height: 1; 
-            background: var(--vibrant-gradient);
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            margin-right: 5px; 
-            transition: none;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 
-        /* XPO (rojo) */
-        .logo-xpo-red { 
-            font-size: 24px; 
-            font-weight: 800; 
-            letter-spacing: -0.5px;
-            color: var(--logo-red); 
-            line-height: 1; 
-            transition: none;
-        }
-        /* LOGISTICS (negro) */
-        .logo-logistics-black {
-            font-size: 20px; /* Un poco más pequeño que XPO */
-            font-weight: 600; /* Menos negrita */
-            color: var(--dark-text);
-            line-height: 1; 
-            transition: none;
-        }
+<style>
+  :root{
+    --bg:#f5f6f7;
+    --card:#ffffff;
+    --ink:#0f0f10;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --shadow:0 10px 28px rgba(0,0,0,.08);
+    --radius:18px;
+    --bezier:cubic-bezier(.24,.8,.25,1);
+    /* Colores funcionales (INMUTABLES) */
+    --cargada:#22c55e;
+    --vacia:#3b82f6;
+    --averiada:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background:var(--bg); color:var(--ink); -webkit-tap-highlight-color: transparent;
+  }
+  /* Header */
+  header{ position:sticky; top:0; z-index:10; background:linear-gradient(180deg,#fff, #f7f8fa);
+    border-bottom:1px solid #ececec; padding:12px 0; backdrop-filter:blur(14px) saturate(140%); }
+  .header-inner{ width:min(1100px,94%); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px }
+  .brand{ display:flex; gap:10px; align-items:center; padding:10px 14px; background:white; border-radius:14px; box-shadow:var(--shadow) }
+  .code{ background:#111; color:#fff; padding:4px 10px; border-radius:12px; font-weight:800 }
+  .xpo{ font-weight:800; color:#e11d48 }
+  .actions{ display:flex; gap:8px; }
 
-        .container { width: 100%; max-width: 450px; background-color: transparent; box-shadow: none; position: relative; height: auto; min-height: calc(100vh - 75px); overflow: hidden; padding: 0 10px; }
+  main{ width:min(1100px,94%); margin:16px auto 96px; }
 
-        /* --- ESTILOS DE PASOS Y CARDS --- */
-        .card-section { background-color: var(--ios-card-bg); margin: 10px 0; padding: 20px; border-radius: 10px; box-shadow: var(--ios-shadow); position: relative; }
-        .step-content { opacity: 0; transform: scale(0.98); transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; padding: 20px; background-color: var(--ios-card-bg); border-radius: 10px; box-shadow: var(--ios-shadow); display: none; }
-        .step-content.active { opacity: 1; transform: scale(1); position: relative; display: block; margin-bottom: 20px; }
+  .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:14px; animation:fade .35s var(--bezier) both }
+  @keyframes fade{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
 
-        /* INPUTS */
-        input[type="text"] { 
-            width: 100%; 
-            padding: 15px; 
-            margin-bottom: 20px; 
-            border: 1px solid var(--ios-separator); 
-            border-radius: 10px; 
-            box-sizing: border-box; 
-            font-size: 18px; 
-            background-color: #f9f9f9; 
-            transition: border-color 0.2s; 
-            -webkit-appearance: none; 
-        }
-        
-        /* BOTONES BASE */
-        button { 
-            width: 100%; 
-            background-color: var(--ios-blue); 
-            color: white; 
-            padding: 15px 20px; 
-            margin: 10px 0; 
-            border: none; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-size: 18px; 
-            font-weight: 600; 
-            transition: transform 0.1s, box-shadow 0.3s, background-color 0.3s; 
-            -webkit-appearance: none; 
-            position: relative; 
-            overflow: hidden; 
-            z-index: 1;
-        }
+  .progress{ display:flex; gap:8px; justify-content:center; margin-bottom:12px }
+  .progress div{ width:10px; height:10px; border-radius:999px; background:#d1d5db; transition:.3s var(--bezier) }
+  .progress .on{ background:#111; transform:scale(1.2) }
 
-        button:active { 
-            opacity: 1; 
-            transform: scale(0.99); 
-        }
-        
-        button i, button span, button strong {
-            position: relative;
-            z-index: 2;
-            pointer-events: none; 
-        }
+  .row{ display:flex; gap:12px; align-items:center; }
+  @media(max-width:560px){ .row{ flex-direction:column } }
 
-        /* --- ANIMACIÓN ESTILO ONDA INTELIGENTE (SIRI WAVE) --- */
-        @keyframes siri-wave {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; } 
-        }
+  input, textarea{
+    width:100%; padding:16px; border-radius:16px; border:1px solid var(--line); background:#fafafa; font-size:17px;
+    transition:.25s var(--bezier); -webkit-appearance:none; appearance:none;
+  }
+  input:focus, textarea:focus{ border-color:#c7d2fe; box-shadow:0 0 0 8px rgba(59,130,246,.12) }
+  textarea{ min-height:120px; resize:vertical }
 
-        #paso1 button {
-            background: var(--siri-gradient);
-            background-size: 300% 300%; 
-            animation: siri-wave 12s ease-in-out infinite alternate; 
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.5);
-            transition: all 0.3s ease; 
-        }
-        
-        #paso1 button:active { 
-            transform: scale(0.98); 
-            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.8); 
-            animation-duration: 5s; 
-        }
-        
-        /* --- FIN ANIMACIÓN ESTILO ONDA INTELIGENTE --- */
+  .btn{ position:relative; overflow:hidden; border:0; border-radius:16px; padding:14px 18px; font-weight:800; background:#111; color:#fff; box-shadow:0 12px 30px rgba(0,0,0,.18); font-size:16px; touch-action:manipulation; }
+  .btn:active{ transform:translateY(1px) scale(.99) }
+  .btn.ghost{ background:#f1f2f3; color:#111; box-shadow:none }
+  .btn.lg{ padding:16px 22px; font-size:17px }
+  .ripple{ position:absolute; border-radius:50%; transform:scale(0); animation:rip .6s linear; background:rgba(255,255,255,.35); pointer-events:none }
+  @keyframes rip{ to{ transform:scale(4); opacity:0 } }
 
+  .chips{ display:flex; gap:10px; flex-wrap:wrap }
+  .chip{ padding:12px 16px; border-radius:16px; background:white; border:1px solid var(--line); box-shadow:var(--shadow); font-weight:800; min-width:110px; text-align:center }
+  .chip[data-e="CARGADA"]{ border-color: color-mix(in srgb, var(--cargada) 40%, #ddd) }
+  .chip[data-e="VACÍA"]{ border-color: color-mix(in srgb, var(--vacia) 40%, #ddd) }
+  .chip[data-e="AVERIADA"]{ border-color: color-mix(in srgb, var(--averiada) 40%, #ddd) }
 
-        .btn-confirm-cargada { background-color: var(--ios-green) !important; }
-        .btn-confirm-vacia { background-color: var(--ios-yellow) !important; color: #333 !important; } 
-        .btn-confirm-averiada { background-color: var(--ios-red) !important; }
-        .btn-state-active { background-color: var(--ios-blue) !important; color: white !important; } 
+  .stats{ display:grid; gap:10px; grid-template-columns:repeat(4,1fr) }
+  @media(max-width:760px){ .stats{ grid-template-columns:repeat(2,1fr) } }
+  .stat{ background:white; border-radius:16px; padding:12px 14px; box-shadow:var(--shadow) }
+  .stat .label{ color:var(--muted); font-size:13px }
+  .stat .value{ font-size:24px; font-weight:800 }
+  .bounce{ animation:b .5s ease }
+  @keyframes b{ 0%{transform:scale(1)} 35%{transform:scale(1.06)} 70%{transform:scale(.98)} 100%{transform:scale(1)} }
 
-        #botonesEstado { display: flex; gap: 5px; margin-bottom: 20px; }
-        #botonesEstado button { 
-            background-color: #e5e5ea; 
-            color: #3c3c43; 
-            font-weight: 500; 
-            flex-grow: 1; 
-            padding: 12px 10px; 
-            margin: 0; 
-            font-size: 16px; 
-            overflow: visible; 
-            animation: none !important; 
-            box-shadow: none !important;
-        }
-        #botonesEstado button::before { content: none; } 
+  .search{ margin:14px 0 }
+  .lists{ display:grid; gap:12px; grid-template-columns:repeat(3,1fr) }
+  @media(max-width:900px){ .lists{ grid-template-columns:1fr } }
 
-        #btnLimpiar { background-color: #FF3B30; margin-top: 10px; }
-        .volver-button { background-color: transparent !important; color: var(--ios-blue) !important; font-weight: 400 !important; text-align: left; padding-left: 0 !important; margin-top: 20px; width: auto !important; }
-        
-        /* ----------------------------------------------- */
-        /* --- ESTILOS DE RESUMEN DE FLOTA (COMPACTOS/WIDGETS) --- */
-        /* ----------------------------------------------- */
-        #contadores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; padding: 0; justify-content: space-between; }
-        
-        /* Cards más compactas (Solicitud de tamaño 10) */
-        .compact-summary { 
-            flex: 1 1 48%; min-width: 130px; 
-            padding: 8px 10px; /* Reducción de padding */
-            border-radius: 12px; 
-            background-color: var(--ios-card-bg); box-shadow: var(--ios-shadow); 
-            overflow: hidden; position: relative; opacity: 0; transform: scale(0.98); 
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out, background-color 0.5s ease;
-        }
-        .compact-summary.visible { opacity: 1; transform: scale(1); }
-        
-        /* Tipografía más compacta */
-        .compact-summary p { margin: 0; font-size: 11px !important; color: var(--text-light-gray); }
-        .compact-summary h4 { margin: 3px 0 0 0 !important; font-size: 20px !important; font-weight: 700; }
+  .panel{ background:white; border-radius:16px; box-shadow:var(--shadow); overflow:hidden }
+  .panel h3{ margin:0; padding:12px 14px; border-bottom:1px solid #eee }
+  .list{ display:flex; flex-direction:column }
+  .item{ padding:14px 16px; display:grid; grid-template-columns:1fr auto; border-bottom:1px solid #f1f1f1; background:linear-gradient(0deg,#fff, #fdfdfd) }
+  .pill{ font-size:12px; font-weight:900; color:#fff; padding:6px 10px; border-radius:999px; margin-left:8px }
+  .pill[data-t="CARGADA"]{ background:var(--cargada) }
+  .pill[data-t="VACÍA"]{ background:var(--vacia) }
+  .pill[data-t="AVERIADA"]{ background:var(--averiada) }
+  .meta{ color:var(--muted); font-size:12px; margin-top:4px }
 
-        .compact-content { position: relative; z-index: 2; }
-        
-        /* Relleno dinámico (el que el usuario quiere) */
-        .summary-fill {
-            position: absolute; bottom: 0; left: 0; width: 100%; 
-            transition: height 0.7s ease-out; 
-            border-radius: 0 0 12px 12px;
-            z-index: 1;
-        }
-        
-        /* Colores de relleno (SUAVES) */
-        #cardCargada .summary-fill { background-color: var(--fill-green); }
-        #cardDisponible .summary-fill { background-color: var(--fill-yellow); }
-        #cardAveriada .summary-fill { background-color: var(--fill-red); }
+  /* Acciones flotantes */
+  .float{ position:fixed; right:16px; bottom:16px; display:flex; gap:10px; z-index:100 }
+  .fab{ border:0; border-radius:999px; padding:14px 16px; background:#111; color:#fff; font-weight:900; box-shadow:0 12px 30px rgba(0,0,0,.25) }
+  .fab .label{ display:inline }
+  @media(max-width:520px){ .fab .label{ display:none } }
 
-        /* Efecto Visual: Total Card */
-        #cardTotal { background-color: var(--light-gray-apple); border: 1px solid var(--ios-separator); }
-        
-        /* Efecto Visual: Porcentaje de color */
-        .compact-summary .percent-text { font-weight: 600; }
-        #cardCargada .percent-text, #cardCargada h4 { color: var(--ios-green); }
-        #cardDisponible .percent-text, #cardDisponible h4 { color: var(--ios-yellow); }
-        #cardAveriada .percent-text, #cardAveriada h4 { color: var(--ios-red); }
+  /* Toasts */
+  .toasts{ position:fixed; left:50%; transform:translateX(-50%); bottom:84px; display:flex; flex-direction:column; gap:8px; z-index:120 }
+  .toast{ background:#111; color:#fff; padding:12px 16px; border-radius:16px; box-shadow:var(--shadow) }
+  .toast a{ color:#93c5fd; text-decoration:underline }
 
-        /* ----------------------------------------------- */
-        /* --- ESTILOS DE HISTORIAL RECIENTE --- */
-        /* ----------------------------------------------- */
-        .history-card { 
-            background-color: var(--ios-card-bg); 
-            border-radius: 10px; 
-            box-shadow: var(--ios-shadow); 
-            padding: 0; 
-            margin: 15px 0 0 0;
-        }
-
-        #historialReciente { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-        }
-        
-        #historialReciente li { 
-            display: flex; 
-            align-items: center; 
-            gap: 5px;
-            padding: 10px 15px; 
-            border-bottom: 1px solid var(--ios-separator); 
-            font-size: 14px; 
-            position: relative;
-        }
-        #historialReciente li:last-child { border-bottom: none; } 
-        
-        .status-indicator { 
-            width: 8px; 
-            height: 8px; 
-            border-radius: 50%; 
-            margin-right: 5px; 
-            flex-shrink: 0; 
-        }
-        .status-indicator.Cargada { background-color: var(--ios-green); }
-        .status-indicator.Vacía { background-color: var(--ios-yellow); } 
-        .status-indicator.Averiada { background-color: var(--ios-red); }
-
-        .historial-matricula { font-weight: 700; flex-grow: 1; margin-right: 10px; }
-        .historial-estado { font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
-        .historial-time { color: var(--text-light-gray); font-size: 12px; margin-left: auto; flex-shrink: 0; } 
-        
-        /* Colores de Badge (SUAVES) */
-        .historial-estado.estado-Cargada { background-color: var(--fill-green); color: var(--ios-green); }
-        .historial-estado.estado-Vacía { background-color: var(--fill-yellow); color: #B2A200; } /* Un poco más oscuro para contraste */
-        .historial-estado.estado-Averiada { background-color: var(--fill-red); color: var(--ios-red); }
-
-        #advertenciaDuplicado { background-color: #fce8e8; color: #c0392b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; border: 1px solid #f9bdbd; }
-
-        /* Contenedor de botones de Filtro */
-        .filter-buttons {
-            display: flex; 
-            gap: 5px; 
-            margin-top: 10px; 
-            margin-bottom: 15px;
-        }
-        .filter-buttons button {
-            background-color: #e5e5ea; 
-            color: #3c3c43; 
-            font-weight: 500; 
-            flex-grow: 1; 
-            padding: 8px 5px; 
-            margin: 0; 
-            font-size: 14px; 
-            box-shadow: none;
-            overflow: visible; 
-            animation: none !important;
-        }
-        .filter-buttons button::before { content: none; } 
-        
-        .filter-buttons button.filter-active {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
-            color: white !important;
-        }
-        #btnFilterCargada.filter-active { background-color: var(--ios-green); }
-        #btnFilterVacia.filter-active { background-color: var(--ios-yellow); color: #333 !important;}
-        #btnFilterAveriada.filter-active { background-color: var(--ios-red); }
-        #btnFilterAll.filter-active { background-color: var(--ios-blue); }
-
-        /* --- MODAL (Para confirmación y alertas proactivas) --- */
-        .modal-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0, 0, 0, 0.5); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 2000; 
-            opacity: 0; 
-            pointer-events: none; 
-            transition: opacity 0.3s; 
-        }
-        .modal-overlay.open { opacity: 1; pointer-events: all; }
-        .modal-content { 
-            background: var(--ios-card-bg); 
-            border-radius: 14px; 
-            width: 90%; 
-            max-width: 350px; 
-            padding: 20px; 
-            text-align: center; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); 
-            transform: scale(0.9); 
-            transition: transform 0.3s; 
-        }
-        .modal-overlay.open .modal-content { transform: scale(1); }
-        .modal-content h4 { margin-top: 0; font-size: 18px; color: var(--ios-red); }
-        .modal-content p { margin-bottom: 20px; color: var(--dark-text); font-size: 15px; }
-        .modal-buttons { display: flex; gap: 10px; }
-        .modal-buttons button { margin: 0; padding: 12px; font-size: 16px; font-weight: 500; }
-        .btn-modal-cancel { background-color: #e5e5ea; color: #3c3c43; }
-        .btn-modal-confirm-red { background-color: var(--ios-red); }
-        .btn-modal-confirm-blue { background-color: var(--ios-blue); }
-    </style>
+  /* Estados de validación */
+  .ok{ outline:0; box-shadow:0 0 0 8px rgba(34,197,94,.12) !important; border-color: color-mix(in srgb, var(--cargada) 55%, #bbb) !important }
+  .bad{ outline:0; box-shadow:0 0 0 8px rgba(239,68,68,.12) !important; border-color: color-mix(in srgb, var(--averiada) 55%, #bbb) !important }
+</style>
 </head>
 <body>
 
-<div class="header-fixed" id="fixedHeader">
-    <div id="logoHeader" class="logo-container">
-        <span class="logo-corporate-code">CODE</span>
-        <span class="logo-xpo-red">XPO</span>
-        <span class="logo-logistics-black">LOGISTICS</span>
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="code">CODE</div><div class="xpo">XPO Logistics</div>
     </div>
+    <div class="actions">
+      <button class="btn ghost" id="btnExport" aria-label="Exportar copia de seguridad">Exportar</button>
+      <label class="btn ghost" for="fileImport" aria-label="Importar copia de seguridad">Importar<input id="fileImport" type="file" accept="application/json" hidden></label>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card" aria-label="Flujo de registro">
+    <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"><div id="p1" class="on"></div><div id="p2"></div><div id="p3"></div></div>
+
+    <!-- Paso 1 -->
+    <div id="s1">
+      <div class="row">
+        <input id="mat" placeholder="Introduce matrícula (ej: 1234-ABC)" autocomplete="off" inputmode="latin-prose" aria-label="Matrícula">
+        <button class="btn lg" id="go2">Continuar</button>
+      </div>
+      <div class="meta" style="margin-top:6px">Sugerencia: escribe sin guiones o espacios; se formatea automáticamente.</div>
+    </div>
+
+    <!-- Paso 2 -->
+    <div id="s2" style="display:none">
+      <div style="font-weight:900">Matrícula: <span id="matTxt"></span></div>
+      <div class="chips" style="margin:12px 0">
+        <button class="chip" data-e="CARGADA" aria-label="Marcar como CARGADA">CARGADA</button>
+        <button class="chip" data-e="VACÍA" aria-label="Marcar como VACÍA">VACÍA</button>
+        <button class="chip" data-e="AVERIADA" aria-label="Marcar como AVERIADA">AVERIADA</button>
+      </div>
+      <div class="meta">Elegir <b>VACÍA</b> registrará directamente sin pasar por el paso 3.</div>
+      <div style="margin-top:10px"><button class="btn ghost" id="back1">Volver</button></div>
+    </div>
+
+    <!-- Paso 3 -->
+    <div id="s3" style="display:none">
+      <textarea id="cont" placeholder="Contenido / incidencia…" aria-label="Contenido"></textarea>
+      <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
+        <button class="btn" id="reg">Registrar</button>
+        <button class="btn ghost" id="back2">Volver</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="Resumen del día">
+    <div class="stat" id="stTotal"><div class="label">Total</div><div class="value">0</div></div>
+    <div class="stat" id="stC"><div class="label">Cargadas</div><div class="value">0</div></div>
+    <div class="stat" id="stV"><div class="label">Vacías</div><div class="value">0</div></div>
+    <div class="stat" id="stA"><div class="label">Averiadas</div><div class="value">0</div></div>
+  </section>
+
+  <div class="search"><input id="q" placeholder="Buscar por matrícula o contenido…" aria-label="Buscar"></div>
+
+  <section class="lists" aria-label="Listas de plataformas">
+    <article class="panel">
+      <h3>Cargadas</h3>
+      <div class="list" id="lc" aria-live="polite"></div>
+    </article>
+    <article class="panel">
+      <h3>Vacías</h3>
+      <div class="list" id="lv" aria-live="polite"></div>
+    </article>
+    <article class="panel">
+      <h3>Averiadas</h3>
+      <div class="list" id="la" aria-live="polite"></div>
+    </article>
+  </section>
+
+  <div style="margin-top:12px; display:flex; justify-content:flex-end">
+    <button class="btn ghost" id="clear">Limpiar registros</button>
+  </div>
+</main>
+
+<div class="float">
+  <button class="fab" id="pdf" title="Generar PDF">PDF <span class="label">diario</span></button>
 </div>
 
-<div class="container">
-    
-    <div id="paso1" class="step-content active">
-        <h3><i class="fas fa-barcode"></i> 1. Ingresar Matrícula</h3>
-        <input type="text" id="matriculaInput" placeholder="Matrícula (Escanear o Tipear)" required onkeypress="if(event.key === 'Enter') registrarMatricula()">
-        <button id="paso1-button" onclick="registrarMatricula()"><i class="fas fa-arrow-right"></i> Continuar</button>
-    </div>
-
-    <div id="paso2" class="step-content">
-        <h3><i class="fas fa-tag"></i> 2. Estado para <span id="mostrarMatricula"></span></h3>
-        
-        <div id="advertenciaDuplicado" style="display:none;">
-            <i class="fas fa-exclamation-triangle"></i> Esta matrícula ya estaba registrada como **<span id="estadoAnterior"></span>**. Al continuar, se actualizará su estado.
-        </div>
-        
-        <div id="botonesEstado">
-            <button id="btnCargada" onclick="manejarEstado('cargada')">Cargada</button>
-            <button id="btnVacia" onclick="manejarEstado('vacia')">Vacía</button>
-            <button id="btnAveriadaState" onclick="manejarEstado('averiada')">Averiada</button>
-        </div>
-
-        <div id="cargadaDetalles" style="display:none;">
-            <input type="text" id="descCargada" placeholder="Descripción de la carga (Requerido)">
-            <button id="btnGuardarCargada" onclick="guardarRegistro('cargada')" class="btn-confirm-cargada"><i class="fas fa-check-circle"></i> Registrar Carga</button>
-        </div>
-
-        <div id="averiadaDetalles" style="display:none;">
-            <input type="text" id="descAveriada" placeholder="Descripción de la avería (Requerido)">
-            <button id="btnGuardarAveriada" onclick="guardarRegistro('averiada')" class="btn-confirm-averiada"><i class="fas fa-check-circle"></i> Registrar Avería</button>
-        </div>
-
-        <button class="volver-button" onclick="mostrarPaso1(true)"><i class="fas fa-chevron-left"></i> Volver</button>
-    </div>
-    
-    <div id="reportes" class="card-section">
-        <h3><i class="fas fa-chart-bar"></i> Resumen de Flota</h3>
-        
-        <div id="contadores">
-            <div id="cardTotal" class="compact-summary card-total">
-                <div class="compact-content">
-                    <p>Total Flota</p>
-                    <h4 id="countTotal">0</h4>
-                </div>
-            </div>
-            <div id="cardCargada" class="compact-summary card-cargada">
-                <div id="fillCargada" class="summary-fill" style="height: 0%;"></div>
-                <div class="compact-content">
-                    <p>Cargadas (<span id="percentCargada" class="percent-text">0%</span>)</p>
-                    <h4 id="countCargada">0</h4>
-                </div>
-            </div>
-            <div id="cardDisponible" class="compact-summary card-disponible">
-                <div id="fillDisponible" class="summary-fill" style="height: 0%;"></div>
-                <div class="compact-content">
-                    <p>Vacías (<span id="percentDisponible" class="percent-text">0%</span>)</p>
-                    <h4 id="countDisponible">0</h4>
-                </div>
-            </div>
-            <div id="cardAveriada" class="compact-summary card-averiada">
-                <div id="fillAveriada" class="summary-fill" style="height: 0%;"></div>
-                <div class="compact-content">
-                    <p>Averiadas (<span id="percentAveriada" class="percent-text">0%</span>)</p>
-                    <h4 id="countAveriada">0</h4>
-                </div>
-            </div>
-        </div>
-        
-        <button id="btnExportar" style="background-color:#34c759; margin-top: 25px;">
-            <i class="fas fa-file-pdf"></i> Exportar a PDF (Informe Ejecutivo)
-        </button>
-        
-        <h4><i class="fas fa-history"></i> Historial Reciente</h4>
-
-        <div class="filter-buttons">
-            <button id="btnFilterAll" class="filter-active" onclick="filtrarHistorial(null)"><i class="fas fa-list"></i> Todo</button>
-            <button id="btnFilterCargada" onclick="filtrarHistorial('Cargada')"><i class="fas fa-box"></i> Cargadas</button>
-            <button id="btnFilterVacia" onclick="filtrarHistorial('Vacía')"><i class="fas fa-truck-moving"></i> Vacías</button>
-            <button id="btnFilterAveriada" onclick="filtrarHistorial('Averiada')"><i class="fas fa-wrench"></i> Averiadas</button>
-        </div>
-
-        <ul id="historialReciente" class="history-card"></ul>
-        
-        <button id="btnLimpiar" onclick="mostrarModalConfirmacionLimpiar()">
-            <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
-        </button>
-    </div>
-
-</div>
-
-<div id="confirmModal" class="modal-overlay" onclick="cerrarModal(event)">
-    <div class="modal-content">
-        <h4 id="modalTitle">Confirmación Requerida</h4>
-        <p id="modalMessage">¿Estás seguro de que deseas realizar esta acción?</p>
-        <div class="modal-buttons">
-            <button class="btn-modal-cancel" onclick="modalCallback(false)">Cancelar</button>
-            <button class="btn-modal-confirm-blue" id="modalConfirmButton" onclick="modalCallback(true)">Confirmar</button>
-        </div>
-    </div>
-</div>
-
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script>
-    let matriculaActual = "";
-    let registroDuplicado = null; 
-    let modalCallback = (result) => {}; 
-    let historialFiltro = null; 
+(function(){
+  const LS="plataformas-global";
+  const $=s=>document.querySelector(s); const $$=s=>document.querySelectorAll(s);
+  // Estado temporal
+  let mat=""; let est=null;
+  // Undo borrado
+  let lastDeleted=null;
 
-    // --- FUNCIONES DE ALMACENAMIENTO (LOCALSTORAGE) ---
-    function guardarRegistros(registros) {
-        localStorage.setItem('registrosMatriculas', JSON.stringify(registros));
+  // Haptics helper
+  const buzz = ms => { if(navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} };
+
+  // Ripple global
+  document.addEventListener("click", e=>{
+    const t=e.target.closest(".btn, .chip, .fab");
+    if(!t) return;
+    const r=document.createElement("span"); r.className="ripple";
+    const rect=t.getBoundingClientRect(); const size=Math.max(rect.width, rect.height);
+    r.style.width=r.style.height=size+'px';
+    r.style.left=(e.clientX-rect.left-size/2)+'px';
+    r.style.top=(e.clientY-rect.top-size/2)+'px';
+    t.appendChild(r); setTimeout(()=>r.remove(), 600);
+  }, {passive:true});
+
+  // Utilidades LS
+  const load = ()=>{ try{ return JSON.parse(localStorage.getItem(LS)||"[]")}catch(_){return[]} };
+  const saveAll = a => { localStorage.setItem(LS, JSON.stringify(a)); bounce(); render(); };
+
+  // Formato matrícula español básico (####-XXX o ####XXX) -> ####-XXX
+  function formatMat(v){
+    v = v.toUpperCase().replace(/[^A-Z0-9]/g,"");
+    const nums = v.replace(/[^0-9]/g,"").slice(0,4);
+    const letters = v.replace(/[^A-Z]/g,"").slice(0,3);
+    return nums + (letters ? "-" + letters : "");
+  }
+  function isValidMat(v){
+    return /^[0-9]{4}-[A-Z]{3}$/.test(v);
+  }
+
+  // Pasos
+  const setStep = n => {
+    $("#s1").style.display = n===1?"block":"none";
+    $("#s2").style.display = n===2?"block":"none";
+    $("#s3").style.display = n===3?"block":"none";
+    $("#p1").classList.toggle("on", n>=1);
+    $("#p2").classList.toggle("on", n>=2);
+    $("#p3").classList.toggle("on", n>=3);
+    $(".progress").setAttribute("aria-valuenow", String(n));
+  };
+
+  // Input matrícula con formato y validación live
+  const matInput = $("#mat");
+  matInput.addEventListener("input", ()=>{
+    const cur = matInput.selectionStart;
+    const before = matInput.value;
+    const formatted = formatMat(before);
+    matInput.value = formatted;
+    // feedback
+    matInput.classList.remove("ok","bad");
+    if(formatted.length>=6){
+      matInput.classList.add(isValidMat(formatted)?"ok":"bad");
     }
-    
-    function cargarRegistros() {
-        return JSON.parse(localStorage.getItem('registrosMatriculas') || '[]');
+  });
+
+  // Botones flujo
+  $("#go2").addEventListener("click", ()=>{
+    const v=matInput.value.trim().toUpperCase();
+    if(!isValidMat(v)){ toast("Matrícula inválida (formato ####-XXX)"); matInput.focus(); buzz(15); return; }
+    mat=v; $("#matTxt").textContent=mat; setStep(2); buzz(8);
+  });
+  $("#back1").addEventListener("click", ()=> { setStep(1); buzz(5); });
+  $("#back2").addEventListener("click", ()=> { setStep(2); buzz(5); });
+
+  // Selección de estado
+  $$(".chip").forEach(ch=>{
+    ch.addEventListener("click", ()=> choose(ch.dataset.e));
+  });
+  function choose(estado){
+    est=estado;
+    if(est==="VACÍA"){
+      const arr=load();
+      const dup=arr.some(x=>x.estado==="VACÍA" && x.matricula===mat);
+      if(dup){ toast("Ya existe una VACÍA con esa matrícula"); buzz(30); return; }
+      arr.unshift(item(mat,"VACÍA","—"));
+      saveAll(arr);
+      reset(true);
+      toast("Registrada como VACÍA");
+      buzz(10);
+      return;
     }
-    
-    function limpiarTodosLosRegistros() {
-        localStorage.removeItem('registrosMatriculas');
-        actualizarContadores();
-        actualizarHistorialReciente();
-        mostrarConfirmacion("Todos los registros eliminados.", "fas fa-trash-alt");
-    }
+    setStep(3);
+    $("#cont").focus();
+    buzz(8);
+  }
 
-    // --- GESTIÓN DE PANTALLAS (TRANSICIÓN DE DESVANECIMIENTO) ---
-    function mostrarPaso(pasoId) {
-        const currentActive = document.querySelector('.step-content.active');
-        const targetPaso = document.getElementById(pasoId);
-        
-        document.getElementById('advertenciaDuplicado').style.display = 'none';
-        
-        if (currentActive && currentActive.id === targetPaso.id) return;
+  // Registrar (CARGADA / AVERIADA requieren contenido)
+  $("#reg").addEventListener("click", ()=>{
+    const text=$("#cont").value.trim();
+    if(est!=="CARGADA" && est!=="AVERIADA"){ toast("Selecciona un estado"); buzz(20); return; }
+    if(!text){ toast("Contenido requerido para "+est); $("#cont").focus(); buzz(20); return; }
+    const arr=load();
+    arr.unshift(item(mat, est, text));
+    saveAll(arr);
+    reset(true);
+    toast("Registro guardado");
+    buzz(10);
+  });
 
-        if (currentActive) {
-            currentActive.classList.remove('active');
-            currentActive.style.opacity = 0;
-            currentActive.style.transform = 'scale(0.98)';
-            
-            setTimeout(() => { 
-                currentActive.style.display = 'none'; 
-                currentActive.style.position = 'absolute'; 
+  function item(matricula, estado, contenido){
+    return { id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+      matricula, estado, contenido, timestamp:new Date().toISOString() };
+  }
+  function reset(clear){
+    if(clear){ $("#mat").value=""; $("#cont").value=""; $("#mat").classList.remove("ok","bad"); }
+    mat=""; est=null; setStep(1); $("#mat").focus();
+  }
 
-                targetPaso.style.display = 'block';
-                targetPaso.style.position = 'relative'; 
+  // Render
+  function render(){
+    const q=$("#q").value.trim().toLowerCase();
+    const a=load();
+    const groups={
+      CARGADA:a.filter(x=>x.estado==="CARGADA"),
+      "VACÍA":a.filter(x=>x.estado==="VACÍA"),
+      AVERIADA:a.filter(x=>x.estado==="AVERIADA")
+    };
+    const fil=x=> !q || x.matricula.toLowerCase().includes(q) || x.contenido.toLowerCase().includes(q);
 
-                setTimeout(() => {
-                    targetPaso.classList.add('active');
-                    targetPaso.style.opacity = 1;
-                    targetPaso.style.transform = 'scale(1)';
-                }, 50); 
-            }, 350); 
-        } else {
-            targetPaso.style.display = 'block';
-            targetPaso.style.position = 'relative';
-            setTimeout(() => {
-                targetPaso.classList.add('active');
-                targetPaso.style.opacity = 1;
-                targetPaso.style.transform = 'scale(1)';
-            }, 50);
-        }
-    }
+    draw("#lc", groups.CARGADA.filter(fil));
+    draw("#lv", groups["VACÍA"].filter(fil));
+    draw("#la", groups.AVERIADA.filter(fil));
 
-    function mostrarPaso1(isBackward = false) {
-        mostrarPaso('paso1'); 
-        matriculaActual = "";
-        registroDuplicado = null;
-        document.getElementById('matriculaInput').value = '';
-        document.getElementById('descCargada').value = '';
-        document.getElementById('descAveriada').value = '';
-        document.getElementById('matriculaInput').focus();
-    }
-    
-    // --- LÓGICA CLAVE: REGISTRO/ESTADO Y ALERTA INTELIGENTE ---
-    
-    function registrarMatricula() {
-        matriculaActual = document.getElementById('matriculaInput').value.toUpperCase().trim();
-        if (!matriculaActual) {
-            mostrarConfirmacion("Ingrese la matrícula.", "fas fa-exclamation-triangle");
-            return;
-        }
-        
-        const registros = cargarRegistros();
-        const existente = registros.find(reg => reg.matricula === matriculaActual);
-        registroDuplicado = existente;
+    $("#stTotal .value").textContent = a.length;
+    $("#stC .value").textContent = groups.CARGADA.length;
+    $("#stV .value").textContent = groups["VACÍA"].length;
+    $("#stA .value").textContent = groups.AVERIADA.length;
+  }
+  function draw(sel, arr){
+    const box=$(sel); box.innerHTML="";
+    if(arr.length===0){ const m=document.createElement("div"); m.className="meta"; m.style.padding="10px"; m.textContent="Sin registros…"; box.appendChild(m); return; }
+    arr.sort((a,b)=>b.timestamp.localeCompare(a.timestamp));
+    arr.forEach(x=>{
+      const row=document.createElement("div"); row.className="item"; row.dataset.id=x.id;
+      const left=document.createElement("div");
+      left.innerHTML = `<div><b>${x.matricula}</b><span class="pill" data-t="${x.estado}">${x.estado}</span></div>
+                        <div class="meta">${x.contenido} • ${new Date(x.timestamp).toLocaleString()}</div>`;
+      const right=document.createElement("div");
+      const del=document.createElement("button"); del.className="btn ghost"; del.textContent="Eliminar"; del.setAttribute("aria-label", "Eliminar registro");
+      del.addEventListener("click", ()=> deleteItem(x.id));
+      right.appendChild(del);
+      row.appendChild(left); row.appendChild(right);
 
-        // ** LÓGICA DE INTELIGENCIA: ALERTA PROACTIVA DE AVERÍA **
-        if (existente && existente.estado === 'Averiada') {
-            abrirModal(
-                '¡Alerta de Avería!',
-                `<i class="fas fa-exclamation-triangle" style="color:var(--ios-red); margin-right:5px;"></i> La matrícula <strong>${matriculaActual}</strong> estaba registrada como **AVERIADA**. ¿Confirma que ha sido reparada y está lista para ser asignada a Carga o Vacía?`,
-                'Confirmar Reparación',
-                'btn-modal-confirm-blue',
-                () => {
-                    // Si confirma la reparación, procedemos a Paso 2 normalmente
-                    procederAPaso2();
-                }
-            );
-        } else {
-            // Si no hay avería previa o es un registro nuevo, procedemos directamente
-            procederAPaso2();
-        }
-    }
-
-    function procederAPaso2() {
-        mostrarPaso('paso2'); 
-        document.getElementById('mostrarMatricula').textContent = matriculaActual;
-        document.getElementById('cargadaDetalles').style.display = 'none';
-        document.getElementById('averiadaDetalles').style.display = 'none';
-        
-        // Resetear botones
-        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('btn-state-active'));
-
-        if (registroDuplicado) {
-            const advertenciaDiv = document.getElementById('advertenciaDuplicado');
-            document.getElementById('estadoAnterior').textContent = registroDuplicado.estado;
-            advertenciaDiv.style.display = 'block';
-            
-            // Pre-seleccionar el estado anterior para la UX
-            const btnId = registroDuplicado.estado === 'Cargada' ? 'btnCargada' : 
-                          registroDuplicado.estado === 'Vacía' ? 'btnVacia' : 
-                          registroDuplicado.estado === 'Averiada' ? 'btnAveriadaState' : null;
-            
-            if (btnId) manejarEstado(btnId.replace('btn', '').toLowerCase().replace('state', ''), true); // 'true' para forzar la selección sin guardar
-            
-        } else {
-            document.getElementById('advertenciaDuplicado').style.display = 'none';
-        }
-    }
-
-
-    function manejarEstado(estado, isAutoSelect = false) {
-        document.getElementById('cargadaDetalles').style.display = 'none';
-        document.getElementById('averiadaDetalles').style.display = 'none';
-
-        // Activar el botón visualmente
-        document.querySelectorAll('#botonesEstado button').forEach(btn => btn.classList.remove('btn-state-active'));
-        let activeBtnId = '';
-        
-        if (estado === 'cargada') {
-            document.getElementById('cargadaDetalles').style.display = 'block';
-            document.getElementById('descCargada').focus();
-            document.getElementById('descCargada').value = (registroDuplicado && registroDuplicado.estado === 'Cargada') ? registroDuplicado.descripcion : '';
-            activeBtnId = 'btnCargada';
-        } else if (estado === 'averiada') {
-            document.getElementById('averiadaDetalles').style.display = 'block';
-            document.getElementById('descAveriada').focus();
-            document.getElementById('descAveriada').value = (registroDuplicado && registroDuplicado.estado === 'Averiada') ? registroDuplicado.descripcion : '';
-            activeBtnId = 'btnAveriadaState';
-        } else if (estado === 'vacia') { 
-            activeBtnId = 'btnVacia';
-            if (!isAutoSelect) {
-                // Si no es una autoselección (es decir, el usuario hizo click), guardamos directamente Vacía.
-                guardarRegistro('vacia'); // Llamada sin descripción para que se guarde como ''
-            }
-        }
-        
-        if (activeBtnId) {
-            document.getElementById(activeBtnId).classList.add('btn-state-active');
-        }
-    }
-    
-    function microInteraccionBoton(buttonElement, estado) {
-        const originalText = buttonElement.innerHTML;
-        buttonElement.disabled = true; 
-        
-        let confirmText = '';
-        let confirmClass = '';
-        
-        if (estado === 'Cargada') {
-            confirmText = '<i class="fas fa-check"></i> ¡Guardado!';
-            confirmClass = 'btn-confirm-cargada';
-        } else if (estado === 'Vacía') {
-            confirmText = '<i class="fas fa-check"></i> ¡Guardado!';
-            confirmClass = 'btn-confirm-vacia';
-        } else if (estado === 'Averiada') {
-            confirmText = '<i class="fas fa-times-circle"></i> ¡Guardado!';
-            confirmClass = 'btn-confirm-averiada';
-        }
-
-        // Aplicar feedback
-        buttonElement.innerHTML = confirmText;
-        buttonElement.classList.add(confirmClass);
-        
-
-        setTimeout(() => {
-            // Restaurar estado
-            buttonElement.innerHTML = originalText;
-            buttonElement.classList.remove(confirmClass);
-            buttonElement.disabled = false; 
-            
-            mostrarConfirmacion(`¡${matriculaActual} registrado!`);
-            mostrarPaso1(true); 
-        }, 800); 
-    }
-
-
-    function guardarRegistro(estado, descripcionManual = '') {
-        let descripcion = descripcionManual;
-        let btnElement = null;
-        let estadoDisplay = '';
-
-        if (estado === 'cargada') {
-            descripcion = document.getElementById('descCargada').value;
-            btnElement = document.getElementById('btnGuardarCargada');
-            estadoDisplay = 'Cargada'; 
-        } else if (estado === 'averiada') {
-            descripcion = document.getElementById('descAveriada').value;
-            btnElement = document.getElementById('btnGuardarAveriada');
-            estadoDisplay = 'Averiada'; 
-        } else if (estado === 'vacia') {
-             // CAMBIO: La descripción para 'Vacía' es un string vacío para que la columna de la tabla quede vacía en el PDF
-             descripcion = ''; 
-             btnElement = document.getElementById('btnVacia');
-             estadoDisplay = 'Vacía'; 
-        }
-
-        if ((estadoDisplay === 'Cargada' || estadoDisplay === 'Averiada') && !descripcion.trim()) {
-            mostrarConfirmacion(`Necesita una descripción para ${estadoDisplay}.`, "fas fa-exclamation-triangle");
-            return;
-        }
-
-        const nuevoRegistro = {
-            matricula: matriculaActual,
-            estado: estadoDisplay,
-            // Aseguramos que la descripción sea string vacío si no hay nada (Vacía)
-            descripcion: descripcion.trim() || '', 
-            timestamp: new Date().getTime() 
-        };
-
-        let registros = cargarRegistros();
-        const index = registros.findIndex(reg => reg.matricula === matriculaActual);
-
-        if (index !== -1) {
-            registros[index] = nuevoRegistro; // Reemplazar registro existente
-        } else {
-            registros.push(nuevoRegistro); // Añadir nuevo registro
-        }
-
-        guardarRegistros(registros);
-        actualizarContadores();
-        actualizarHistorialReciente();
-
-        if (btnElement) {
-            // Animación y transición visual
-            microInteraccionBoton(btnElement, estadoDisplay);
-        } else if (estado === 'vacia') {
-             // Ya que el botón Vacia no tiene un botón de 'Guardar' aparte
-             microInteraccionBoton(document.getElementById('btnVacia'), estadoDisplay);
-        }
-    }
-
-    // --- MANEJO DE LA INTERFAZ DE USUARIO (Contadores e Historial) ---
-    function actualizarContadores() {
-        const registros = cargarRegistros();
-        let counts = { Cargada: 0, Vacía: 0, Averiada: 0, Total: registros.length };
-
-        registros.forEach(reg => {
-            if (reg.estado === 'Cargada') counts.Cargada++;
-            else if (reg.estado === 'Vacía') counts.Vacía++; 
-            else if (reg.estado === 'Averiada') counts.Averiada++;
-        });
-        
-        counts.Disponible = counts.Vacía; 
-
-        const totalFlota = counts.Total;
-        
-        document.getElementById('countTotal').textContent = counts.Total;
-        document.getElementById('countCargada').textContent = counts.Cargada;
-        document.getElementById('countDisponible').textContent = counts.Vacía; 
-        document.getElementById('countAveriada').textContent = counts.Averiada;
-
-        const updateCompactCard = (state, count) => {
-            const percentValue = totalFlota > 0 ? Math.round((count / totalFlota) * 100) : 0;
-            const percentText = `${percentValue}%`;
-            
-            const percentElement = document.getElementById(`percent${state}`);
-            if(percentElement) percentElement.textContent = percentText;
-            
-            // Altura del relleno de fondo
-            const fillElement = document.getElementById(`fill${state}`);
-            if(fillElement) fillElement.style.height = percentText;
-        };
-        
-        updateCompactCard('Cargada', counts.Cargada);
-        updateCompactCard('Disponible', counts.Vacía); 
-        updateCompactCard('Averiada', counts.Averiada);
-        
-        // Animación de aparición de tarjetas
-        const cardIds = ['cardTotal', 'cardCargada', 'cardDisponible', 'cardAveriada'];
-        cardIds.forEach((id, index) => {
-            const item = document.getElementById(id);
-            if (!item.classList.contains('visible')) {
-                setTimeout(() => {
-                    item.classList.add('visible');
-                }, 50 + index * 50); 
-            }
-        });
-    }
-
-    function filtrarHistorial(estado) {
-        historialFiltro = estado;
-        
-        // Activar el botón de filtro correcto
-        document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('filter-active'));
-        if (estado === 'Cargada') {
-            document.getElementById('btnFilterCargada').classList.add('filter-active');
-        } else if (estado === 'Vacía') {
-            document.getElementById('btnFilterVacia').classList.add('filter-active');
-        } else if (estado === 'Averiada') {
-            document.getElementById('btnFilterAveriada').classList.add('filter-active');
-        } else {
-            document.getElementById('btnFilterAll').classList.add('filter-active');
-        }
-        
-        actualizarHistorialReciente();
-    }
-
-    function actualizarHistorialReciente() {
-        let registros = cargarRegistros();
-        const ul = document.getElementById('historialReciente');
-        ul.innerHTML = ''; 
-
-        // 1. Filtrar si es necesario
-        if (historialFiltro) {
-            registros = registros.filter(reg => reg.estado === historialFiltro);
-        }
-        
-        if (registros.length === 0) {
-            let message = 'Aún no hay movimientos registrados.';
-            if (historialFiltro) {
-                message = `No hay matrículas registradas como "${historialFiltro}".`;
-            }
-            ul.innerHTML = `<li style="justify-content:center; color: var(--text-light-gray); border-bottom: none;">${message}</li>`;
-            return;
-        }
-
-        // 2. Ordenar por timestamp (más reciente primero)
-        registros.sort((a, b) => b.timestamp - a.timestamp);
-        
-        // Mostrar solo los 5 más recientes del conjunto filtrado
-        const ultimosRegistros = historialFiltro ? registros : registros.slice(0, 5);
-        
-        ultimosRegistros.forEach(reg => {
-            const dateObj = new Date(reg.timestamp);
-            const hora = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-
-            const estadoDisplay = reg.estado;
-            const estadoClass = `estado-${estadoDisplay}`;
-            
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="status-indicator ${estadoDisplay}"></span>
-                <span class="historial-matricula">${reg.matricula}</span>
-                <span class="historial-estado ${estadoClass}">${estadoDisplay}</span>
-                <span class="historial-time">${hora}</span>
-            `;
-            ul.appendChild(li);
-        });
-    }
-    
-    // --- MODAL CENTRALIZADO ---
-    
-    function abrirModal(title, message, confirmText, confirmClass, callback) {
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('modalMessage').innerHTML = message;
-        document.getElementById('modalConfirmButton').textContent = confirmText;
-        document.getElementById('modalConfirmButton').className = `btn-modal-confirm ${confirmClass}`;
-        modalCallback = (result) => {
-            cerrarModal();
-            if (result) callback();
-        };
-        document.getElementById('confirmModal').classList.add('open');
-    }
-    
-    function cerrarModal(event) {
-        const modal = document.getElementById('confirmModal');
-        // Asegurarse de que solo se cierra al tocar el overlay directamente, no el contenido.
-        if (!event || event.target === modal) {
-            modal.classList.remove('open');
-        }
-    }
-
-    function mostrarModalConfirmacionLimpiar() {
-        abrirModal(
-            '¡Eliminar Todos!',
-            'Esta acción **eliminará permanentemente** todos los registros guardados en tu dispositivo. ¿Estás seguro de continuar?',
-            'Sí, Eliminar Todo',
-            'btn-modal-confirm-red',
-            limpiarTodosLosRegistros 
-        );
-    }
-
-    function mostrarConfirmacion(mensaje, icono = "fas fa-check-circle") {
-        console.log(`[Notificación] ${mensaje}`);
-        // Aquí podríamos disparar un toast o un modal de notificación si fuera una app completa.
-    }
-    
-    // --- EXPORTACIÓN PDF (Estilo Apple Pages/Alternando Columnas COMPACTO) ---
-    
-    /**
-     * Función auxiliar para convertir colores HEX a RGB para jsPDF.
-     */
-    function hexToRgb(hex) {
-        let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-        hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-            return r + r + g + g + b + b;
-        });
-        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? [
-            parseInt(result[1], 16),
-            parseInt(result[2], 16),
-            parseInt(result[3], 16)
-        ] : [0, 0, 0];
-    }
-    
-    /**
-     * Genera y descarga un archivo PDF con el historial de la flota aplicando un diseño
-     * ultra-minimalista estilo Apple Pages, eliminando elementos decorativos.
-     */
-    function exportarPDF() {
-        const registros = cargarRegistros();
-
-        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined' || !window.jspdf.jsPDF.API.autoTable) {
-            mostrarConfirmacion("Error: El generador de PDF (jsPDF) no se ha cargado completamente. Inténtalo de nuevo.", "fas fa-exclamation-triangle");
-            return;
-        }
-
-        if (registros.length === 0) {
-            mostrarConfirmacion("No hay registros para exportar.", "fas fa-info-circle");
-            return;
-        }
-
-        try {
-           const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4'); 
-            const margin = 15; // Margen ligeramente aumentado para aire visual
-            let yPos = margin;
-            const pageWidth = doc.internal.pageSize.width;
-            
-            // --- 1. CONFIGURACIÓN DE COLORES MINIMALISTAS ---
-            const APPLE_COLORS = {
-                // Colores Corporativos sutiles
-                RED_XPO: hexToRgb('#FF3B30'),
-                DARK_TEXT: hexToRgb('#1C1C1E'),
-                MEDIUM_GRAY: hexToRgb('#D1D1D6'), // Líneas divisorias
-                SOFT_GRAY_TEXT: hexToRgb('#8E8E93'), // Texto secundario
-                // Colores de estado
-                GREEN_CARGADA: hexToRgb('#34C759'),
-                YELLOW_VACIA: hexToRgb('#FFCC00'),
-                // Fondo de la tarjeta Matrícula
-                LIGHT_GRAY_BG: hexToRgb('#F7F7FA') 
-            };
-            
-            // --- 2. PREPARACIÓN DE DATOS ---
-            const registrosCargadas = registros
-                .filter(reg => reg.estado === 'Cargada')
-                .map(reg => [reg.matricula, reg.descripcion]); 
-            
-            const registrosVacías = registros
-                .filter(reg => reg.estado === 'Vacía')
-                .map(reg => [reg.matricula, 'Disponible (Sin Carga)']); // Descripción estática para Vacía
-            
-            const registrosAveriadas = registros
-                .filter(reg => reg.estado === 'Averiada')
-                .map(reg => [reg.matricula, reg.descripcion]);
-                
-            const counts = {
-                    Cargada: registrosCargadas.length,
-                    Vacía: registrosVacías.length,
-                    Averiada: registrosAveriadas.length,
-                    Total: registros.length
-                };
-            
-            // --- 3. ENCABEZADO TIPO DOCUMENTO (Pages/Notes) ---
-            
-            // Título Principal
-            doc.setFontSize(24);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-            doc.text("Reporte Ejecutivo de Flota", margin, yPos);
-            
-            yPos += 8;
-            
-            // Subtítulo/Fecha
-            const currentDay = new Date().toLocaleDateString('es-ES', { weekday: 'long' });
-            const currentDate = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-            
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(APPLE_COLORS.SOFT_GRAY_TEXT[0], APPLE_COLORS.SOFT_GRAY_TEXT[1], APPLE_COLORS.SOFT_GRAY_TEXT[2]);
-            doc.text(`${currentDay}, ${currentDate} | Total: ${counts.Total} registros`, margin, yPos);
-            
-            yPos += 15; // Espacio después del encabezado
-            
-            // --- 4. BADGES TIPO TARJETA MINIMALISTA (Focus en el Conteo) ---
-            
-            const badgeHeight = 12; // Un poco más alto para mejor lectura
-            const badgeMargin = 5; 
-            const badgeWidth = (pageWidth - 2 * margin - 2 * badgeMargin) / 3;
-            const badgeY = yPos;
-            
-            const badges = [
-                { label: 'CARGADAS', count: counts.Cargada, color: APPLE_COLORS.GREEN_CARGADA, x: margin },
-                { label: 'VACÍAS', count: counts.Vacía, color: APPLE_COLORS.YELLOW_VACIA, x: margin + badgeWidth + badgeMargin },
-                { label: 'AVERIADAS', count: counts.Averiada, color: APPLE_COLORS.RED_XPO, x: margin + 2 * (badgeWidth + badgeMargin) }
-            ];
-
-            badges.forEach(badge => {
-                const percentage = counts.Total > 0 ? (badge.count / counts.Total) : 0;
-                
-                // Dibujar tarjeta (Fondo blanco, sin borde)
-                doc.setFillColor(255, 255, 255);
-                doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
-                doc.roundedRect(badge.x, badgeY, badgeWidth, badgeHeight, 3, 3, 'F'); 
-                
-                // Texto: Label (muy pequeño y gris suave)
-                doc.setFontSize(7); 
-                doc.setFont("helvetica", "normal");
-                doc.setTextColor(APPLE_COLORS.SOFT_GRAY_TEXT[0], APPLE_COLORS.SOFT_GRAY_TEXT[1], APPLE_COLORS.SOFT_GRAY_TEXT[2]);
-                doc.text(badge.label, badge.x + 2, badgeY + 4); 
-
-                // Texto: Conteo (grande, audaz y coloreado)
-                doc.setFontSize(14); // Más grande para el número
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(badge.color[0], badge.color[1], badge.color[2]);
-                doc.text(`${badge.count}`, badge.x + 2, badgeY + badgeHeight - 2); 
-                
-                // Texto: Porcentaje (pequeño y audaz)
-                doc.setFontSize(7); 
-                doc.setFont("helvetica", "normal");
-                doc.setTextColor(APPLE_COLORS.SOFT_GRAY_TEXT[0], APPLE_COLORS.SOFT_GRAY_TEXT[1], APPLE_COLORS.SOFT_GRAY_TEXT[2]);
-                doc.text(`${(percentage * 100).toFixed(0)}%`, badge.x + badgeWidth - 2, badgeY + badgeHeight - 2, { align: 'right' });
-            });
-            
-            yPos = badgeY + badgeHeight + 12; 
-            
-            // --- 5. APLICAR DISEÑO DE TABLAS (Estilo Apple Notes/Ultra-Compacto) ---
-            
-            const tableMarginX = 5; 
-            const halfWidth = (pageWidth - 2 * margin - tableMarginX) / 2;
-            let startYDoubleColumn = yPos;
-            
-            // Estilos de la Tabla (Minimalista y Compacto)
-            const styles = { 
-                fontSize: 7, 
-                cellPadding: 1.5, // Padding ligeramente mejorado
-                valign: 'middle', 
-                font: "helvetica", 
-                textColor: APPLE_COLORS.DARK_TEXT, 
-                // Eliminar bordes de la tabla
-                lineColor: APPLE_COLORS.MEDIUM_GRAY, 
-                lineWidth: 0, 
-                fontStyle: 'normal' 
-            };
-            
-            const headStyles = { 
-                fillColor: [255, 255, 255], // Fondo blanco
-                textColor: APPLE_COLORS.SOFT_GRAY_TEXT, 
-                fontStyle: 'normal', 
-                fontSize: 8,
-                // Solo línea divisoria en el fondo (como Notes)
-                lineWidth: { top: 0, right: 0, bottom: 0.15, left: 0 }, 
-                cellPadding: 2 
-            };
-            
-            const alternateRowStyles = { 
-                fillColor: [255, 255, 255] 
-            };
-            
-            // Opciones base para todas las tablas
-            const tableOptions = {
-                startY: startYDoubleColumn,
-                styles: styles,
-                headStyles: headStyles,
-                alternateRowStyles: alternateRowStyles, 
-                margin: { top: 0, bottom: 0, left: margin, right: margin },
-                // *** IMPLEMENTACIÓN CLAVE: Envolver texto en la segunda columna ***
-                columnStyles: {
-                    1: { cellWidth: 70, overflow: 'linebreak' } // Columna 1 (Contenido/Avería) ancho fijo y forzar salto de línea
-                },
-                didParseCell: (data) => {
-                    if (data.row.section === 'body') {
-                        data.cell.styles.minCellHeight = 5; // Altura mínima de celda compacta
-
-                        // Estilo Apple: Columna de clave (Matrícula) ligeramente resaltada
-                        if (data.column.index === 0) {
-                            data.cell.styles.fillColor = APPLE_COLORS.LIGHT_GRAY_BG;
-                            data.cell.styles.fontStyle = 'bold'; // Matrícula destacada (SF Pro Semibold)
-                            data.cell.styles.textColor = APPLE_COLORS.DARK_TEXT;
-                        } else {
-                            data.cell.styles.fillColor = [255, 255, 255]; 
-                            data.cell.styles.fontStyle = 'normal'; 
-                        }
-                        
-                        // Línea divisoria SOLO debajo de las filas
-                        data.cell.styles.lineWidth = { top: 0, right: 0, bottom: 0.05, left: 0 }; 
-                    }
-                    if (data.row.index === data.table.body.length - 1) {
-                         // Eliminar la línea divisoria de la última fila
-                         data.cell.styles.lineWidth = { top: 0, right: 0, bottom: 0, left: 0 }; 
-                    }
-                }
-            };
-            
-            // Función para dibujar el título de sección con espacio
-            const drawSectionTitle = (title, currentY) => {
-                doc.setFontSize(14); 
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(APPLE_COLORS.DARK_TEXT[0], APPLE_COLORS.DARK_TEXT[1], APPLE_COLORS.DARK_TEXT[2]);
-                doc.text(title, margin, currentY + 6);
-                return currentY + 10;
-            };
-
-            // --- TABLAS DE CONTENIDO (una columna completa) ---
-            
-            // Cargadas
-            startYDoubleColumn = drawSectionTitle(`Plataformas Cargadas (${counts.Cargada})`, startYDoubleColumn);
-            if (counts.Cargada > 0) {
-                doc.autoTable({
-                    head: [['MATRÍCULA', 'CONTENIDO']],
-                    body: registrosCargadas,
-                    ...tableOptions,
-                    startY: startYDoubleColumn
-                });
-                startYDoubleColumn = doc.autoTable.previous.finalY;
-            } else { startYDoubleColumn += 10; }
-
-
-            // Vacías / Disponibles
-            // Manejo de página si no cabe
-            if (startYDoubleColumn + 20 > doc.internal.pageSize.height - margin) { 
-                doc.addPage();
-                startYDoubleColumn = margin;
-            } else {
-                 startYDoubleColumn += 10; // Espacio entre secciones
-            }
-
-            startYDoubleColumn = drawSectionTitle(`Plataformas Vacías / Disponibles (${counts.Vacía})`, startYDoubleColumn);
-            if (counts.Vacía > 0) {
-                doc.autoTable({
-                    head: [['MATRÍCULA', 'ESTADO']], 
-                    body: registrosVacías,
-                    ...tableOptions,
-                    startY: startYDoubleColumn
-                });
-                startYDoubleColumn = doc.autoTable.previous.finalY;
-            } else { startYDoubleColumn += 10; }
-
-
-            // Averíadas
-            if (counts.Averiada > 0) {
-                // Manejo de página si no cabe
-                if (startYDoubleColumn + 20 > doc.internal.pageSize.height - margin) { 
-                    doc.addPage();
-                    startYDoubleColumn = margin;
-                } else {
-                     startYDoubleColumn += 10;
-                }
-
-                startYDoubleColumn = drawSectionTitle(`Plataformas Averíadas (${counts.Averiada})`, startYDoubleColumn);
-                doc.autoTable({
-                    head: [['MATRÍCULA', 'DESCRIPCIÓN DE AVERÍA']],
-                    body: registrosAveriadas,
-                    ...tableOptions,
-                    startY: startYDoubleColumn
-                });
-                startYDoubleColumn = doc.autoTable.previous.finalY;
-            }
-
-            // --- Pie de Página (Footer Sutil) ---
-            const footerY = doc.internal.pageSize.height - 8;
-            
-            const pageCount = doc.internal.getNumberOfPages();
-            for(let i = 1; i <= pageCount; i++) {
-                doc.setPage(i); 
-
-                doc.setFontSize(8); 
-                doc.setTextColor(APPLE_COLORS.SOFT_GRAY_TEXT[0], APPLE_COLORS.SOFT_GRAY_TEXT[1], APPLE_COLORS.SOFT_GRAY_TEXT[2]);
-                doc.setFont("helvetica", "normal");
-                
-                // Línea divisoria sutil
-                doc.setDrawColor(APPLE_COLORS.MEDIUM_GRAY[0], APPLE_COLORS.MEDIUM_GRAY[1], APPLE_COLORS.MEDIUM_GRAY[2]);
-                doc.setLineWidth(0.1);
-                doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5); 
-                
-                // Texto de derechos de autor y Página
-                doc.text(`© ${new Date().getFullYear()} XPO LOGISTICS - Reporte interno`, margin, footerY);
-                doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
-            }
-            
-            doc.save('Reporte_Pages_XPO.pdf'); 
-            
-            mostrarConfirmacion("PDF generado con estilo Apple Pages Minimalista. La descarga ha comenzado.", "fas fa-file-pdf");
-
-        } catch (e) {
-            console.error("Error al generar PDF:", e);
-            mostrarConfirmacion("Error al generar el PDF. Revisa la consola para más detalles.", "fas fa-exclamation-triangle");
-        }
-    }
-
-
-    // --- LÓGICA DE ANIMACIÓN Y SCROLL ---
-    function handleScroll() {
-        const header = document.getElementById('fixedHeader');
-        const scrollPosition = window.scrollY;
-        
-        if (scrollPosition > 10) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-    }
-    
-    // La animación compleja del logo ha sido reemplazada por una presentación inmediata corporativa.
-    function setupLogo() {
-        // No hay animación compleja, el logo se muestra inmediatamente con el estilo corporativo
-    }
-
-    // --- INICIALIZACIÓN GLOBAL ---
-    document.addEventListener('DOMContentLoaded', () => {
-        setupLogo();
-        actualizarContadores();
-        actualizarHistorialReciente(); 
-        
-        document.getElementById('btnExportar').addEventListener('click', exportarPDF);
-        
-        document.getElementById('paso1').style.display = 'block';
-        document.getElementById('paso1').style.position = 'relative'; 
-        document.getElementById('paso1').classList.add('active');
-        document.getElementById('matriculaInput').focus();
-        
-        // --- ACTIVAR EL MANEJO DE SCROLL PARA EL EFECTO DINÁMICO ---
-        window.addEventListener('scroll', handleScroll);
-        handleScroll();
-
-        // Asegurar que el filtro inicial sea 'Todo'
-        document.getElementById('btnFilterAll').classList.add('filter-active');
+      // Gestos swipe (solo móvil táctil)
+      let startX=0, trans=0, swiping=false;
+      row.addEventListener("touchstart", e=>{ startX=e.touches[0].clientX; row.classList.add("swiping"); }, {passive:true});
+      row.addEventListener("touchmove", e=>{
+        if(!startX) return;
+        const dx=e.touches[0].clientX-startX;
+        if(Math.abs(dx)>6){ swiping=true; trans=Math.min(Math.max(dx,-120),120); row.style.transform=`translateX(${trans}px)`; }
+      }, {passive:true});
+      row.addEventListener("touchend", ()=>{
+        row.classList.remove("swiping");
+        if(swiping && Math.abs(trans)>80){ deleteItem(x.id); }
+        row.style.transform=""; startX=0; trans=0; swiping=false;
+      });
+      box.appendChild(row);
     });
+  }
+
+  function deleteItem(id){
+    const arr=load();
+    const idx=arr.findIndex(x=>x.id===id);
+    if(idx<0) return;
+    lastDeleted=arr[idx];
+    arr.splice(idx,1);
+    saveAll(arr);
+    toast(`Registro eliminado • <a href="#" id="undo">Deshacer</a>`, 3500, true);
+    buzz(15);
+    setTimeout(()=>{
+      const u=$("#undo"); if(u){ u.onclick=(e)=>{ e.preventDefault(); undoDelete(); }; }
+    },0);
+  }
+  function undoDelete(){
+    if(!lastDeleted) return;
+    const arr=load();
+    arr.unshift(lastDeleted);
+    saveAll(arr);
+    lastDeleted=null;
+    toast("Restaurado");
+  }
+
+  function bounce(){
+    ["#stTotal","#stC","#stV","#stA"].forEach(sel=>{
+      const el=$(sel);
+      el.classList.remove("bounce"); void el.offsetWidth; el.classList.add("bounce");
+    });
+    buzz(8);
+  }
+
+  // Buscador
+  $("#q").addEventListener("input", render);
+
+  // Limpiar
+  $("#clear").addEventListener("click", ()=>{
+    if(confirm("¿Seguro que quieres borrar todos los registros?")){
+      localStorage.removeItem(LS); render(); toast("Registros eliminados"); buzz(20);
+    }
+  });
+
+  // Exportar / Importar (Backup/Restore)
+  $("#btnExport").addEventListener("click", ()=>{
+    const blob = new Blob([localStorage.getItem(LS)||"[]"], {type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="plataformas-backup-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    toast("Backup exportado");
+  });
+  $("#fileImport").addEventListener("change", async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const text = await file.text();
+    try{
+      const arr=JSON.parse(text);
+      if(!Array.isArray(arr)) throw new Error("Formato no válido");
+      localStorage.setItem(LS, JSON.stringify(arr));
+      render(); toast("Backup importado");
+    }catch(_){ toast("Archivo inválido"); }
+    e.target.value="";
+  });
+
+  // PDF (con opción de compartir si el navegador lo permite)
+  $("#pdf").addEventListener("click", async ()=>{
+    const data=load();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:"pt", format:"a4" });
+
+    doc.setFont("helvetica","bold"); doc.setFontSize(18);
+    doc.text("CODE", 40, 40); doc.setFontSize(14); doc.text("+ XPO Logistics", 100, 40);
+    doc.setFontSize(10); doc.setTextColor(120); doc.text(new Date().toLocaleString(), 40, 58); doc.setTextColor(0);
+
+    // Badges estadísticas
+    const s=[
+      ["Total", String(data.length)],
+      ["Cargadas", String(data.filter(x=>x.estado==='CARGADA').length)],
+      ["Vacías", String(data.filter(x=>x.estado==='VACÍA').length)],
+      ["Averiadas", String(data.filter(x=>x.estado==='AVERIADA').length)],
+    ];
+    let x=40,y=80;
+    s.forEach(([k,v])=>{ doc.setDrawColor(230); doc.roundedRect(x,y-14,120,22,6,6); doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.text(`${k}: ${v}`, x+10, y); x+=130; });
+
+    const sections=[
+      { t:"CARGADAS", color:[34,197,94], rows:data.filter(x=>x.estado==="CARGADA") },
+      { t:"VACÍAS", color:[59,130,246], rows:data.filter(x=>x.estado==="VACÍA") },
+      { t:"AVERIADAS", color:[239,68,68], rows:data.filter(x=>x.estado==="AVERIADA") },
+    ];
+    let startY=130;
+    sections.forEach(sec=>{
+      doc.setTextColor(...sec.color); doc.setFontSize(13); doc.setFont("helvetica","bold"); doc.text(sec.t, 40, startY); doc.setTextColor(0);
+      const body = sec.rows.map(r=>[r.matricula, r.contenido, new Date(r.timestamp).toLocaleString()]);
+      doc.autoTable({ head:[["Matrícula","Contenido","Fecha/Hora"]], body, startY:startY+10, margin:{left:40, right:40}, styles:{font:"helvetica", fontSize:10}, headStyles:{ fillColor:sec.color }, theme:"striped" });
+      startY = doc.lastAutoTable.finalY + 24;
+      if(startY > 720){ doc.addPage(); startY = 60; }
+    });
+    const pages=doc.internal.getNumberOfPages();
+    for(let i=1;i<=pages;i++){ doc.setPage(i); doc.setFontSize(9); doc.setTextColor(120);
+      doc.text("Generado desde el registro local", 40, doc.internal.pageSize.getHeight()-30);
+      doc.text(String(i)+" / "+String(pages), doc.internal.pageSize.getWidth()-60, doc.internal.pageSize.getHeight()-30);
+    }
+
+    const blob = doc.output("blob");
+    const file = new File([blob], "registro-plataformas.pdf", {type:"application/pdf"});
+    // Intentar compartir
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      try{ await navigator.share({ files:[file], title:"Registro plataformas", text:"PDF generado" }); }
+      catch(_){ /* usuario canceló */ }
+    }else{
+      // Fallback: descarga
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a"); a.href=url; a.download=file.name; a.click(); URL.revokeObjectURL(url);
+      toast("PDF descargado");
+    }
+  });
+
+  // Toasts
+  function toast(msg, t=1800, html=false){
+    const box=$("#toasts");
+    const el=document.createElement("div"); el.className="toast";
+    if(html){ el.innerHTML=msg; } else { el.textContent=msg; }
+    box.appendChild(el);
+    setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; setTimeout(()=> el.remove(), 280); }, t);
+  }
+
+  // PWA básico (manifest + service worker en runtime)
+  try{
+    const manifest = {
+      name: "Registro XPO (local)",
+      short_name: "Registro XPO",
+      start_url: ".",
+      display: "standalone",
+      background_color: "#ffffff",
+      theme_color: "#ffffff",
+      icons: []
+    };
+    const link=document.createElement("link");
+    link.rel="manifest";
+    const blob=new Blob([JSON.stringify(manifest)], {type:"application/json"});
+    link.href=URL.createObjectURL(blob);
+    document.head.appendChild(link);
+
+    if("serviceWorker" in navigator){
+      const swCode = `
+        const CACHE='xpo-cache-v1';
+        const ASSETS = ['.'];
+        self.addEventListener('install', e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))); self.skipWaiting(); });
+        self.addEventListener('activate', e=>{ e.waitUntil(self.clients.claim()); });
+        self.addEventListener('fetch', e=>{
+          e.respondWith(caches.match(e.request).then(r=> r || fetch(e.request).then(res=>{
+            const copy=res.clone(); caches.open(CACHE).then(c=> c.put(e.request, copy)).catch(()=>{});
+            return res;
+          }).catch(()=> r )));
+        });
+      `;
+      const swBlob = new Blob([swCode], {type:"text/javascript"});
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(()=>{});
+    }
+  }catch(_){}
+
+  // Init
+  render();
+  $("#mat").focus({preventScroll:true});
+})();
 </script>
 
 </body>
