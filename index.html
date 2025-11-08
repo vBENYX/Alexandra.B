@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>XPO Logistics — Registro Móvil • Efectos</title>
+<title>XPO Logistics — Registro de Plataformas</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,15 +11,15 @@
 
 <style>
   :root{
-    --bg:#f5f6f7;
+    --bg:#f6f7f9;
     --card:#ffffff;
     --ink:#0f0f10;
     --muted:#6b7280;
     --line:#e5e7eb;
-    --shadow:0 10px 28px rgba(0,0,0,.08);
+    --shadow:0 12px 30px rgba(0,0,0,.08);
     --radius:18px;
-    --bezier:cubic-bezier(.24,.8,.25,1);
-    /* Colores funcionales (INMUTABLES) */
+    --bezier:cubic-bezier(.25,.8,.25,1);
+    /* Colores funcionales (no cambiar) */
     --cargada:#22c55e;
     --vacia:#3b82f6;
     --averiada:#ef4444;
@@ -27,78 +27,68 @@
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background:var(--bg); color:var(--ink); -webkit-tap-highlight-color: transparent;
+    margin:0;
+    font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:var(--ink); background:var(--bg);
+    -webkit-tap-highlight-color: transparent;
+    overflow-x:hidden;
   }
 
-  /* Barra de progreso de scroll */
-  .scrollbar{
-    position:fixed; top:0; left:0; height:3px; width:100%; background:transparent; z-index:50;
-  }
-  .scrollbar .bar{
-    height:100%; width:0%;
-    background:linear-gradient(90deg, #111, #6b7280);
-    transition:width .15s linear;
-  }
-
-  /* Header con parallax + modo compacto */
-  header{ position:sticky; top:0; z-index:40; background:linear-gradient(180deg,#fff, #f7f8fa);
-    border-bottom:1px solid #ececec; padding:16px 0; backdrop-filter:blur(14px) saturate(140%);
+  /* Header con parallax suave */
+  header{
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(180deg,#fff, #f7f8fb);
+    border-bottom:1px solid #ececec; padding:14px 0;
+    backdrop-filter:blur(16px) saturate(140%);
     transition: padding .25s var(--bezier), box-shadow .25s var(--bezier);
   }
   header.compact{ padding:10px 0; box-shadow:0 10px 24px rgba(0,0,0,.06) }
   .header-inner{ width:min(1100px,94%); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px }
-  .brand{ display:flex; gap:10px; align-items:center; padding:10px 14px; background:white; border-radius:14px; box-shadow:var(--shadow);
-    transform:translateZ(0); will-change:transform; transition: transform .25s var(--bezier) }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; background:white; border-radius:14px; box-shadow:var(--shadow);
+    transform:translateZ(0); will-change:transform; transition: transform .25s var(--bezier);
   }
-  .code{ background:#111; color:#fff; padding:4px 10px; border-radius:12px; font-weight:800 }
-  .xpo{ font-weight:800; color:#e11d48 }
-  .actions{ display:flex; gap:8px; }
+  .logo-code{ background:#111; color:#fff; padding:4px 10px; border-radius:12px; font-weight:800 }
+  .logo-xpo{ font-weight:800; color:#e11d48 }
 
-  main{ width:min(1100px,94%); margin:16px auto 96px; }
+  main{ width:min(1100px,94%); margin:16px auto 100px; }
 
-  .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:14px;
-    animation:fade .35s var(--bezier) both }
-  @keyframes fade{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+  /* Pasos */
+  .steps{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+  .progress-dots{ display:flex; gap:8px; justify-content:center; margin-bottom:12px }
+  .dot{ width:10px; height:10px; border-radius:999px; background:#d1d5db; transition:.35s var(--bezier) }
+  .dot.on{ background:#111; transform:scale(1.2) }
+  .step{ display:none; animation:step .35s var(--bezier) both }
+  .step.active{ display:block }
+  @keyframes step{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
 
-  /* Revelado al hacer scroll */
-  .reveal{ opacity:0; transform:translateY(18px) scale(.98); filter:saturate(.9); }
-  .reveal.inview{ opacity:1; transform:translateY(0) scale(1); filter:saturate(1); transition:opacity .5s var(--bezier), transform .5s var(--bezier), filter .5s var(--bezier) }
-
-  .progress{ display:flex; gap:8px; justify-content:center; margin-bottom:12px }
-  .progress div{ width:10px; height:10px; border-radius:999px; background:#d1d5db; transition:.3s var(--bezier) }
-  .progress .on{ background:#111; transform:scale(1.2) }
-
-  .row{ display:flex; gap:12px; align-items:center; }
+  /* Inputs */
+  .row{ display:flex; gap:12px; align-items:center }
   @media(max-width:560px){ .row{ flex-direction:column } }
-
   input, textarea{
     width:100%; padding:16px; border-radius:16px; border:1px solid var(--line); background:#fafafa; font-size:17px;
-    transition:.25s var(--bezier); -webkit-appearance:none; appearance:none;
+    transition:.25s var(--bezier);
   }
   input:focus, textarea:focus{ border-color:#c7d2fe; box-shadow:0 0 0 8px rgba(59,130,246,.12) }
   textarea{ min-height:120px; resize:vertical }
 
-  /* Botones con microinteracciones */
-  .btn{ position:relative; overflow:hidden; border:0; border-radius:16px; padding:14px 18px; font-weight:800; background:#111; color:#fff; box-shadow:0 12px 30px rgba(0,0,0,.18); font-size:16px; touch-action:manipulation;
-    transition: transform .08s ease, box-shadow .25s var(--bezier) }
+  /* Botones */
+  .btn{ position:relative; overflow:hidden; border:0; border-radius:16px; padding:14px 18px; font-weight:800; background:#111; color:#fff; box-shadow:0 12px 30px rgba(0,0,0,.18); font-size:16px; }
   .btn:active{ transform:translateY(1px) scale(.985) }
   .btn.ghost{ background:#f1f2f3; color:#111; box-shadow:none }
-  .btn.lg{ padding:16px 22px; font-size:17px }
-  .btn.pulse{ animation: pulse 1.4s ease 2 }
-  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(17,17,17,.26)} 70%{box-shadow:0 0 0 18px rgba(17,17,17,0)} 100%{box-shadow:0 0 0 0 rgba(17,17,17,0)} }
   .ripple{ position:absolute; border-radius:50%; transform:scale(0); animation:rip .6s linear; background:rgba(255,255,255,.35); pointer-events:none }
   @keyframes rip{ to{ transform:scale(4); opacity:0 } }
 
-  .chips{ display:flex; gap:10px; flex-wrap:wrap }
-  .chip{ padding:12px 16px; border-radius:16px; background:white; border:1px solid var(--line); box-shadow:var(--shadow); font-weight:800; min-width:110px; text-align:center;
-    transition: transform .18s var(--bezier), box-shadow .25s var(--bezier) }
-  .chip:active{ transform:scale(.98) }
-  .chip[data-e="CARGADA"]{ border-color: color-mix(in srgb, var(--cargada) 40%, #ddd) }
-  .chip[data-e="VACÍA"]{ border-color: color-mix(in srgb, var(--vacia) 40%, #ddd) }
-  .chip[data-e="AVERIADA"]{ border-color: color-mix(in srgb, var(--averiada) 40%, #ddd) }
+  /* Chips estado */
+  .chips{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px }
+  .chip{ padding:12px 16px; border-radius:16px; background:white; border:1px solid var(--line); box-shadow:var(--shadow); font-weight:800; min-width:110px; text-align:center }
+  .chip[data-estado="CARGADA"]{ border-color: color-mix(in srgb, var(--cargada) 40%, #ddd) }
+  .chip[data-estado="VACÍA"]{ border-color: color-mix(in srgb, var(--vacia) 40%, #ddd) }
+  .chip[data-estado="AVERIADA"]{ border-color: color-mix(in srgb, var(--averiada) 40%, #ddd) }
 
-  .stats{ display:grid; gap:10px; grid-template-columns:repeat(4,1fr) }
+  /* Stats */
+  .stats{ display:grid; gap:12px; grid-template-columns:repeat(4,1fr); margin-top:14px }
   @media(max-width:760px){ .stats{ grid-template-columns:repeat(2,1fr) } }
   .stat{ background:white; border-radius:16px; padding:12px 14px; box-shadow:var(--shadow) }
   .stat .label{ color:var(--muted); font-size:13px }
@@ -106,376 +96,323 @@
   .bounce{ animation:b .5s ease }
   @keyframes b{ 0%{transform:scale(1)} 35%{transform:scale(1.06)} 70%{transform:scale(.98)} 100%{transform:scale(1)} }
 
+  /* Buscador */
   .search{ margin:14px 0 }
+
+  /* Listas */
   .lists{ display:grid; gap:12px; grid-template-columns:repeat(3,1fr) }
   @media(max-width:900px){ .lists{ grid-template-columns:1fr } }
-
   .panel{ background:white; border-radius:16px; box-shadow:var(--shadow); overflow:hidden }
-  .panel h3{ position:sticky; top:56px; backdrop-filter:saturate(160%) blur(8px); background:rgba(255,255,255,.9);
-             margin:0; padding:12px 14px; border-bottom:1px solid #eee; z-index:1 }
+  .panel header{ padding:12px 14px; border-bottom:1px solid #eee; position:sticky; top:56px; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); z-index:1 }
   .list{ display:flex; flex-direction:column }
   .item{ padding:14px 16px; display:grid; grid-template-columns:1fr auto; border-bottom:1px solid #f1f1f1; background:linear-gradient(0deg,#fff, #fdfdfd);
-         transition: transform .2s var(--bezier), box-shadow .25s var(--bezier) }
+         transition: transform .2s var(--bezier) }
   .item:active{ transform:scale(.995) }
   .pill{ font-size:12px; font-weight:900; color:#fff; padding:6px 10px; border-radius:999px; margin-left:8px }
-  .pill[data-t="CARGADA"]{ background:var(--cargada) }
-  .pill[data-t="VACÍA"]{ background:var(--vacia) }
-  .pill[data-t="AVERIADA"]{ background:var(--averiada) }
+  .pill[data-type="CARGADA"]{ background:var(--cargada) }
+  .pill[data-type="VACÍA"]{ background:var(--vacia) }
+  .pill[data-type="AVERIADA"]{ background:var(--averiada) }
   .meta{ color:var(--muted); font-size:12px; margin-top:4px }
 
-  /* Acciones flotantes */
-  .float{ position:fixed; right:16px; bottom:16px; display:flex; gap:10px; z-index:100 }
-  .fab{ border:0; border-radius:999px; padding:14px 16px; background:#111; color:#fff; font-weight:900; box-shadow:0 12px 30px rgba(0,0,0,.25);
-        transition: transform .12s ease, box-shadow .25s var(--bezier) }
-  .fab:active{ transform:translateY(1px) scale(.98) }
+  /* Barra flotante */
+  .floatbar{ position:fixed; right:16px; bottom:16px; display:flex; gap:10px; z-index:40 }
+  .fab{ border:0; border-radius:999px; padding:14px 16px; background:#111; color:#fff; font-weight:900; box-shadow:0 12px 30px rgba(0,0,0,.25) }
   .fab .label{ display:inline }
   @media(max-width:520px){ .fab .label{ display:none } }
 
   /* Toasts */
-  .toasts{ position:fixed; left:50%; transform:translateX(-50%); bottom:84px; display:flex; flex-direction:column; gap:8px; z-index:120 }
+  .toasts{ position:fixed; left:50%; transform:translateX(-50%); bottom:90px; display:flex; flex-direction:column; gap:8px; z-index:60 }
   .toast{ background:#111; color:#fff; padding:12px 16px; border-radius:16px; box-shadow:var(--shadow) }
-  .toast a{ color:#93c5fd; text-decoration:underline }
 
-  /* Estados de validación */
+  /* Validación matrícula */
   .ok{ outline:0; box-shadow:0 0 0 8px rgba(34,197,94,.12) !important; border-color: color-mix(in srgb, var(--cargada) 55%, #bbb) !important }
   .bad{ outline:0; box-shadow:0 0 0 8px rgba(239,68,68,.12) !important; border-color: color-mix(in srgb, var(--averiada) 55%, #bbb) !important }
 </style>
 </head>
 <body>
 
-<div class="scrollbar" aria-hidden="true"><div class="bar" id="scrollBar"></div></div>
-
 <header id="hdr">
   <div class="header-inner">
     <div class="brand" id="brand">
-      <div class="code">CODE</div><div class="xpo">XPO Logistics</div>
+      <span class="logo-code">CODE</span>
+      <span class="logo-xpo">XPO Logistics</span>
     </div>
-    <div class="actions">
-      <button class="btn ghost" id="btnExport" aria-label="Exportar copia de seguridad">Exportar</button>
-      <label class="btn ghost" for="fileImport" aria-label="Importar copia de seguridad">Importar<input id="fileImport" type="file" accept="application/json" hidden></label>
-    </div>
+    <small style="color:var(--muted)">Uso móvil optimizado</small>
   </div>
 </header>
 
 <main>
-  <section class="card reveal" aria-label="Flujo de registro">
-    <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"><div id="p1" class="on"></div><div id="p2"></div><div id="p3"></div></div>
+  <!-- Pasos -->
+  <section class="steps" aria-label="Flujo de registro">
+    <div class="progress-dots" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1">
+      <div class="dot on" data-s="1"></div>
+      <div class="dot" data-s="2"></div>
+      <div class="dot" data-s="3"></div>
+    </div>
 
     <!-- Paso 1 -->
-    <div id="s1">
+    <div class="step active" id="step1">
       <div class="row">
-        <input id="mat" placeholder="Introduce matrícula (ej: 1234-ABC)" autocomplete="off" inputmode="latin-prose" aria-label="Matrícula">
-        <button class="btn lg pulse" id="go2">Continuar</button>
+        <input id="matricula" placeholder="Introduce matrícula (ej: 1234-ABC)" autocomplete="off" inputmode="latin-prose" aria-label="Matrícula">
+        <button class="btn" id="toStep2">Continuar</button>
       </div>
-      <div class="meta" style="margin-top:6px">Escribe sin guiones o espacios; se formatea automáticamente.</div>
+      <div class="meta" style="margin-top:6px">Escribe sin guiones ni espacios; se formatea a ####-XXX.</div>
     </div>
 
     <!-- Paso 2 -->
-    <div id="s2" style="display:none">
-      <div style="font-weight:900">Matrícula: <span id="matTxt"></span></div>
-      <div class="chips" style="margin:12px 0">
-        <button class="chip" data-e="CARGADA" aria-label="Marcar como CARGADA">CARGADA</button>
-        <button class="chip" data-e="VACÍA" aria-label="Marcar como VACÍA">VACÍA</button>
-        <button class="chip" data-e="AVERIADA" aria-label="Marcar como AVERIADA">AVERIADA</button>
+    <div class="step" id="step2">
+      <div style="font-weight:900">Matrícula: <span id="matPreview"></span></div>
+      <div class="chips">
+        <button class="chip" data-estado="CARGADA">CARGADA</button>
+        <button class="chip" data-estado="VACÍA">VACÍA</button>
+        <button class="chip" data-estado="AVERIADA">AVERIADA</button>
       </div>
       <div class="meta">Elegir <b>VACÍA</b> registrará directamente sin pasar por el paso 3.</div>
       <div style="margin-top:10px"><button class="btn ghost" id="back1">Volver</button></div>
     </div>
 
     <!-- Paso 3 -->
-    <div id="s3" style="display:none">
-      <textarea class="reveal" id="cont" placeholder="Contenido / incidencia…" aria-label="Contenido"></textarea>
+    <div class="step" id="step3">
+      <textarea id="contenido" placeholder="Contenido / incidencia…" aria-label="Contenido"></textarea>
       <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
-        <button class="btn" id="reg">Registrar</button>
+        <button class="btn" id="registrar">Registrar</button>
         <button class="btn ghost" id="back2">Volver</button>
       </div>
     </div>
   </section>
 
-  <section class="stats reveal" aria-label="Resumen del día">
+  <!-- Estadísticas -->
+  <section class="stats" aria-label="Resumen del día">
     <div class="stat" id="stTotal"><div class="label">Total</div><div class="value">0</div></div>
     <div class="stat" id="stC"><div class="label">Cargadas</div><div class="value">0</div></div>
     <div class="stat" id="stV"><div class="label">Vacías</div><div class="value">0</div></div>
     <div class="stat" id="stA"><div class="label">Averiadas</div><div class="value">0</div></div>
   </section>
 
-  <div class="search reveal"><input id="q" placeholder="Buscar por matrícula o contenido…" aria-label="Buscar"></div>
+  <!-- Buscador -->
+  <div class="search" role="search">
+    <input id="buscador" placeholder="Buscar por matrícula o contenido…" aria-label="Buscar">
+  </div>
 
+  <!-- Listas -->
   <section class="lists" aria-label="Listas de plataformas">
-    <article class="panel reveal">
-      <h3>Cargadas</h3>
-      <div class="list" id="lc" aria-live="polite"></div>
+    <article class="panel">
+      <header><strong>Cargadas</strong> <span class="meta" id="cntC">0</span></header>
+      <div class="list" id="listC"></div>
     </article>
-    <article class="panel reveal">
-      <h3>Vacías</h3>
-      <div class="list" id="lv" aria-live="polite"></div>
+    <article class="panel">
+      <header><strong>Vacías</strong> <span class="meta" id="cntV">0</span></header>
+      <div class="list" id="listV"></div>
     </article>
-    <article class="panel reveal">
-      <h3>Averiadas</h3>
-      <div class="list" id="la" aria-live="polite"></div>
+    <article class="panel">
+      <header><strong>Averiadas</strong> <span class="meta" id="cntA">0</span></header>
+      <div class="list" id="listA"></div>
     </article>
   </section>
 
-  <div class="reveal" style="margin-top:12px; display:flex; justify-content:flex-end">
-    <button class="btn ghost" id="clear">Limpiar registros</button>
+  <div style="margin-top:12px; display:flex; justify-content:flex-end">
+    <button class="btn ghost" id="limpiar">Limpiar registros</button>
   </div>
 </main>
 
-<div class="float">
-  <button class="fab" id="pdf" title="Generar PDF">PDF <span class="label">diario</span></button>
+<!-- Botón flotante PDF -->
+<div class="floatbar">
+  <button class="fab" id="btnPDF" title="Generar PDF">PDF <span class="label">diario</span></button>
 </div>
 
+<!-- Toasts -->
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script>
 (function(){
-  const LS="plataformas-global";
+  const LS_KEY="plataformas-global";
   const $=s=>document.querySelector(s); const $$=s=>document.querySelectorAll(s);
-  // Estado temporal
-  let mat=""; let est=null;
-  let lastDeleted=null;
 
-  // Haptics
-  const buzz = ms => { if(navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} };
+  // Elementos
+  const hdr=$("#hdr"), brand=$("#brand");
+  const step1=$("#step1"), step2=$("#step2"), step3=$("#step3");
+  const dots=$$(".dot");
+  const inputMat=$("#matricula"), matPreview=$("#matPreview");
+  const toStep2=$("#toStep2"), back1=$("#back1"), back2=$("#back2");
+  const contenido=$("#contenido"), registrar=$("#registrar");
+  const buscador=$("#buscador");
+  const listC=$("#listC"), listV=$("#listV"), listA=$("#listA");
+  const cntC=$("#cntC"), cntV=$("#cntV"), cntA=$("#cntA");
+  const vTotal=$("#stTotal .value"), vC=$("#stC .value"), vV=$("#stV .value"), vA=$("#stA .value");
+  const btnPDF=$("#btnPDF");
+  const toasts=$("#toasts");
 
-  // Ripple
+  let current={ matricula:"", estado:null };
+
+  // Header parallax + compacto
+  document.addEventListener("scroll", ()=>{
+    const st = document.documentElement.scrollTop || document.body.scrollTop;
+    hdr.classList.toggle("compact", st>8);
+    brand.style.transform = `translateY(${Math.min(12, st*0.05)}px)`;
+  }, { passive:true });
+
+  // Ripple para botones/chips
   document.addEventListener("click", e=>{
     const t=e.target.closest(".btn, .chip, .fab");
     if(!t) return;
     const r=document.createElement("span"); r.className="ripple";
     const rect=t.getBoundingClientRect(); const size=Math.max(rect.width, rect.height);
     r.style.width=r.style.height=size+'px';
-    r.style.left=(e.clientX-rect.left-size/2)+'px';
-    r.style.top=(e.clientY-rect.top-size/2)+'px';
+    r.style.left=(e.clientX-rect.left-size/2)+'px'; r.style.top=(e.clientY-rect.top-size/2)+'px';
     t.appendChild(r); setTimeout(()=>r.remove(), 600);
-  }, {passive:true});
+  }, { passive:true });
 
-  // Scroll progress + header compacto + parallax leve
-  const bar=$("#scrollBar"), hdr=$("#hdr"), brand=$("#brand");
-  const onScroll=()=>{
-    const doc=document.documentElement;
-    const sTop=doc.scrollTop || document.body.scrollTop;
-    const sHeight=doc.scrollHeight - doc.clientHeight;
-    const p = sHeight>0 ? (sTop/sHeight)*100 : 0;
-    bar.style.width = p + "%";
-    hdr.classList.toggle("compact", sTop>8);
-    // Parallax leve
-    brand.style.transform = `translateY(${Math.min(12, sTop*0.05)}px)`;
-  };
-  document.addEventListener("scroll", onScroll, {passive:true}); onScroll();
+  // Utils LS
+  const load = ()=>{ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"[]") }catch(_){ return [] } };
+  const saveAll = a => { localStorage.setItem(LS_KEY, JSON.stringify(a)); bounce(); render(); };
 
-  // IntersectionObserver para reveal
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("inview"); io.unobserve(e.target); }});
-  }, { threshold:.12 });
-  $$(".reveal").forEach(el=> io.observe(el));
-
-  // Utilidades LS
-  const load = ()=>{ try{ return JSON.parse(localStorage.getItem(LS)||"[]")}catch(_){return[]} };
-  const saveAll = a => { localStorage.setItem(LS, JSON.stringify(a)); bounce(); render(); };
-
-  // Matrícula
-  function formatMat(v){
+  // Validación y formato de matrícula ####-XXX
+  function fmt(v){
     v = v.toUpperCase().replace(/[^A-Z0-9]/g,"");
-    const nums = v.replace(/[^0-9]/g,"").slice(0,4);
-    const letters = v.replace(/[^A-Z]/g,"").slice(0,3);
-    return nums + (letters ? "-" + letters : "");
+    const n = v.replace(/[^0-9]/g,"").slice(0,4);
+    const l = v.replace(/[^A-Z]/g,"").slice(0,3);
+    return n + (l ? "-" + l : "");
   }
-  function isValidMat(v){ return /^[0-9]{4}-[A-Z]{3}$/.test(v); }
-
-  const matInput = $("#mat");
-  matInput.addEventListener("input", ()=>{
-    const before = matInput.value;
-    const formatted = formatMat(before);
-    matInput.value = formatted;
-    matInput.classList.remove("ok","bad");
-    if(formatted.length>=6){
-      matInput.classList.add(isValidMat(formatted)?"ok":"bad");
-    }
+  function valid(v){ return /^[0-9]{4}-[A-Z]{3}$/.test(v); }
+  inputMat.addEventListener("input", ()=>{
+    const f = fmt(inputMat.value);
+    inputMat.value = f;
+    inputMat.classList.remove("ok","bad");
+    if(f.length>=6){ inputMat.classList.add(valid(f)?"ok":"bad"); }
   });
 
-  // Pasos
-  const setStep = n => {
-    $("#s1").style.display = n===1?"block":"none";
-    $("#s2").style.display = n===2?"block":"none";
-    $("#s3").style.display = n===3?"block":"none";
-    $("#p1").classList.toggle("on", n>=1);
-    $("#p2").classList.toggle("on", n>=2);
-    $("#p3").classList.toggle("on", n>=3);
-    $(".progress").setAttribute("aria-valuenow", String(n));
-  };
-
-  // Flujo
-  $("#go2").addEventListener("click", ()=>{
-    const v=matInput.value.trim().toUpperCase();
-    if(!isValidMat(v)){ toast("Matrícula inválida (formato ####-XXX)"); matInput.focus(); buzz(15); return; }
-    mat=v; $("#matTxt").textContent=mat; setStep(2); buzz(8);
-  });
-  $("#back1").addEventListener("click", ()=> { setStep(1); buzz(5); });
-  $("#back2").addEventListener("click", ()=> { setStep(2); buzz(5); });
-
-  $$(".chip").forEach(ch=> ch.addEventListener("click", ()=> choose(ch.dataset.e)));
-  function choose(estado){
-    est=estado;
-    if(est==="VACÍA"){
-      const arr=load();
-      const dup=arr.some(x=>x.estado==="VACÍA" && x.matricula===mat);
-      if(dup){ toast("Ya existe una VACÍA con esa matrícula"); buzz(30); return; }
-      arr.unshift(item(mat,"VACÍA","—"));
-      saveAll(arr);
-      reset(true);
-      toast("Registrada como VACÍA");
-      buzz(10);
-      return;
-    }
-    setStep(3);
-    $("#cont").focus(); buzz(8);
+  // Navegación de pasos
+  function setStep(n){
+    [step1,step2,step3].forEach((el,i)=> el.classList.toggle("active",(i+1)===n));
+    dots.forEach((d,i)=> d.classList.toggle("on",(i+1)<=n));
+    $(".progress-dots").setAttribute("aria-valuenow", String(n));
   }
 
-  $("#reg").addEventListener("click", ()=>{
-    const text=$("#cont").value.trim();
-    if(est!=="CARGADA" && est!=="AVERIADA"){ toast("Selecciona un estado"); buzz(20); return; }
-    if(!text){ toast("Contenido requerido para "+est); $("#cont").focus(); buzz(20); return; }
-    const arr=load();
-    arr.unshift(item(mat, est, text));
-    saveAll(arr);
+  toStep2.addEventListener("click", ()=>{
+    const v=inputMat.value.trim().toUpperCase();
+    if(!valid(v)){ toast("Matrícula inválida (formato ####-XXX)"); inputMat.focus(); return; }
+    current.matricula=v; matPreview.textContent=v; setStep(2);
+  });
+  back1.addEventListener("click", ()=> setStep(1));
+  back2.addEventListener("click", ()=> setStep(2));
+
+  // Selección estado
+  $$(".chip").forEach(ch=>{
+    ch.addEventListener("click", ()=>{
+      const estado=ch.dataset.estado; current.estado=estado;
+      if(estado==="VACÍA"){
+        const data=load();
+        const dup=data.some(x=>x.estado==="VACÍA" && x.matricula===current.matricula);
+        if(dup){ toast("Ya existe una VACÍA con esa matrícula"); return; }
+        data.unshift(makeItem(current.matricula,"VACÍA","—"));
+        saveAll(data);
+        reset(true);
+        toast("Registrada como VACÍA");
+        return;
+      }
+      setStep(3); contenido.focus();
+    });
+  });
+
+  registrar.addEventListener("click", ()=>{
+    const txt=contenido.value.trim();
+    if(current.estado!=="CARGADA" && current.estado!=="AVERIADA"){ toast("Selecciona un estado"); return; }
+    if(!txt){ toast("Contenido requerido para "+current.estado); contenido.focus(); return; }
+    const data=load();
+    data.unshift(makeItem(current.matricula, current.estado, txt));
+    saveAll(data);
     reset(true);
     toast("Registro guardado");
-    buzz(10);
   });
 
-  function item(matricula, estado, contenido){
-    return { id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-      matricula, estado, contenido, timestamp:new Date().toISOString() };
-  }
   function reset(clear){
-    if(clear){ $("#mat").value=""; $("#cont").value=""; $("#mat").classList.remove("ok","bad"); }
-    mat=""; est=null; setStep(1); $("#mat").focus();
+    if(clear){ inputMat.value=""; contenido.value=""; inputMat.classList.remove("ok","bad"); }
+    current={ matricula:"", estado:null };
+    setStep(1); inputMat.focus({preventScroll:true});
   }
 
-  // Render + listas
+  function makeItem(matricula, estado, contenido){
+    return { id: Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+             matricula, estado, contenido, timestamp:new Date().toISOString() };
+  }
+
+  // Render
   function render(){
-    const q=$("#q").value.trim().toLowerCase();
-    const a=load();
-    const groups={
-      CARGADA:a.filter(x=>x.estado==="CARGADA"),
-      "VACÍA":a.filter(x=>x.estado==="VACÍA"),
-      AVERIADA:a.filter(x=>x.estado==="AVERIADA")
+    const q = buscador.value.trim().toLowerCase();
+    const data = load();
+    const groups = {
+      CARGADA: data.filter(x=>x.estado==="CARGADA"),
+      "VACÍA": data.filter(x=>x.estado==="VACÍA"),
+      AVERIADA: data.filter(x=>x.estado==="AVERIADA"),
     };
-    const fil=x=> !q || x.matricula.toLowerCase().includes(q) || x.contenido.toLowerCase().includes(q);
+    const fil = x => !q || x.matricula.toLowerCase().includes(q) || x.contenido.toLowerCase().includes(q);
 
-    draw("#lc", groups.CARGADA.filter(fil));
-    draw("#lv", groups["VACÍA"].filter(fil));
-    draw("#la", groups.AVERIADA.filter(fil));
+    draw(listC, groups.CARGADA.filter(fil));
+    draw(listV, groups["VACÍA"].filter(fil));
+    draw(listA, groups.AVERIADA.filter(fil));
 
-    $("#stTotal .value").textContent = a.length;
-    $("#stC .value").textContent = groups.CARGADA.length;
-    $("#stV .value").textContent = groups["VACÍA"].length;
-    $("#stA .value").textContent = groups.AVERIADA.length;
+    cntC.textContent = groups.CARGADA.length;
+    cntV.textContent = groups["VACÍA"].length;
+    cntA.textContent = groups.AVERIADA.length;
+
+    vTotal.textContent = data.length;
+    vC.textContent = groups.CARGADA.length;
+    vV.textContent = groups["VACÍA"].length;
+    vA.textContent = groups.AVERIADA.length;
   }
-  function draw(sel, arr){
-    const box=$(sel); box.innerHTML="";
-    if(arr.length===0){ const m=document.createElement("div"); m.className="meta"; m.style.padding="10px"; m.textContent="Sin registros…"; box.appendChild(m); return; }
-    arr.sort((a,b)=>b.timestamp.localeCompare(a.timestamp));
-    arr.forEach(x=>{
-      const row=document.createElement("div"); row.className="item reveal"; row.dataset.id=x.id;
+
+  function draw(container, items){
+    container.innerHTML="";
+    if(items.length===0){
+      const m=document.createElement("div"); m.className="meta"; m.style.padding="10px"; m.textContent="Sin registros…"; container.appendChild(m); return;
+    }
+    items.sort((a,b)=> b.timestamp.localeCompare(a.timestamp));
+    items.forEach(x=>{
+      const row=document.createElement("div"); row.className="item"; row.dataset.id=x.id;
       const left=document.createElement("div");
-      left.innerHTML = `<div><b>${x.matricula}</b><span class="pill" data-t="${x.estado}">${x.estado}</span></div>
+      left.innerHTML = `<div><b>${x.matricula}</b><span class="pill" data-type="${x.estado}">${x.estado}</span></div>
                         <div class="meta">${x.contenido} • ${new Date(x.timestamp).toLocaleString()}</div>`;
       const right=document.createElement("div");
-      const del=document.createElement("button"); del.className="btn ghost"; del.textContent="Eliminar"; del.setAttribute("aria-label", "Eliminar registro");
-      del.addEventListener("click", ()=> deleteItem(x.id));
+      const del=document.createElement("button"); del.className="btn ghost"; del.textContent="Eliminar"; del.title="Eliminar";
+      del.addEventListener("click", ()=>{
+        const arr=load().filter(y=>y.id!==x.id);
+        saveAll(arr);
+        toast("Registro eliminado");
+      });
       right.appendChild(del);
       row.appendChild(left); row.appendChild(right);
-
-      // Reveal para cada item
-      io.observe(row);
-
-      // Gestos swipe (móvil)
-      let startX=0, trans=0, swiping=false;
-      row.addEventListener("touchstart", e=>{ startX=e.touches[0].clientX; row.classList.add("swiping"); }, {passive:true});
-      row.addEventListener("touchmove", e=>{
-        if(!startX) return;
-        const dx=e.touches[0].clientX-startX;
-        if(Math.abs(dx)>6){ swiping=true; trans=Math.min(Math.max(dx,-120),120); row.style.transform=`translateX(${trans}px)`; }
-      }, {passive:true});
-      row.addEventListener("touchend", ()=>{
-        row.classList.remove("swiping");
-        if(swiping && Math.abs(trans)>80){ deleteItem(x.id); }
-        row.style.transform=""; startX=0; trans=0; swiping=false;
-      });
-      box.appendChild(row);
+      container.appendChild(row);
     });
-  }
-
-  function deleteItem(id){
-    const arr=load();
-    const idx=arr.findIndex(x=>x.id===id);
-    if(idx<0) return;
-    lastDeleted=arr[idx];
-    arr.splice(idx,1);
-    saveAll(arr);
-    toast(`Registro eliminado • <a href="#" id="undo">Deshacer</a>`, 3500, true);
-    buzz(15);
-    setTimeout(()=>{
-      const u=$("#undo"); if(u){ u.onclick=(e)=>{ e.preventDefault(); undoDelete(); }; }
-    },0);
-  }
-  function undoDelete(){
-    if(!lastDeleted) return;
-    const arr=load();
-    arr.unshift(lastDeleted);
-    saveAll(arr);
-    lastDeleted=null;
-    toast("Restaurado");
   }
 
   function bounce(){
     ["#stTotal","#stC","#stV","#stA"].forEach(sel=>{
-      const el=$(sel);
+      const el=document.querySelector(sel);
       el.classList.remove("bounce"); void el.offsetWidth; el.classList.add("bounce");
     });
-    buzz(8);
   }
 
-  // Buscador
-  $("#q").addEventListener("input", render);
+  // Buscador en tiempo real
+  buscador.addEventListener("input", render);
 
-  // Limpiar
-  $("#clear").addEventListener("click", ()=>{
+  // Limpiar registros
+  $("#limpiar").addEventListener("click", ()=>{
     if(confirm("¿Seguro que quieres borrar todos los registros?")){
-      localStorage.removeItem(LS); render(); toast("Registros eliminados"); buzz(20);
+      localStorage.removeItem(LS_KEY);
+      render();
+      toast("Registros eliminados");
     }
   });
 
-  // Exportar / Importar
-  $("#btnExport").addEventListener("click", ()=>{
-    const blob = new Blob([localStorage.getItem(LS)||"[]"], {type:"application/json"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
-    a.download="plataformas-backup-"+new Date().toISOString().slice(0,10)+".json";
-    document.body.appendChild(a); a.click(); a.remove();
-    toast("Backup exportado");
-  });
-  $("#fileImport").addEventListener("change", async (e)=>{
-    const file = e.target.files[0]; if(!file) return;
-    const text = await file.text();
-    try{
-      const arr=JSON.parse(text);
-      if(!Array.isArray(arr)) throw new Error("Formato no válido");
-      localStorage.setItem(LS, JSON.stringify(arr));
-      render(); toast("Backup importado");
-    }catch(_){ toast("Archivo inválido"); }
-    e.target.value="";
-  });
-
-  // PDF + compartir
-  $("#pdf").addEventListener("click", async ()=>{
+  // PDF
+  btnPDF.addEventListener("click", ()=>{
     const data=load();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit:"pt", format:"a4" });
 
     doc.setFont("helvetica","bold"); doc.setFontSize(18);
-    doc.text("CODE", 40, 40); doc.setFontSize(14); doc.text("+ XPO Logistics", 100, 40);
+    doc.text("CODE", 40, 40);
+    doc.setFontSize(14); doc.text("+ XPO Logistics", 100, 40);
     doc.setFontSize(10); doc.setTextColor(120); doc.text(new Date().toLocaleString(), 40, 58); doc.setTextColor(0);
 
     const s=[
@@ -500,43 +437,28 @@
       startY = doc.lastAutoTable.finalY + 24;
       if(startY > 720){ doc.addPage(); startY = 60; }
     });
-    const pages=doc.internal.getNumberOfPages();
-    for(let i=1;i<=pages;i++){ doc.setPage(i); doc.setFontSize(9); doc.setTextColor(120);
-      doc.text("Generado desde el registro local", 40, doc.internal.pageSize.getHeight()-30);
-      doc.text(String(i)+" / "+String(pages), doc.internal.pageSize.getWidth()-60, doc.internal.pageSize.getHeight()-30);
-    }
 
-    const blob = doc.output("blob");
-    const file = new File([blob], "registro-plataformas.pdf", {type:"application/pdf"});
-    if(navigator.canShare && navigator.canShare({ files:[file] })){
-      try{ await navigator.share({ files:[file], title:"Registro plataformas", text:"PDF generado" }); }
-      catch(_){}
-    }else{
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement("a"); a.href=url; a.download=file.name; a.click(); URL.revokeObjectURL(url);
-      toast("PDF descargado");
+    const pages=doc.internal.getNumberOfPages();
+    for(let i=1;i<=pages;i++){
+      doc.setPage(i); doc.setFontSize(9); doc.setTextColor(120);
+      doc.text("Generado desde el registro local", 40, doc.internal.pageSize.getHeight() - 30);
+      doc.text(String(i)+" / "+String(pages), doc.internal.pageSize.getWidth() - 60, doc.internal.pageSize.getHeight() - 30);
     }
+    doc.save("registro-plataformas.pdf");
   });
 
-  // Toasts
-  function toast(msg, t=1800, html=false){
-    const box=$("#toasts");
-    const el=document.createElement("div"); el.className="toast";
-    if(html){ el.innerHTML=msg; } else { el.textContent=msg; }
-    box.appendChild(el);
+  // Toast
+  function toast(msg, t=1800){
+    const el=document.createElement("div"); el.className="toast"; el.textContent=msg;
+    toasts.appendChild(el);
     setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; setTimeout(()=> el.remove(), 280); }, t);
   }
 
-  // IntersectionObserver instance reused for list items reveal
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("inview"); io.unobserve(e.target); }});
-  }, { threshold:.12 });
-  document.querySelectorAll(".reveal").forEach(el=> io.observe(el));
-
   // Init
   render();
-  $("#mat").focus({preventScroll:true});
+  inputMat.focus({preventScroll:true});
 })();
 </script>
 
 </body>
+</html>
