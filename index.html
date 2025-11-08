@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>XPO Logistics — Registro Móvil</title>
+<title>XPO Logistics — Registro Móvil • Efectos</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -25,23 +25,45 @@
     --averiada:#ef4444;
   }
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{
     margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     background:var(--bg); color:var(--ink); -webkit-tap-highlight-color: transparent;
   }
-  /* Header */
-  header{ position:sticky; top:0; z-index:10; background:linear-gradient(180deg,#fff, #f7f8fa);
-    border-bottom:1px solid #ececec; padding:12px 0; backdrop-filter:blur(14px) saturate(140%); }
+
+  /* Barra de progreso de scroll */
+  .scrollbar{
+    position:fixed; top:0; left:0; height:3px; width:100%; background:transparent; z-index:50;
+  }
+  .scrollbar .bar{
+    height:100%; width:0%;
+    background:linear-gradient(90deg, #111, #6b7280);
+    transition:width .15s linear;
+  }
+
+  /* Header con parallax + modo compacto */
+  header{ position:sticky; top:0; z-index:40; background:linear-gradient(180deg,#fff, #f7f8fa);
+    border-bottom:1px solid #ececec; padding:16px 0; backdrop-filter:blur(14px) saturate(140%);
+    transition: padding .25s var(--bezier), box-shadow .25s var(--bezier);
+  }
+  header.compact{ padding:10px 0; box-shadow:0 10px 24px rgba(0,0,0,.06) }
   .header-inner{ width:min(1100px,94%); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px }
-  .brand{ display:flex; gap:10px; align-items:center; padding:10px 14px; background:white; border-radius:14px; box-shadow:var(--shadow) }
+  .brand{ display:flex; gap:10px; align-items:center; padding:10px 14px; background:white; border-radius:14px; box-shadow:var(--shadow);
+    transform:translateZ(0); will-change:transform; transition: transform .25s var(--bezier) }
+  }
   .code{ background:#111; color:#fff; padding:4px 10px; border-radius:12px; font-weight:800 }
   .xpo{ font-weight:800; color:#e11d48 }
   .actions{ display:flex; gap:8px; }
 
   main{ width:min(1100px,94%); margin:16px auto 96px; }
 
-  .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:14px; animation:fade .35s var(--bezier) both }
+  .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:14px;
+    animation:fade .35s var(--bezier) both }
   @keyframes fade{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+
+  /* Revelado al hacer scroll */
+  .reveal{ opacity:0; transform:translateY(18px) scale(.98); filter:saturate(.9); }
+  .reveal.inview{ opacity:1; transform:translateY(0) scale(1); filter:saturate(1); transition:opacity .5s var(--bezier), transform .5s var(--bezier), filter .5s var(--bezier) }
 
   .progress{ display:flex; gap:8px; justify-content:center; margin-bottom:12px }
   .progress div{ width:10px; height:10px; border-radius:999px; background:#d1d5db; transition:.3s var(--bezier) }
@@ -57,15 +79,21 @@
   input:focus, textarea:focus{ border-color:#c7d2fe; box-shadow:0 0 0 8px rgba(59,130,246,.12) }
   textarea{ min-height:120px; resize:vertical }
 
-  .btn{ position:relative; overflow:hidden; border:0; border-radius:16px; padding:14px 18px; font-weight:800; background:#111; color:#fff; box-shadow:0 12px 30px rgba(0,0,0,.18); font-size:16px; touch-action:manipulation; }
-  .btn:active{ transform:translateY(1px) scale(.99) }
+  /* Botones con microinteracciones */
+  .btn{ position:relative; overflow:hidden; border:0; border-radius:16px; padding:14px 18px; font-weight:800; background:#111; color:#fff; box-shadow:0 12px 30px rgba(0,0,0,.18); font-size:16px; touch-action:manipulation;
+    transition: transform .08s ease, box-shadow .25s var(--bezier) }
+  .btn:active{ transform:translateY(1px) scale(.985) }
   .btn.ghost{ background:#f1f2f3; color:#111; box-shadow:none }
   .btn.lg{ padding:16px 22px; font-size:17px }
+  .btn.pulse{ animation: pulse 1.4s ease 2 }
+  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(17,17,17,.26)} 70%{box-shadow:0 0 0 18px rgba(17,17,17,0)} 100%{box-shadow:0 0 0 0 rgba(17,17,17,0)} }
   .ripple{ position:absolute; border-radius:50%; transform:scale(0); animation:rip .6s linear; background:rgba(255,255,255,.35); pointer-events:none }
   @keyframes rip{ to{ transform:scale(4); opacity:0 } }
 
   .chips{ display:flex; gap:10px; flex-wrap:wrap }
-  .chip{ padding:12px 16px; border-radius:16px; background:white; border:1px solid var(--line); box-shadow:var(--shadow); font-weight:800; min-width:110px; text-align:center }
+  .chip{ padding:12px 16px; border-radius:16px; background:white; border:1px solid var(--line); box-shadow:var(--shadow); font-weight:800; min-width:110px; text-align:center;
+    transition: transform .18s var(--bezier), box-shadow .25s var(--bezier) }
+  .chip:active{ transform:scale(.98) }
   .chip[data-e="CARGADA"]{ border-color: color-mix(in srgb, var(--cargada) 40%, #ddd) }
   .chip[data-e="VACÍA"]{ border-color: color-mix(in srgb, var(--vacia) 40%, #ddd) }
   .chip[data-e="AVERIADA"]{ border-color: color-mix(in srgb, var(--averiada) 40%, #ddd) }
@@ -83,9 +111,12 @@
   @media(max-width:900px){ .lists{ grid-template-columns:1fr } }
 
   .panel{ background:white; border-radius:16px; box-shadow:var(--shadow); overflow:hidden }
-  .panel h3{ margin:0; padding:12px 14px; border-bottom:1px solid #eee }
+  .panel h3{ position:sticky; top:56px; backdrop-filter:saturate(160%) blur(8px); background:rgba(255,255,255,.9);
+             margin:0; padding:12px 14px; border-bottom:1px solid #eee; z-index:1 }
   .list{ display:flex; flex-direction:column }
-  .item{ padding:14px 16px; display:grid; grid-template-columns:1fr auto; border-bottom:1px solid #f1f1f1; background:linear-gradient(0deg,#fff, #fdfdfd) }
+  .item{ padding:14px 16px; display:grid; grid-template-columns:1fr auto; border-bottom:1px solid #f1f1f1; background:linear-gradient(0deg,#fff, #fdfdfd);
+         transition: transform .2s var(--bezier), box-shadow .25s var(--bezier) }
+  .item:active{ transform:scale(.995) }
   .pill{ font-size:12px; font-weight:900; color:#fff; padding:6px 10px; border-radius:999px; margin-left:8px }
   .pill[data-t="CARGADA"]{ background:var(--cargada) }
   .pill[data-t="VACÍA"]{ background:var(--vacia) }
@@ -94,7 +125,9 @@
 
   /* Acciones flotantes */
   .float{ position:fixed; right:16px; bottom:16px; display:flex; gap:10px; z-index:100 }
-  .fab{ border:0; border-radius:999px; padding:14px 16px; background:#111; color:#fff; font-weight:900; box-shadow:0 12px 30px rgba(0,0,0,.25) }
+  .fab{ border:0; border-radius:999px; padding:14px 16px; background:#111; color:#fff; font-weight:900; box-shadow:0 12px 30px rgba(0,0,0,.25);
+        transition: transform .12s ease, box-shadow .25s var(--bezier) }
+  .fab:active{ transform:translateY(1px) scale(.98) }
   .fab .label{ display:inline }
   @media(max-width:520px){ .fab .label{ display:none } }
 
@@ -110,9 +143,11 @@
 </head>
 <body>
 
-<header>
+<div class="scrollbar" aria-hidden="true"><div class="bar" id="scrollBar"></div></div>
+
+<header id="hdr">
   <div class="header-inner">
-    <div class="brand">
+    <div class="brand" id="brand">
       <div class="code">CODE</div><div class="xpo">XPO Logistics</div>
     </div>
     <div class="actions">
@@ -123,16 +158,16 @@
 </header>
 
 <main>
-  <section class="card" aria-label="Flujo de registro">
+  <section class="card reveal" aria-label="Flujo de registro">
     <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"><div id="p1" class="on"></div><div id="p2"></div><div id="p3"></div></div>
 
     <!-- Paso 1 -->
     <div id="s1">
       <div class="row">
         <input id="mat" placeholder="Introduce matrícula (ej: 1234-ABC)" autocomplete="off" inputmode="latin-prose" aria-label="Matrícula">
-        <button class="btn lg" id="go2">Continuar</button>
+        <button class="btn lg pulse" id="go2">Continuar</button>
       </div>
-      <div class="meta" style="margin-top:6px">Sugerencia: escribe sin guiones o espacios; se formatea automáticamente.</div>
+      <div class="meta" style="margin-top:6px">Escribe sin guiones o espacios; se formatea automáticamente.</div>
     </div>
 
     <!-- Paso 2 -->
@@ -149,7 +184,7 @@
 
     <!-- Paso 3 -->
     <div id="s3" style="display:none">
-      <textarea id="cont" placeholder="Contenido / incidencia…" aria-label="Contenido"></textarea>
+      <textarea class="reveal" id="cont" placeholder="Contenido / incidencia…" aria-label="Contenido"></textarea>
       <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
         <button class="btn" id="reg">Registrar</button>
         <button class="btn ghost" id="back2">Volver</button>
@@ -157,31 +192,31 @@
     </div>
   </section>
 
-  <section class="stats" aria-label="Resumen del día">
+  <section class="stats reveal" aria-label="Resumen del día">
     <div class="stat" id="stTotal"><div class="label">Total</div><div class="value">0</div></div>
     <div class="stat" id="stC"><div class="label">Cargadas</div><div class="value">0</div></div>
     <div class="stat" id="stV"><div class="label">Vacías</div><div class="value">0</div></div>
     <div class="stat" id="stA"><div class="label">Averiadas</div><div class="value">0</div></div>
   </section>
 
-  <div class="search"><input id="q" placeholder="Buscar por matrícula o contenido…" aria-label="Buscar"></div>
+  <div class="search reveal"><input id="q" placeholder="Buscar por matrícula o contenido…" aria-label="Buscar"></div>
 
   <section class="lists" aria-label="Listas de plataformas">
-    <article class="panel">
+    <article class="panel reveal">
       <h3>Cargadas</h3>
       <div class="list" id="lc" aria-live="polite"></div>
     </article>
-    <article class="panel">
+    <article class="panel reveal">
       <h3>Vacías</h3>
       <div class="list" id="lv" aria-live="polite"></div>
     </article>
-    <article class="panel">
+    <article class="panel reveal">
       <h3>Averiadas</h3>
       <div class="list" id="la" aria-live="polite"></div>
     </article>
   </section>
 
-  <div style="margin-top:12px; display:flex; justify-content:flex-end">
+  <div class="reveal" style="margin-top:12px; display:flex; justify-content:flex-end">
     <button class="btn ghost" id="clear">Limpiar registros</button>
   </div>
 </main>
@@ -198,13 +233,12 @@
   const $=s=>document.querySelector(s); const $$=s=>document.querySelectorAll(s);
   // Estado temporal
   let mat=""; let est=null;
-  // Undo borrado
   let lastDeleted=null;
 
-  // Haptics helper
+  // Haptics
   const buzz = ms => { if(navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} };
 
-  // Ripple global
+  // Ripple
   document.addEventListener("click", e=>{
     const t=e.target.closest(".btn, .chip, .fab");
     if(!t) return;
@@ -216,20 +250,49 @@
     t.appendChild(r); setTimeout(()=>r.remove(), 600);
   }, {passive:true});
 
+  // Scroll progress + header compacto + parallax leve
+  const bar=$("#scrollBar"), hdr=$("#hdr"), brand=$("#brand");
+  const onScroll=()=>{
+    const doc=document.documentElement;
+    const sTop=doc.scrollTop || document.body.scrollTop;
+    const sHeight=doc.scrollHeight - doc.clientHeight;
+    const p = sHeight>0 ? (sTop/sHeight)*100 : 0;
+    bar.style.width = p + "%";
+    hdr.classList.toggle("compact", sTop>8);
+    // Parallax leve
+    brand.style.transform = `translateY(${Math.min(12, sTop*0.05)}px)`;
+  };
+  document.addEventListener("scroll", onScroll, {passive:true}); onScroll();
+
+  // IntersectionObserver para reveal
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("inview"); io.unobserve(e.target); }});
+  }, { threshold:.12 });
+  $$(".reveal").forEach(el=> io.observe(el));
+
   // Utilidades LS
   const load = ()=>{ try{ return JSON.parse(localStorage.getItem(LS)||"[]")}catch(_){return[]} };
   const saveAll = a => { localStorage.setItem(LS, JSON.stringify(a)); bounce(); render(); };
 
-  // Formato matrícula español básico (####-XXX o ####XXX) -> ####-XXX
+  // Matrícula
   function formatMat(v){
     v = v.toUpperCase().replace(/[^A-Z0-9]/g,"");
     const nums = v.replace(/[^0-9]/g,"").slice(0,4);
     const letters = v.replace(/[^A-Z]/g,"").slice(0,3);
     return nums + (letters ? "-" + letters : "");
   }
-  function isValidMat(v){
-    return /^[0-9]{4}-[A-Z]{3}$/.test(v);
-  }
+  function isValidMat(v){ return /^[0-9]{4}-[A-Z]{3}$/.test(v); }
+
+  const matInput = $("#mat");
+  matInput.addEventListener("input", ()=>{
+    const before = matInput.value;
+    const formatted = formatMat(before);
+    matInput.value = formatted;
+    matInput.classList.remove("ok","bad");
+    if(formatted.length>=6){
+      matInput.classList.add(isValidMat(formatted)?"ok":"bad");
+    }
+  });
 
   // Pasos
   const setStep = n => {
@@ -242,21 +305,7 @@
     $(".progress").setAttribute("aria-valuenow", String(n));
   };
 
-  // Input matrícula con formato y validación live
-  const matInput = $("#mat");
-  matInput.addEventListener("input", ()=>{
-    const cur = matInput.selectionStart;
-    const before = matInput.value;
-    const formatted = formatMat(before);
-    matInput.value = formatted;
-    // feedback
-    matInput.classList.remove("ok","bad");
-    if(formatted.length>=6){
-      matInput.classList.add(isValidMat(formatted)?"ok":"bad");
-    }
-  });
-
-  // Botones flujo
+  // Flujo
   $("#go2").addEventListener("click", ()=>{
     const v=matInput.value.trim().toUpperCase();
     if(!isValidMat(v)){ toast("Matrícula inválida (formato ####-XXX)"); matInput.focus(); buzz(15); return; }
@@ -265,10 +314,7 @@
   $("#back1").addEventListener("click", ()=> { setStep(1); buzz(5); });
   $("#back2").addEventListener("click", ()=> { setStep(2); buzz(5); });
 
-  // Selección de estado
-  $$(".chip").forEach(ch=>{
-    ch.addEventListener("click", ()=> choose(ch.dataset.e));
-  });
+  $$(".chip").forEach(ch=> ch.addEventListener("click", ()=> choose(ch.dataset.e)));
   function choose(estado){
     est=estado;
     if(est==="VACÍA"){
@@ -283,11 +329,9 @@
       return;
     }
     setStep(3);
-    $("#cont").focus();
-    buzz(8);
+    $("#cont").focus(); buzz(8);
   }
 
-  // Registrar (CARGADA / AVERIADA requieren contenido)
   $("#reg").addEventListener("click", ()=>{
     const text=$("#cont").value.trim();
     if(est!=="CARGADA" && est!=="AVERIADA"){ toast("Selecciona un estado"); buzz(20); return; }
@@ -309,7 +353,7 @@
     mat=""; est=null; setStep(1); $("#mat").focus();
   }
 
-  // Render
+  // Render + listas
   function render(){
     const q=$("#q").value.trim().toLowerCase();
     const a=load();
@@ -334,7 +378,7 @@
     if(arr.length===0){ const m=document.createElement("div"); m.className="meta"; m.style.padding="10px"; m.textContent="Sin registros…"; box.appendChild(m); return; }
     arr.sort((a,b)=>b.timestamp.localeCompare(a.timestamp));
     arr.forEach(x=>{
-      const row=document.createElement("div"); row.className="item"; row.dataset.id=x.id;
+      const row=document.createElement("div"); row.className="item reveal"; row.dataset.id=x.id;
       const left=document.createElement("div");
       left.innerHTML = `<div><b>${x.matricula}</b><span class="pill" data-t="${x.estado}">${x.estado}</span></div>
                         <div class="meta">${x.contenido} • ${new Date(x.timestamp).toLocaleString()}</div>`;
@@ -344,7 +388,10 @@
       right.appendChild(del);
       row.appendChild(left); row.appendChild(right);
 
-      // Gestos swipe (solo móvil táctil)
+      // Reveal para cada item
+      io.observe(row);
+
+      // Gestos swipe (móvil)
       let startX=0, trans=0, swiping=false;
       row.addEventListener("touchstart", e=>{ startX=e.touches[0].clientX; row.classList.add("swiping"); }, {passive:true});
       row.addEventListener("touchmove", e=>{
@@ -401,7 +448,7 @@
     }
   });
 
-  // Exportar / Importar (Backup/Restore)
+  // Exportar / Importar
   $("#btnExport").addEventListener("click", ()=>{
     const blob = new Blob([localStorage.getItem(LS)||"[]"], {type:"application/json"});
     const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
@@ -421,7 +468,7 @@
     e.target.value="";
   });
 
-  // PDF (con opción de compartir si el navegador lo permite)
+  // PDF + compartir
   $("#pdf").addEventListener("click", async ()=>{
     const data=load();
     const { jsPDF } = window.jspdf;
@@ -431,7 +478,6 @@
     doc.text("CODE", 40, 40); doc.setFontSize(14); doc.text("+ XPO Logistics", 100, 40);
     doc.setFontSize(10); doc.setTextColor(120); doc.text(new Date().toLocaleString(), 40, 58); doc.setTextColor(0);
 
-    // Badges estadísticas
     const s=[
       ["Total", String(data.length)],
       ["Cargadas", String(data.filter(x=>x.estado==='CARGADA').length)],
@@ -462,12 +508,10 @@
 
     const blob = doc.output("blob");
     const file = new File([blob], "registro-plataformas.pdf", {type:"application/pdf"});
-    // Intentar compartir
     if(navigator.canShare && navigator.canShare({ files:[file] })){
       try{ await navigator.share({ files:[file], title:"Registro plataformas", text:"PDF generado" }); }
-      catch(_){ /* usuario canceló */ }
+      catch(_){}
     }else{
-      // Fallback: descarga
       const url=URL.createObjectURL(blob);
       const a=document.createElement("a"); a.href=url; a.download=file.name; a.click(); URL.revokeObjectURL(url);
       toast("PDF descargado");
@@ -483,41 +527,11 @@
     setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; setTimeout(()=> el.remove(), 280); }, t);
   }
 
-  // PWA básico (manifest + service worker en runtime)
-  try{
-    const manifest = {
-      name: "Registro XPO (local)",
-      short_name: "Registro XPO",
-      start_url: ".",
-      display: "standalone",
-      background_color: "#ffffff",
-      theme_color: "#ffffff",
-      icons: []
-    };
-    const link=document.createElement("link");
-    link.rel="manifest";
-    const blob=new Blob([JSON.stringify(manifest)], {type:"application/json"});
-    link.href=URL.createObjectURL(blob);
-    document.head.appendChild(link);
-
-    if("serviceWorker" in navigator){
-      const swCode = `
-        const CACHE='xpo-cache-v1';
-        const ASSETS = ['.'];
-        self.addEventListener('install', e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))); self.skipWaiting(); });
-        self.addEventListener('activate', e=>{ e.waitUntil(self.clients.claim()); });
-        self.addEventListener('fetch', e=>{
-          e.respondWith(caches.match(e.request).then(r=> r || fetch(e.request).then(res=>{
-            const copy=res.clone(); caches.open(CACHE).then(c=> c.put(e.request, copy)).catch(()=>{});
-            return res;
-          }).catch(()=> r )));
-        });
-      `;
-      const swBlob = new Blob([swCode], {type:"text/javascript"});
-      const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl).catch(()=>{});
-    }
-  }catch(_){}
+  // IntersectionObserver instance reused for list items reveal
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("inview"); io.unobserve(e.target); }});
+  }, { threshold:.12 });
+  document.querySelectorAll(".reveal").forEach(el=> io.observe(el));
 
   // Init
   render();
@@ -526,4 +540,3 @@
 </script>
 
 </body>
-</html>
