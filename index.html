@@ -2846,4 +2846,5 @@ function animateCount(id, value) {
   if (element && element.textContent != value) {
     element.textContent = value;
     element.classList.add('animate');
-   
+    setTimeout(() => element.classList.remove('animate'), 400);
+  }
