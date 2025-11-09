@@ -280,7 +280,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
     <!-- Actions -->
     <section class="panel actions" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <button class="btn btn-primary" id="genPdf">📄 Generar PDF</button>
+      <button class="btn btn-primary" id="genPdf">Generar PDF</button>
       <button class="btn btn-secondary" id="clearAll">Limpiar registros</button>
     </section>
   </div>
@@ -395,13 +395,14 @@ function updateAll(){
 function setFill(pillId, pct){
   const el = $(pillId);
   if(!el) return;
-  // Animación suave del relleno estilo iOS
   requestAnimationFrame(()=>{ el.style.setProperty('--fill', Math.max(0, Math.min(100, pct)).toFixed(0) + '%'); });
 }
 
 function renderList(id, arr, showContent){
   const box=$(id);
   if(!arr.length){ box.innerHTML='<div class="empty">No hay registros</div>'; return; }
+  const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;'};
+  const esc = (s)=>String(s).replace(/[&<>"']/g, m=>map[m]);
   box.innerHTML = arr.map(it=>(
     '<div class="card-row">'+
       '<div class="head" style="display:flex;justify-content:space-between;gap:10px;font-weight:700">'+
@@ -410,7 +411,6 @@ function renderList(id, arr, showContent){
     '</div>'
   )).join('');
 }
-const esc = (s)=>String(s).replace(/[&<>\"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',\"'\":'&#039;'}[m]));
 
 /* ===== PDF export (misma estructura, paleta alineada con HTML) ===== */
 function generatePDF(){
@@ -434,7 +434,7 @@ function generatePDF(){
   const vacias = plataformas.filter(p => p.estado === 'VACÍA');
   const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
 
-  // Cabecera en “glass” claro
+  // Cabecera
   doc.setFillColor(...PANEL);
   doc.roundedRect(10, 8, 190, 36, 5, 5, 'F');
   doc.setDrawColor(...LINE);
@@ -455,17 +455,14 @@ function generatePDF(){
   doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...MUTED);
   doc.text(dateString, 105, 28, { align: 'center' });
 
-  // “Pills” de totales en PDF (look suave, sin colores chillones)
+  // Pills de totales
   function drawPill(x,y,w,h,label,num,pct){
-      // base
       doc.setDrawColor(...LINE);
       doc.setFillColor(...PANEL);
       doc.roundedRect(x,y,w,h, h/2, h/2, 'F');
-      // fill progresivo
       const fillW = Math.max(0, Math.min(w, w * (pct/100)));
-      doc.setFillColor(223,236,255); // azul muy suave
+      doc.setFillColor(223,236,255);
       doc.roundedRect(x,y,fillW,h, h/2, h/2, 'F');
-      // texto
       doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...TEXT);
       doc.text(label, x+8, y+h/2+2, { align:'left' });
       doc.setTextColor(...BLUE);
