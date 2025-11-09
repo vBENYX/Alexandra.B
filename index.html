@@ -3,318 +3,879 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>XPO — Registro de Plataformas (Card Flow · Refined)</title>
+<title>XPO — Registro de Plataformas (Estilo Apple Pro)</title>
 
+<!-- Normalize for consistent base -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+<!-- jsPDF (para exportación) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- D3.js (para el gráfico de distribución) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 
 <style>
+  /* * ESTILOS APPLE/iOS PRO
+   * Diseño minimalista y limpio, corrección de flujo de pasos.
+   */
   :root{
-    --accent:#0A84FF;
-    --bg:#F5F6F7;
-    --panel:#FFFFFF;
-    --line:#E6E6EA;
-    --text:#101417;
-    --muted:#6A6F75;
-    --radius:18px;
-    --shadow:0 10px 28px rgba(0,0,0,.06);
-    --shadow-card:0 4px 18px rgba(0,0,0,.07);
+    --accent:#0A84FF; /* Azul de acento (iOS Blue) */
+    --bg:#F2F2F7; /* Fondo de sistema claro */
+    --panel:#FFFFFF; /* Tarjetas y paneles */
+    --line:#E5E5EA; /* Línea de separación, más sutil */
+    --text:#1C1C1E; /* Texto principal (Dark Charcoal) */
+    --muted:#8E8E93; /* Texto secundario/sutil */
+    
+    /* Colores de estado */
+    --color-cargada:#FF3B30; /* Rojo */
+    --color-vacia:#34C759; /* Verde */
+    --color-averiada:#FF9F0A; /* Naranja */
+    
+    --radius:16px; /* Radio grande para tarjetas */
+    --radius-sm:10px; /* Radio pequeño para inputs/botones */
+
+    /* Sombras suaves de estilo Apple */
+    --shadow-main:0 12px 30px rgba(0,0,0,.08), 0 4px 8px rgba(0,0,0,.05);
+    --shadow-card:0 4px 15px rgba(0,0,0,.08);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
   body{
     margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,Segoe UI,Roboto,Helvetica,Arial;
+    /* Fuente por defecto de iOS/macOS */
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     background:var(--bg);
     color:var(--text);
-    line-height:1.45;
-    letter-spacing:.01em;
-    font-weight:400; /* nada en negrita por defecto */
+    line-height:1.4;
   }
-  input,textarea,button{font-size:16px}
+  input,textarea,button{font-size:16px;font-family:inherit;} 
   button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
-  .app{max-width:1040px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)) 16px}
+  .app{
+    max-width:980px;margin:0 auto;
+    padding: calc(24px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)) 16px;
+  }
 
-  /* Header */
+  /* Header - Minimalista y centrado */
   .header{
     background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:22px;
-    padding:20px 18px;
-    box-shadow:var(--shadow);
+    border-radius:var(--radius);
+    padding:24px 20px;
+    box-shadow:var(--shadow-main);
+    text-align:center;
   }
-  .brand{display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:.08em}
-  .chip{background:#F2F3F4;border:1px solid var(--line);padding:6px 10px;border-radius:10px}
-  .headline{margin:8px 0 2px;text-align:center;font-size:clamp(19px,3vw,26px);font-weight:600}
-  .subtle{text-align:center;color:var(--muted)}
+  .brand{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    font-weight:700;letter-spacing:.05em;font-size:12px;color:var(--muted);
+  }
+  .headline{
+    margin:6px 0 4px;
+    font-weight:800;
+    font-size:clamp(24px,3.5vw,36px);
+    line-height:1.1;
+  }
+  .subtle{color:var(--muted);font-weight:500;font-size:14px;}
 
-  /* Single Card Flow */
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-card);margin:18px 0;overflow:hidden}
-  .card-h{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);background:#FBFBFD}
-  .card-h .t{letter-spacing:.02em}
-  .cc{position:relative;min-height:240px}
-  .screen{position:absolute;inset:0;padding:16px 14px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;opacity:0;transform:translateX(24px) scale(.985);pointer-events:none}
-  .screen.active{opacity:1;transform:none;pointer-events:auto;animation:slideIn .42s cubic-bezier(.22,1,.36,1)}
-  .screen.out-left{animation:slideOutL .34s cubic-bezier(.22,1,.36,1)}
-  .screen.out-right{animation:slideOutR .34s cubic-bezier(.22,1,.36,1)}
+  /* Single Card Flow (Flujo de la Matrícula) */
+  .card{
+    background:var(--panel);border-radius:var(--radius);
+    box-shadow:var(--shadow-card);padding:0;margin:24px auto;
+    overflow:hidden;max-width:560px;
+  }
+  .card-header{
+    display:flex;align-items:center;justify-content:center;
+    padding:16px 16px;border-bottom:1px solid var(--line);background:var(--panel);
+  }
+  .title-lg{font-weight:700;letter-spacing:.01em;font-size:1.1em;}
+  
+  /* Contenedor del flujo de pasos - Min-height para asegurar espacio */
+  .card-content{
+    position:relative;
+    min-height:350px; 
+  }
+  
+  /* Contenido de los pasos */
+  .screen{
+    position:absolute;inset:0;
+    padding:32px 24px 70px; /* CLAVE: 70px de padding inferior para los dots + espacio */
+    display:flex;flex-direction:column;gap:18px;
+    align-items:flex-start;justify-content:center; 
+    opacity:0;transform:translateX(100%);pointer-events:none;
+    z-index: 5; 
+    transition:transform .5s cubic-bezier(.25, 1, .5, 1), opacity .3s;
+  }
+  .screen.active{opacity:1;transform:none;pointer-events:auto;z-index:10;} 
+  
+  /* Animaciones de cambio de pantalla (iOS style: slide) */
+  .screen.out-left{transform:translateX(-100%);opacity:0;z-index:5;}
+  .screen.out-right{transform:translateX(100%);opacity:0;z-index:5;}
 
-  @keyframes slideIn{from{opacity:0;transform:translateX(24px) scale(.985)}to{opacity:1;transform:none}}
-  @keyframes slideOutL{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-24px) scale(.99)}}
-  @keyframes slideOutR{from{opacity:1;transform:none}to{opacity:0;transform:translateX(24px) scale(.99)}}
+  /* Estilos para los títulos dentro del step */
+  .step-header{width: 100%;margin-bottom: 20px;text-align: left; padding: 0 0;}
+  .step-header h2{
+    margin:0 0 4px;font-weight:700;font-size:22px;color: var(--text);
+  }
+  .step-header .subtle-info{
+    text-align:left;color:var(--muted);font-weight:400;font-size:15px;
+  }
 
-  .steps{display:flex;gap:8px;justify-content:center;padding:10px 0 8px}
-  .dot{width:8px;height:8px;border-radius:999px;background:#D4D6DA;transition:.25s}
-  .dot.active{background:var(--accent);transform:scale(1.35)}
+  /* Indicadores de paso (dots) - CLAVE: Posicionamiento absoluto al fondo del card-content */
+  .steps{
+    display:flex;gap:10px;justify-content:center;
+    position:absolute;bottom:20px;left:0;right:0;
+    z-index:15; /* Asegurar que los dots siempre estén encima */
+  }
+  .dot{width:8px;height:8px;border-radius:999px;background:var(--line);transition:.3s ease-out;position:relative}
+  .dot.active{background:var(--accent);transform:scale(1.25);}
+  .dot::after{
+    content:'';position:absolute;inset:-6px;border-radius:50%;
+    box-shadow:0 0 0 0 rgba(10,132,255,.4);
+    transition:box-shadow .4s ease-out;
+  }
+  .dot.active::after{
+    box-shadow:0 0 0 2px rgba(10,132,255,.1);
+  }
 
-  /* Inputs */
+
+  /* Inputs estilo campo de texto relleno */
   .input,.textarea{
-    width:100%;max-width:520px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;outline:none;
-    transition:border-color .22s, box-shadow .22s, transform .12s;
-    font-weight:400;
-  }
-  .input:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 6px rgba(10,132,255,.12);transform:translateY(-1px)}
-  .textarea{min-height:110px;resize:vertical}
-
-  /* Buttons */
-  .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    padding:11px 16px;border:0;border-radius:12px;font-weight:500;color:#fff;background:#1C1C1E;
-    box-shadow:0 1px 0 rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.10);
-    transition:transform .14s, filter .18s;
-  }
-  .btn:active{transform:scale(.985)}
-  .btn:disabled{opacity:.6;transform:none}
-  .btn-primary{background:var(--accent)}
-  .btn-secondary{background:#8E8E93}
-  .btn-danger{background:#C74A44}
-
-  /* Step 2 vertical, suaves (sin colorines) */
-  .option{
-    width:100%;max-width:360px;display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);
-    transition:box-shadow .18s, transform .12s, border-color .18s;
+    width:100%;padding:14px 16px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--bg);
+    outline:none;transition:border-color .22s, background .22s, transform .12s;
     font-weight:500;
   }
-  .option:active{transform:scale(.99)}
-  .option:hover{box-shadow:var(--shadow-card);border-color:#DADBE0}
-  .opt-label{opacity:.9}
-  .opt-meta{color:var(--muted);font-size:13px}
-
-  /* Summary & Registros */
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-card);margin:18px 0}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-  .stat{background:#FBFBFC;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
-  .stat .n{display:block;font-size:clamp(22px,3.5vw,28px);margin-bottom:2px;color:var(--accent);font-weight:600}
-  .stat .label{color:var(--muted)}
-
-  /* Registros card con pestañas */
-  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);padding:0 6px}
-  .tab{
-    padding:10px 12px;border:0;background:transparent;cursor:pointer;font-weight:500;color:#4a4f55;border-bottom:2px solid transparent;
+  .input:focus,.textarea:focus{border-color:var(--accent);background:#fff;transform:none;}
+  .textarea{min-height:100px;resize:vertical}
+  
+  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;max-width:520px;}
+  
+  /* Botones estilo iOS (rellenos, redondeados y con microanimación de presión) */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:14px 22px;
+    border:0;border-radius:var(--radius-sm);font-weight:700;
+    box-shadow:0 2px 4px rgba(0,0,0,.1); 
+    transition:transform .1s ease-out, opacity .2s;
+    user-select: none;
+    cursor:pointer;
   }
-  .tab.active{color:#0b0e11;border-color:var(--accent)}
-  .table{width:100%;border-collapse:separate;border-spacing:0 8px;margin-top:12px}
-  .row-item{background:#fff;border:1px solid var(--line);border-radius:12px}
-  .cell{padding:10px 12px}
-  .cell.meta{color:#4a4f55}
-  .empty{padding:14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center;font-style:italic;margin-top:12px}
+  .btn:active{transform:scale(.98);box-shadow:0 1px 2px rgba(0,0,0,.15);} 
+  .btn:disabled{opacity:.5;transform:none;box-shadow:none;}
 
-  .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-  @media (max-width:640px){ .row .btn{flex:1 1 100%} }
+  .btn-primary{background:var(--accent); color:#fff;}
+  .btn-secondary{background:var(--line); color:var(--text); font-weight:600;}
+  .btn-danger{background:var(--color-cargada); color:#fff;}
+  
+  /* Botones de estado (Paso 2) - Estilo iOS Segmented Control Simplificado */
+  .btn-status {
+      flex: 1 1 30%; 
+      min-height: 80px;
+      font-size: 16px;
+      font-weight: 600;
+      background: var(--panel); 
+      color: var(--muted); /* Texto gris sutil por defecto */
+      border: 1px solid var(--line);
+      box-shadow:none;
+      transition: all 0.2s ease-out;
+      position: relative;
+  }
+
+  .btn-status.selected{
+      border-color:var(--accent);
+      color: var(--accent); /* Texto azul cuando seleccionado */
+      transform:translateY(-1px);
+      box-shadow:0 4px 12px rgba(0,0,0,.04); /* Sombra muy sutil */
+  }
+  
+  /* Stats - Diseño de tarjeta flotante */
+  .panel{
+    background:var(--panel);border-radius:var(--radius);
+    padding:18px;box-shadow:var(--shadow-card);margin:24px 0;
+  }
+  .stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:10px;padding:0 4px;
+  }
+  .stat{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:12px;text-align:left; 
+    transition:transform .2s;
+    overflow:hidden;
+  }
+  .stat .n{
+    display:block;
+    font-size:clamp(26px,3vw,38px);
+    font-weight:800;margin-bottom:0;
+    line-height:1.1;
+  }
+  @keyframes countPop {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .stat .n.pop{ animation:countPop .2s ease-out; }
+
+  .stat .label{color:var(--muted);font-weight:600;font-size:12px;line-height:1.2;margin-top:2px;}
+  
+  /* Lists - Diseño limpio y con botón de eliminación */
+  .lists-container{
+      display:grid;grid-template-columns:1fr;gap:20px;
+  }
+  .lists h3{
+    margin:0 0 10px;font-size:16px;font-weight:700;
+    border-left:4px solid var(--accent);padding-left:12px;
+  }
+  .empty{padding:14px;border:1px dashed var(--line);border-radius:var(--radius-sm);color:var(--muted);text-align:center;font-style:italic}
+  
+  .card-row{
+    background:#fff;border-radius:var(--radius-sm);
+    padding:12px 14px;margin-bottom:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,.08); 
+    transition:transform .18s, box-shadow .18s, opacity .3s, margin-left .3s;
+    position:relative;
+    border-left: 4px solid var(--accent); 
+  }
+  .card-row:active{transform:scale(.995);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  
+  .card-row.fade-out{
+    opacity: 0;
+    margin-left: -5%;
+    transform: scale(0.95);
+  }
+
+  .head{display:flex;justify-content:space-between;gap:10px;font-weight:600;color:var(--text);align-items:center;}
+  .body{color:#2B2F34;margin-top:6px;white-space:pre-wrap;font-size:14px;line-height:1.3;}
+  .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+  /* Botón de eliminar registro (SVG más limpio) */
+  .delete-btn{
+    background:none;border:none;color:var(--muted);font-size:18px;line-height:1;
+    cursor:pointer;opacity:.8;padding: 4px 0 4px 8px; margin-left: 8px;
+    transition:color .2s;
+  }
+  .delete-btn:hover{color:var(--color-cargada);}
+  .delete-btn svg { width: 14px; height: 14px; display: block; fill: currentColor;}
+
+  /* Modal Estilo iOS: fondo desenfocado */
+  #customModal{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.15); 
+    backdrop-filter:blur(5px); 
+    display:none;align-items:center;justify-content:center;z-index:100;
+    opacity:0;
+    transition:opacity .3s ease-out;
+  }
+  #customModal.show{opacity:1;}
+  #modalContent{
+    background:var(--panel);border-radius:24px;
+    padding:24px;width:90%;max-width:340px;text-align:center;
+    box-shadow:var(--shadow-main);
+    transform:scale(1.05);opacity:0;
+    transition:transform .3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity .3s;
+  }
+  #customModal.show #modalContent{transform:scale(1);opacity:1;}
+
+  @media (max-width:768px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .lists-container{grid-template-columns:1fr;}
+    .stat{text-align:center;} 
+    .stat .n{display:inline-block; margin-right: 8px;}
+  }
+  @media (max-width:640px){
+    .row .btn{flex:1 1 100%;}
+    .row .btn-status{flex:1 1 auto; min-height: 60px; font-size: 14px; padding: 10px;} 
+    .row {gap: 8px;} 
+  }
 </style>
 </head>
 <body>
   <div class="app">
+    <!-- Header (Tarjeta Flotante) -->
     <header class="header">
-      <div class="brand"><div class="chip">CODE</div><div>XPO LOGISTICS</div></div>
+      <div class="brand">
+        <span style="color:var(--text); font-weight:900;">XPO</span>
+        <span style="font-weight:500;">LOGISTICS</span>
+      </div>
       <div class="headline">Registro de Plataformas</div>
       <div class="subtle" id="currentDate"></div>
     </header>
 
-    <!-- Single Card Flow -->
+    <!-- Single Card Flow (Flujo de Matrícula) -->
     <section class="card" id="flowCard">
-      <div class="card-h"><div class="t" id="flowTitle">Matrícula</div><div style="opacity:.5;font-size:13px" id="hint"></div></div>
-      <div class="cc">
-        <!-- S1 -->
-        <div class="screen active" id="s1" aria-labelledby="flowTitle">
-          <div style="font-weight:600">Paso 1: Matrícula de la plataforma</div>
-          <input id="matriculaInput" class="input" autocomplete="off" placeholder="Introduce la matrícula" />
-          <div class="row"><button class="btn btn-primary" id="toS2">Continuar</button></div>
+      <div class="card-header">
+        <div class="title-lg" id="flowTitle">Matrícula</div>
+      </div>
+      <div class="card-content" id="screens">
+        
+        <!-- Indicadores de paso (dots) - CLAVE: Posición absoluta y Z-index alto -->
+        <div class="steps" aria-hidden="true">
+          <div class="dot active" id="d1"></div>
+          <div class="dot" id="d2"></div>
+          <div class="dot" id="d3"></div>
         </div>
-        <!-- S2 -->
-        <div class="screen" id="s2" aria-labelledby="flowTitle">
-          <div style="font-weight:600">Paso 2: Estado</div>
-          <div class="option" id="optCarg">
-            <div class="opt-label">Cargada</div>
-            <div class="opt-meta">requiere contenido</div>
+
+        <!-- Screen 1: Paso 1 de 3 (Matrícula) -->
+        <div class="screen active" id="s1">
+          <div class="step-header">
+            <h2>Paso 1 de 3: Matrícula</h2>
+            <p class="subtle-info">Introduce la matrícula de la plataforma.</p>
           </div>
-          <div class="option" id="optVacia">
-            <div class="opt-label">Vacía</div>
-            <div class="opt-meta">registro directo</div>
+          <div style="width:100%; max-width:520px;">
+            <label for="matriculaInput" style="font-weight:600;display:block;margin-bottom:8px;color:var(--text);text-align:left;">Matrícula del vehículo</label>
+            <input id="matriculaInput" class="input" autocomplete="off" placeholder="Ej: M-1234-XPO" style="margin-bottom:20px;" maxlength="15" />
           </div>
-          <div class="option" id="optAver">
-            <div class="opt-label">Averiada</div>
-            <div class="opt-meta">requiere detalle</div>
-          </div>
-          <div class="row"><button class="btn btn-secondary" id="back1">Volver</button></div>
+          <button class="btn btn-primary" id="toS2" style="width:100%; max-width:520px;">Continuar</button>
         </div>
-        <!-- S3 -->
-        <div class="screen" id="s3" aria-labelledby="flowTitle">
-          <div style="font-weight:600">Paso 3: Contenido</div>
-          <div class="subtle">Matrícula: <span id="matriculaDisplay2">—</span> — Estado: <span id="estadoDisplay">—</span></div>
-          <textarea id="contenidoInput" class="textarea" placeholder="Describe el contenido o el problema…"></textarea>
+        
+        <!-- Screen 2: Paso 2 de 3 (Estado) -->
+        <div class="screen" id="s2" style="align-items:center;">
+          <div class="step-header" style="text-align:center;">
+            <h2>Paso 2 de 3: Estado</h2>
+            <p class="subtle-info">Matrícula: <strong id="matriculaDisplay" style="color:var(--text)">—</strong></p>
+          </div>
+          <div class="row" style="gap:16px;">
+            <!-- Botones de estado (Sin emojis, estilo Segmented Control) -->
+            <button class="btn btn-status" id="btnCargada" data-estado="CARGADA">Cargada</button>
+            <button class="btn btn-status" id="btnVacia" data-estado="VACÍA">Vacía</button>
+            <button class="btn btn-status" id="btnAveriada" data-estado="AVERIADA">Averiada</button>
+          </div>
+          <div class="row" style="margin-top:16px;">
+            <button class="btn btn-secondary" id="back1">Volver</button>
+          </div>
+        </div>
+
+        <!-- Screen 3: Paso 3 de 3 (Contenido) -->
+        <div class="screen" id="s3">
+          <div class="step-header">
+            <h2>Paso 3 de 3: Descripción</h2>
+            <p class="subtle-info">Matrícula: <strong id="matriculaDisplay2" style="color:var(--text)">—</strong> — Estado: <strong id="estadoDisplay" style="color:var(--text)">—</strong></p>
+          </div>
+          <textarea id="contenidoInput" class="textarea" placeholder="Describe el contenido o el problema (máx. 250 caracteres)..."></textarea>
           <div class="row">
+            <!-- Botones principales, colocados encima de los dots gracias al padding-bottom de .screen -->
             <button class="btn btn-primary" id="btnRegistrar">Registrar</button>
             <button class="btn btn-secondary" id="back2">Volver</button>
           </div>
         </div>
       </div>
-      <div class="steps" aria-hidden="true">
-        <div class="dot active" id="d1"></div>
-        <div class="dot" id="d2"></div>
-        <div class="dot" id="d3"></div>
-      </div>
+      
     </section>
 
-    <!-- Resumen -->
+    <!-- Summary (Contadores Dinámicos - Estilo Flotante) -->
     <section class="panel">
+      <h3 style="text-align:center;margin:0 0 10px;font-size:18px;font-weight:700;">Resumen del día</h3>
       <div class="stats">
-        <div class="stat"><span class="n" id="cargadasCount">0</span><div class="label">Cargadas</div></div>
-        <div class="stat"><span class="n" id="vaciasCount">0</span><div class="label">Vacías</div></div>
-        <div class="stat"><span class="n" id="averiadasCount">0</span><div class="label">Averiadas</div></div>
-        <div class="stat"><span class="n" id="totalCount">0</span><div class="label">Total</div></div>
+        <div class="stat" data-color="var(--color-cargada)">
+            <span class="n" id="cargadasCount">0</span>
+            <span class="label">Cargadas</span>
+        </div>
+        <div class="stat" data-color="var(--color-vacia)">
+            <span class="n" id="vaciasCount">0</span>
+            <span class="label">Vacías</span>
+        </div>
+        <div class="stat" data-color="var(--color-averiada)">
+            <span class="n" id="averiadasCount">0</span>
+            <span class="label">Averiadas</span>
+        </div>
+        <div class="stat" data-color="var(--accent)">
+            <span class="n" id="totalCount">0</span>
+            <span class="label">Total registrado</span>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Chart and Lists (Mejora Gráfica y Utilidad) -->
+    <section class="panel">
+      <h3 style="text-align:center;margin:0 0 10px;font-size:18px;font-weight:700;">Distribución y Registros</h3>
+      
+      <!-- Gráfico de Distribución (Donut Chart) -->
+      <div id="chartContainer" style="display: flex; justify-content: center; height: 180px; margin-bottom: 20px;">
+        <svg id="donutChart"></svg>
+      </div>
+
+      <!-- Búsqueda -->
+      <div style="margin-bottom: 20px;">
+        <input id="searchInput" class="input" placeholder="Buscar por matrícula..." />
+      </div>
+
+      <!-- Lists (Contenedores) -->
+      <div class="lists-container">
+        <div class="list">
+          <h3 style="border-left-color:var(--color-cargada);">Plataformas cargadas (<span id="cargadasListCount">0</span>)</h3>
+          <div id="cargadasList"></div>
+        </div>
+        <div class="list">
+          <h3 style="border-left-color:var(--color-vacia);">Plataformas vacías (<span id="vaciasListCount">0</span>)</h3>
+          <div id="vaciasList"></div>
+        </div>
+        <div class="list">
+          <h3 style="border-left-color:var(--color-averiada);">Plataformas averiadas (<span id="averiadasListCount">0</span>)</h3>
+          <div id="averiadasList"></div>
+        </div>
       </div>
     </section>
 
-    <!-- Registros (una sola tarjeta con pestañas) -->
-    <section class="panel" id="registrosCard">
-      <div class="tabs">
-        <button class="tab active" data-filter="TODAS">Todas</button>
-        <button class="tab" data-filter="CARGADA">Cargadas</button>
-        <button class="tab" data-filter="VACÍA">Vacías</button>
-        <button class="tab" data-filter="AVERIADA">Averiadas</button>
-      </div>
-      <div id="tableWrap"></div>
-    </section>
-
-    <!-- Acciones -->
+    <!-- Actions -->
     <section class="panel actions">
-      <button class="btn btn-primary" id="genPdf">📄 Generar PDF</button>
-      <button class="btn btn-danger" id="clearAll">🗑 Limpiar registros</button>
+      <button class="btn btn-primary" id="genPdf" style="max-width:280px;">Generar Reporte PDF</button>
+      <button class="btn btn-secondary" id="clearAll" style="background:#fff; color:var(--color-cargada); border:1px solid var(--color-cargada);">Limpiar todos los registros</button>
     </section>
   </div>
+  
+<!-- Custom Modal (Estilo iOS con Blur) -->
+<div id="customModal">
+    <div id="modalContent">
+        <h4 id="modalTitle"></h4>
+        <p id="modalBody" style="color:var(--text);"></p>
+        <div id="modalButtons" class="row" style="gap:10px;justify-content:stretch;">
+            <!-- Buttons go here -->
+        </div>
+    </div>
+</div>
 
 <script>
-  // ===== Helpers & State =====
+  // Inicialización de Firebase (No se usa, pero se mantiene la estructura)
+  // const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  // const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+  
+  // ===== Utilities & State =====
   const $ = (id)=>document.getElementById(id);
+  const $$ = (selector)=>document.querySelectorAll(selector);
   const fmtDateLong = (d=new Date()) => d.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   const fmtHour = () => new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const esc = (s)=>String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&quot;',"'":'&#039;'}[m]));
 
   let plataformas = [];
   let currentMatricula = '';
   let currentEstado = '';
+  let filteredMatricula = ''; // Nuevo estado para la búsqueda
 
-  const STORAGE_KEY = 'plataformas-global';
-  function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); plataformas=raw?JSON.parse(raw):[] }catch(e){ plataformas=[] } }
-  function saveData(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(plataformas)); }catch(e){} }
+  const STORAGE_KEY = 'plataformas-xpo-pro-apple';
+  function loadData(){ 
+    try{ 
+      const raw=localStorage.getItem(STORAGE_KEY); 
+      plataformas=raw?JSON.parse(raw):[];
+    }catch(e){ 
+      console.error("Error al cargar datos:", e);
+      plataformas=[] 
+    } 
+  }
+  function saveData(){ 
+    try{ 
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(plataformas)); 
+    }catch(e){
+      console.error("Error al guardar datos:", e);
+    } 
+  }
 
-  // ===== Single Card Flow with transitions =====
+  // Custom Modal implementation (iOS style)
+  const modal = $('customModal');
+  const modalTitle = $('modalTitle');
+  const modalBody = $('modalBody');
+  const modalButtons = $('modalButtons');
+
+  /**
+   * Muestra un modal personalizado con estilo iOS.
+   */
+  function showMessage(title, message, type='alert', onConfirm=null) {
+      modalTitle.textContent = title;
+      modalBody.innerHTML = message;
+      modalButtons.innerHTML = '';
+      
+      modal.style.display = 'flex'; 
+      setTimeout(() => modal.classList.add('show'), 10); 
+
+      const close = () => { modal.classList.remove('show'); };
+
+      if (type === 'alert') {
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-primary';
+          btn.textContent = 'Aceptar';
+          btn.style.flex = '1 1 100%';
+          btn.onclick = close;
+          modalButtons.appendChild(btn);
+      } else if (type === 'confirm' && onConfirm) {
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'btn btn-secondary';
+          cancelBtn.textContent = 'Cancelar';
+          cancelBtn.style.flex = '1';
+          cancelBtn.onclick = close;
+
+          const confirmBtn = document.createElement('button');
+          confirmBtn.className = 'btn btn-danger';
+          confirmBtn.textContent = 'Confirmar';
+          confirmBtn.style.flex = '1';
+          confirmBtn.onclick = () => { onConfirm(); close(); };
+
+          modalButtons.appendChild(cancelBtn);
+          modalButtons.appendChild(confirmBtn);
+      }
+  }
+  
+  modal.addEventListener('transitionend', (e) => {
+      if (e.target === modal && !modal.classList.contains('show')) {
+          modal.style.display = 'none';
+      }
+  });
+
+
+  // ===== Single Card Flow logic (con transiciones iOS) =====
   let step = 1;
-  function setDots(n){ ['d1','d2','d3'].forEach((id,i)=>$(id).classList.toggle('active', i===n-1)); }
-  function setTitle(n){ $('flowTitle').textContent = n===1?'Matrícula':n===2?'Estado':'Contenido'; }
-  function hint(msg){ $('hint').textContent = msg||''; }
-
+  
   function showStep(next, dir='forward'){
-    const cur = $('s'+step), nxt = $('s'+next);
-    if(cur===nxt) return;
+    const cur = $('s'+step);
+    const nxt = $('s'+next);
+    if(!nxt || cur===nxt) return;
+
+    console.log('Transition to step', next, 'Direction:', dir); // Debug log
+
+    // 1. Ocultar la pantalla actual
     cur.classList.remove('active');
     cur.classList.add(dir==='forward' ? 'out-left':'out-right');
-    setTimeout(()=>cur.classList.remove('out-left','out-right'), 340);
+    
+    // 2. Mostrar la siguiente pantalla
     nxt.classList.add('active');
-    step = next; setDots(step); setTitle(step);
+    nxt.classList.remove(dir==='forward' ? 'out-right':'out-left'); 
+
+    // 3. Actualizar dots
+    $('d1').classList.toggle('active', next===1);
+    $('d2').classList.toggle('active', next===2);
+    $('d3').classList.toggle('active', next===3);
+
+    // 4. Actualizar título
+    $('flowTitle').textContent = next===1 ? 'Matrícula' : next===2 ? 'Estado' : 'Descripción';
+    step = next;
+
+    // 5. Limpiar clases de transición antiguas 
+    setTimeout(()=>{ 
+      cur.classList.remove('out-left','out-right');
+      // Asegurar que la pantalla de destino no tenga clases de transición antiguas
+      nxt.classList.remove('out-left','out-right');
+    }, 500);
   }
 
   function nextFromS1(){
     const m = $('matriculaInput').value.trim().toUpperCase();
-    if(!m){ alert('Por favor, introduce una matrícula válida'); return; }
+    if(m.length < 4){ 
+      showMessage('Error de Entrada', 'Por favor, introduce una matrícula válida (mínimo 4 caracteres).'); 
+      return; 
+    }
     currentMatricula = m;
-    $('matriculaDisplay2') && ($('matriculaDisplay2').textContent = m);
-    showStep(2,'forward'); hint('Selecciona el estado');
+    $('matriculaDisplay').textContent = m;
+    $('matriculaDisplay2').textContent = m;
+    showStep(2,'forward');
+    // Reiniciar selección de estado
+    $$('.btn-status').forEach(btn => btn.classList.remove('selected'));
+    currentEstado = '';
   }
 
-  function chooseEstado(estado){
+  function selectEstado(estado){
+    console.log('Estado selected:', estado); // Debug log
+    // 1. Limpiar selección y establecer nueva
+    $$('.btn-status').forEach(btn => {
+        btn.classList.remove('selected');
+        // Reset visual feedback for VACÍA button
+        if(btn.dataset.estado === 'VACÍA'){
+            btn.textContent = 'Vacía';
+            btn.style.color = 'var(--muted)';
+            btn.style.borderColor = 'var(--line)';
+        }
+    });
+    
+    const btn = document.querySelector(`[data-estado="${estado}"]`);
+    btn.classList.add('selected');
+
     currentEstado = estado;
-    $('estadoDisplay') && ($('estadoDisplay').textContent = estado);
+    $('estadoDisplay').textContent = estado;
+    
+    // 2. Comportamiento según el estado
     if(estado==='VACÍA'){
-      if(!currentMatricula){ alert('Introduce primero una matrícula válida'); showStep(1,'back'); return; }
-      const dup = plataformas.some(p => p.matricula===currentMatricula && p.estado==='VACÍA');
-      if(dup){ alert('⚠️ Esta matrícula ya fue registrada como VACÍA.'); resetFlow(); return; }
-      plataformas.push({ id:Date.now(), matricula:currentMatricula, estado, contenido:'', timestamp:fmtHour() });
-      saveData(); updateAll(); renderTable(activeFilter); resetFlow();
+      if(!currentMatricula){ showMessage('Error', 'Error interno de Matrícula.'); resetFlow(); return; }
+      
+      const dup = plataformas.some(p => p.matricula===currentMatricula && p.estado==='VACÍA' && isToday(p.id));
+      if(dup){ 
+        showMessage('Registro Duplicado', `Esta matrícula ya fue registrada como **VACÍA** hoy.`, 'alert'); 
+        btn.classList.remove('selected');
+        currentEstado = ''; // Limpiar estado ya que no se registró
+        return; 
+      }
+      
+      // Registrar inmediatamente VACÍA
+      plataformas.push({ id:Date.now(), matricula:currentMatricula, estado, contenido:'Vacía', timestamp:fmtHour() });
+      saveData(); 
+      updateAll(true); 
+      
+      // Feedback visual
+      const prev=btn.textContent;
+      btn.textContent='Registrado';
+      btn.style.color = 'var(--color-vacia)';
+      btn.style.borderColor = 'var(--color-vacia)';
+      
+      setTimeout(()=>{ 
+        btn.textContent=prev; 
+        btn.style.color = 'var(--muted)'; // Volver al color sutil por defecto
+        btn.style.borderColor = 'var(--line)'; // Volver al borde sutil
+        resetFlow(); 
+      }, 1000);
+
     }else{
-      showStep(3,'forward'); hint('Añade una descripción breve');
+      // Para CARGADA o AVERIADA, continuar al paso 3
+      showStep(3,'forward');
+      $('contenidoInput').focus();
     }
+  }
+
+  function isToday(timestamp) {
+    const today = new Date().toDateString();
+    const date = new Date(timestamp).toDateString();
+    return today === date;
   }
 
   function registrar(){
     const contenido = $('contenidoInput').value.trim();
-    if(!contenido){ alert('Describe el contenido o el problema'); return; }
+    if(contenido.length < 5){ showMessage('Falta Descripción', 'Describe el contenido o el problema con un mínimo de 5 caracteres.'); return; }
+    
+    // Re-check for duplication logic 
+    const dup = plataformas.some(p => 
+        p.matricula === currentMatricula && 
+        p.estado === currentEstado && 
+        p.contenido === contenido &&
+        isToday(p.id)
+    );
+
+    if (dup) {
+        showMessage('Registro Duplicado', `Ya has registrado la matrícula **${currentMatricula}** como **${currentEstado}** con esa misma descripción hoy.`, 'alert');
+        return;
+    }
+
+
     plataformas.push({ id:Date.now(), matricula:currentMatricula, estado:currentEstado, contenido, timestamp:fmtHour() });
-    saveData(); updateAll(); renderTable(activeFilter);
+    saveData(); 
+    updateAll(true);
+    
+    // Feedback visual de iOS
     const btn=$('btnRegistrar'); const prev=btn.textContent;
-    btn.disabled=true; btn.textContent='Registrando…';
-    setTimeout(()=>{ btn.textContent='Registrado ✓'; setTimeout(()=>{ btn.disabled=false; btn.textContent=prev; resetFlow(); }, 800); }, 420);
+    btn.disabled=true; 
+    btn.textContent='Registrado';
+
+    setTimeout(()=>{ 
+      btn.textContent=prev; 
+      btn.disabled=false; 
+      resetFlow(); 
+    }, 1200);
   }
 
   function resetFlow(){
-    $('matriculaInput').value=''; $('contenidoInput').value='';
-    currentMatricula=''; currentEstado=''; showStep(1,'back'); hint('');
+    $('matriculaInput').value=''; 
+    $('contenidoInput').value='';
+    currentMatricula=''; 
+    currentEstado=''; 
+    $$('.btn-status').forEach(btn => btn.classList.remove('selected'));
+    showStep(1,'back');
+    $('matriculaInput').focus();
+  }
+  
+  /**
+   * Elimina un registro con animación.
+   */
+  function deleteRegistro(id) {
+      // Usar confirmación tipo iOS
+      showMessage(
+          'Eliminar Registro',
+          `¿Deseas eliminar el registro con ID **${id}**?`,
+          'confirm',
+          ()=>{
+              const row = document.querySelector(`.card-row[data-id="${id}"]`);
+              if (row) {
+                  row.classList.add('fade-out'); // Inicia animación
+                  setTimeout(() => {
+                      plataformas = plataformas.filter(p => p.id !== id);
+                      saveData();
+                      updateAll(true); 
+                  }, 300); 
+              }
+          }
+      );
   }
 
-  // ===== Summary + Registros card (single) =====
-  function updateAll(){
-    const cargadas = plataformas.filter(p=>p.estado==='CARGADA');
-    const vacias   = plataformas.filter(p=>p.estado==='VACÍA');
-    const averiadas= plataformas.filter(p=>p.estado==='AVERIADA');
-    $('cargadasCount').textContent=cargadas.length;
-    $('vaciasCount').textContent=vacias.length;
-    $('averiadasCount').textContent=averiadas.length;
-    $('totalCount').textContent=plataformas.length;
+
+  // ===== UI update (Contadores Dinámicos y Gráfico) =====
+  function updateAll(animate=false){
+    // Filtrar solo registros de hoy para el resumen
+    const todaysPlatforms = plataformas.filter(p => isToday(p.id));
+
+    const cargadas = todaysPlatforms.filter(p=>p.estado==='CARGADA');
+    const vacias   = todaysPlatforms.filter(p=>p.estado==='VACÍA');
+    const averiadas= todaysPlatforms.filter(p=>p.estado==='AVERIADA');
+    
+    // Obtener colores del CSS (necesario ya que son variables)
+    const getCssColor = (prop) => getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+    const red = getCssColor('--color-cargada');
+    const green = getCssColor('--color-vacia');
+    const yellow = getCssColor('--color-averiada');
+    const accent = getCssColor('--accent');
+
+    // Función de actualización de contador con microanimación
+    const updateCount = (id, value, color) => {
+        const elem = $(id);
+        if (elem.textContent !== String(value) && animate) {
+            elem.classList.add('pop');
+            setTimeout(() => elem.classList.remove('pop'), 250);
+        }
+        elem.textContent = value;
+        elem.style.color = color;
+    };
+    
+    updateCount('cargadasCount', cargadas.length, red);
+    updateCount('vaciasCount', vacias.length, green);
+    updateCount('averiadasCount', averiadas.length, yellow);
+    updateCount('totalCount', todaysPlatforms.length, accent);
+    
+    $('cargadasListCount').textContent=cargadas.length;
+    $('vaciasListCount').textContent=vacias.length;
+    $('averiadasListCount').textContent=averiadas.length;
+    
+    // Renderizado de listas (aplicando filtro de búsqueda)
+    const filteredCargadas = cargadas.filter(p => p.matricula.includes(filteredMatricula));
+    const filteredVacias = vacias.filter(p => p.matricula.includes(filteredMatricula));
+    const filteredAveriadas = averiadas.filter(p => p.matricula.includes(filteredMatricula));
+
+    renderList('cargadasList', filteredCargadas, true, red);
+    renderList('vaciasList',   filteredVacias,   false, green);
+    renderList('averiadasList',filteredAveriadas,true, yellow);
+    
+    // Actualizar gráfico de distribución
+    updateChart(todaysPlatforms);
+  }
+  
+  function renderList(id, arr, showContent, color){
+    const box=$(id);
+    if(!arr.length){ 
+        box.innerHTML='<div class="empty">No hay registros hoy</div>'; 
+        return; 
+    }
+    
+    box.innerHTML = arr.map(it=>(
+      '<div class="card-row" data-id="'+it.id+'" style="border-left: 4px solid '+color+';">'+
+        '<div class="head"><span>'+esc(it.matricula)+'</span>'+
+        '<div style="display:flex;align-items:center;">'+
+        '<span style="color:var(--muted);font-weight:500;font-size:12px;">'+esc(it.timestamp)+'</span>'+
+        '<button class="delete-btn" onclick="deleteRegistro('+it.id+')">'+
+            '<svg viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>'+
+            '<path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4h1.07l.951 7.135a.5.5 0 0 0 .992.001L8 10l.969 1.136a.5.5 0 0 0 .992-.001L10.812 4h1.07L13 13.5A2.5 2.5 0 0 1 10.5 16h-5A2.5 2.5 0 0 1 3 13.5L4.118 4zM4.5 2a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/></svg>'+
+        '</button>'+
+        '</div>'+
+        '</div>'+
+        (showContent&&it.contenido&&it.contenido!=='Vacía'?'<div class="body">'+esc(it.contenido)+'</div>':'')+
+      '</div>'
+    )).join('');
   }
 
-  let activeFilter = 'TODAS';
-  function renderTable(filter='TODAS'){
-    activeFilter = filter;
-    const wrap = document.getElementById('tableWrap');
-    const data = plataformas.filter(p => filter==='TODAS' ? true : p.estado===filter);
-    if(!data.length){ wrap.innerHTML = '<div class="empty">No hay registros</div>'; return; }
-    const rows = data.map(p => `
-      <tr class="row-item">
-        <td class="cell"><strong>${esc(p.matricula)}</strong></td>
-        <td class="cell meta">${esc(p.estado)}</td>
-        <td class="cell meta">${esc(p.timestamp)}</td>
-        <td class="cell">${p.contenido?esc(p.contenido):''}</td>
-        <td class="cell" style="width:1%">
-          <button aria-label="Eliminar" data-id="${p.id}" class="btn btn-secondary" style="padding:6px 10px">Eliminar</button>
-        </td>
-      </tr>
-    `).join('');
-    wrap.innerHTML = `<table class="table"><tbody>${rows}</tbody></table>`;
-    // attach delete
-    wrap.querySelectorAll('button[data-id]').forEach(b=>{
-      b.onclick = () => {
-        const id = Number(b.getAttribute('data-id'));
-        plataformas = plataformas.filter(p=>p.id!==id);
-        saveData(); updateAll(); renderTable(activeFilter);
-      };
-    });
-  }
-  const esc = (s)=>String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  // ===== D3.js Donut Chart Logic =====
+  function updateChart(data) {
+    const total = data.length;
+    
+    const chartData = [
+        { status: 'Cargadas', count: data.filter(p => p.estado === 'CARGADA').length, color: getCssColor('--color-cargada') },
+        { status: 'Vacías', count: data.filter(p => p.estado === 'VACÍA').length, color: getCssColor('--color-vacia') },
+        { status: 'Averiadas', count: data.filter(p => p.estado === 'AVERIADA').length, color: getCssColor('--color-averiada') }
+    ].filter(d => d.count > 0);
 
-  // ===== EXACT PDF (igual que tu archivo) =====
+    const svg = d3.select("#donutChart");
+    svg.selectAll("*").remove(); // Limpiar gráfico anterior
+
+    if (total === 0) {
+      svg.append("text")
+        .attr("x", "50%")
+        .attr("y", "50%")
+        .attr("dominant-baseline", "middle")
+        .attr("text-anchor", "middle")
+        .attr("font-size", "14px")
+        .attr("fill", getCssColor('--muted'))
+        .text("No hay datos para el gráfico");
+      return;
+    }
+
+    const width = 180, height = 180;
+    const radius = Math.min(width, height) / 2;
+    const innerRadius = radius * 0.7; // Para el efecto Donut
+    
+    svg.attr("width", width)
+       .attr("height", height)
+       .attr("viewBox", `0 0 ${width} ${height}`)
+       .append("g")
+       .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+    const g = svg.select("g");
+
+    const pie = d3.pie()
+        .sort(null)
+        .value(d => d.count);
+
+    const arc = d3.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(radius);
+
+    // Creación de arcos
+    const arcs = g.selectAll(".arc")
+        .data(pie(chartData))
+        .enter().append("g")
+        .attr("class", "arc");
+
+    arcs.append("path")
+        .attr("d", arc)
+        .attr("fill", d => d.data.color)
+        .attr("stroke", getCssColor('--panel'))
+        .attr("stroke-width", 2)
+        .transition()
+        .duration(700)
+        .attrTween("d", function(d) {
+            const i = d3.interpolate(d.startAngle, d.endAngle);
+            return function(t) {
+                d.endAngle = i(t);
+                return arc(d);
+            }
+        });
+
+    // Texto central (Total)
+    g.append("text")
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-size", "30px")
+        .attr("font-weight", "800")
+        .attr("fill", getCssColor('--text'))
+        .text(total);
+
+    g.append("text")
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-size", "10px")
+        .attr("font-weight", "600")
+        .attr("fill", getCssColor('--muted'))
+        .attr("y", 15)
+        .text("TOTAL");
+
+    // Leyenda (fuera del gráfico) - Se puede mover a un div aparte si es más grande
+    const legend = d3.select("#chartContainer")
+        .append("div")
+        .style("margin-left", "20px")
+        .style("align-self", "center");
+
+    legend.selectAll(".legend-item")
+        .data(chartData)
+        .enter()
+        .append("div")
+        .attr("class", "legend-item")
+        .style("display", "flex")
+        .style("align-items", "center")
+        .style("margin-bottom", "4px")
+        .html(d => {
+            const percent = total > 0 ? (d.count / total * 100).toFixed(0) : 0;
+            return `<div style="width:10px; height:10px; border-radius:50%; background:${d.color}; margin-right:8px;"></div>
+                    <span style="font-size:12px; font-weight: 500; color: ${getCssColor('--text')}">${d.status.toUpperCase()}</span>
+                    <span style="font-size:12px; font-weight: 600; color: ${d.color}; margin-left: auto;">(${percent}%)</span>`;
+        });
+  }
+
+  // ===== PDF Export (Con colores Apple/iOS) =====
   function generatePDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -326,165 +887,205 @@
           day: 'numeric'
       }).toUpperCase();
 
-      const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
-      const vacias = plataformas.filter(p => p.estado === 'VACÍA');
-      const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+      const todaysPlatforms = plataformas.filter(p => isToday(p.id));
+      const cargadas = todaysPlatforms.filter(p => p.estado === 'CARGADA');
+      const vacias = todaysPlatforms.filter(p => p.estado === 'VACÍA');
+      const averiadas = todaysPlatforms.filter(p => p.estado === 'AVERIADA');
+      
+      // Colores ajustados a las variables CSS (deben ser RGB para jsPDF)
+      const XPO_BLUE = [10, 132, 255]; 
+      const RED_STATUS = [255, 59, 48];
+      const GREEN_STATUS = [52, 199, 89];
+      const YELLOW_STATUS = [255, 159, 10];
+      const GRAY_TEXT = [142, 142, 147];
+      const DARK_TEXT = [28, 28, 30];
 
-      // HEADER
+      // ==== HEADER PRONUNCIADO ====
       doc.setFillColor(255,255,255);
-      doc.roundedRect(10, 8, 190, 36, 5, 5, 'F');
+      doc.roundedRect(10, 8, 190, 38, 5, 5, 'F');
       doc.setDrawColor(220,220,220);
-      doc.roundedRect(10, 8, 190, 36, 5, 5);
-      doc.setDrawColor(200,200,200);
-      doc.line(10, 44, 200, 44);
 
+      // CODE (arriba derecha - XPO LOGISTICS)
       doc.setFont('helvetica','bold');
       doc.setFontSize(11);
-      doc.setTextColor(40,40,40);
-      doc.text('CODE', 195, 14, { align: 'right' });
+      doc.setTextColor(...DARK_TEXT); 
+      doc.text('XPO LOGISTICS', 195, 14, { align: 'right' });
 
+      // Título Principal
       doc.setFont('helvetica','bold');
-      doc.setFontSize(18);
-      const full = 'XPO LOGISTICS';
-      const xpoPart = 'XPO ';
-      const startX = 105 - (doc.getTextWidth(full) / 2);
-      doc.setTextColor(239,68,68);
-      doc.text(xpoPart, startX, 22);
-      const nextX = startX + doc.getTextWidth(xpoPart);
-      doc.setTextColor(0,0,0);
-      doc.text('LOGISTICS', nextX, 22);
+      doc.setFontSize(22);
+      const full = 'REGISTRO DE PLATAFORMAS';
+      doc.setTextColor(...DARK_TEXT);
+      doc.text(full, 105, 24, { align: 'center' });
 
+      // Fecha ligera
       doc.setFont('helvetica','normal');
-      doc.setFontSize(8);
-      doc.setTextColor(120,120,130);
-      doc.text(dateString, 105, 28, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setTextColor(...GRAY_TEXT);
+      doc.text(dateString, 105, 30, { align: 'center' });
 
-      const badgeY = 32, badgeWidth = 40, badgeHeight = 8, gap = 8;
-      let bx = 105 - (badgeWidth*3 + gap*2)/2;
-      function drawCard(x,y,w,h,bg,num,label,numColor){
-          doc.setFillColor(...bg);
+      // ==== BADGES ====
+      function drawCard(x,y,w,h,num,label,numColor){
+          doc.setFillColor(255,255,255);
           doc.roundedRect(x,y,w,h,2,2,'F');
-          doc.setFont('helvetica','bold');
-          doc.setFontSize(8);
-          doc.setTextColor(...numColor);
-          doc.text(String(num), x+w*0.3, y+h/2+2, { align: 'center' });
-          doc.setFont('helvetica','bold');
-          doc.setFontSize(7);
-          doc.setTextColor(60,60,70);
-          doc.text(label, x+w*0.7, y+h/2+2, { align: 'center' });
-      }
-      drawCard(bx,badgeY,badgeWidth,badgeHeight,[254,226,226],cargadas.length,'CARGADAS',[180,30,50]); bx+=badgeWidth+gap;
-      drawCard(bx,badgeY,badgeWidth,badgeHeight,[237,249,237],vacias.length,'VACÍAS',[16,185,129]); bx+=badgeWidth+gap;
-      drawCard(bx,badgeY,badgeWidth,badgeHeight,[255,245,230],averiadas.length,'AVERIADAS',[200,110,20]);
+          doc.setDrawColor(230,230,235);
+          doc.roundedRect(x,y,w,h,2,2,'S');
 
-      let yPosition = 52, bottomMargin = 260;
-      function createTwoColumnTables(leftTitle,leftData,rightTitle,rightData,startY){
-          let currentY=startY, leftX=15, rightX=110, columnWidth=85;
-          doc.setFont('helvetica','bold'); doc.setFontSize(12);
-          if(leftData.length>0) doc.text(leftTitle.toUpperCase(),leftX,currentY);
-          if(rightData.length>0) doc.text(rightTitle.toUpperCase(),rightX,currentY);
-          currentY+=8;
-          if(leftData.length>0){
-              doc.setFillColor(245,247,250); doc.rect(leftX,currentY-4,columnWidth,7,'F');
-              doc.setFont('helvetica','bold'); doc.setFontSize(9);
-              doc.text('MATRICULA',leftX+2,currentY); doc.text('CONTENIDO',leftX+35,currentY);
-          }
-          if(rightData.length>0){
-              doc.setFillColor(245,247,250); doc.rect(rightX,currentY-4,columnWidth,7,'F');
-              doc.setFont('helvetica','bold'); doc.setFontSize(9);
-              doc.text('MATRICULA',rightX+2,currentY);
-          }
-          currentY+=8;
-          doc.setFont('helvetica','normal'); doc.setFontSize(8);
-          const maxRows=Math.max(leftData.length,rightData.length);
-          for(let i=0;i<maxRows;i++){
-              if(i%2===0){
-                  if(leftData[i]){doc.setFillColor(252,253,255);doc.rect(leftX,currentY-3,columnWidth,6,'F');}
-                  if(rightData[i]){doc.setFillColor(252,253,255);doc.rect(rightX,currentY-3,columnWidth,6,'F');}
-              }
-              if(leftData[i]){
-                  doc.text(leftData[i].matricula.toUpperCase(),leftX+2,currentY);
-                  if(leftData[i].contenido){
-                      const lines=doc.splitTextToSize(leftData[i].contenido.toUpperCase(),45);
-                      doc.text(lines,leftX+35,currentY);
-                      if(lines.length>1) currentY+=(lines.length-1)*3;
-                  }
-              }
-              if(rightData[i]){ doc.text(rightData[i].matricula.toUpperCase(),rightX+2,currentY); }
-              currentY+=6;
-              if(currentY>bottomMargin){ doc.addPage(); currentY=30; }
-          }
-          return currentY+10;
+          doc.setFont('helvetica','bold');
+          doc.setFontSize(14);
+          doc.setTextColor(numColor[0],numColor[1],numColor[2]);
+          doc.text(String(num), x+w*0.25, y+h/2+1, { align: 'center' });
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(8);
+          doc.setTextColor(...DARK_TEXT);
+          doc.text(label, x+w*0.7, y+h/2+1, { align: 'center' });
       }
-      function createSingleTable(title,data,startY){
-          let currentY=startY; if(!data.length) return currentY;
-          doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text(title.toUpperCase(),15,currentY); currentY+=8;
-          doc.setFillColor(245,247,250); doc.rect(15,currentY-4,180,7,'F');
-          doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text('MATRICULA',17,currentY); doc.text('DESCRIPCION',70,currentY); currentY+=8;
-          doc.setFont('helvetica','normal'); doc.setFontSize(8);
-          data.forEach((p,i)=>{
-              if(i%2===0){doc.setFillColor(252,253,255);doc.rect(15,currentY-3,180,6,'F');}
-              doc.text(p.matricula.toUpperCase(),17,currentY);
-              if(p.contenido){
-                  const lines=doc.splitTextToSize(p.contenido.toUpperCase(),120);
-                  doc.text(lines,70,currentY);
-                  if(lines.length>1) currentY+=(lines.length-1)*3;
+
+      const badgeY = 38;
+      const badgeWidth = 45;
+      const badgeHeight = 10;
+      const gap = 6;
+      const totalWidth = badgeWidth*4 + gap*3; 
+      let bx = 105 - totalWidth/2;
+
+      // Badges with subtle colors
+      drawCard(bx,badgeY,badgeWidth,badgeHeight,cargadas.length,'CARGADAS',RED_STATUS);
+      bx+=badgeWidth+gap;
+      drawCard(bx,badgeY,badgeWidth,badgeHeight,vacias.length,'VACÍAS',GREEN_STATUS);
+      bx+=badgeWidth+gap;
+      drawCard(bx,badgeY,badgeWidth,badgeHeight,averiadas.length,'AVERIADAS',YELLOW_STATUS);
+      bx+=badgeWidth+gap;
+      drawCard(bx,badgeY,badgeWidth,badgeHeight,todaysPlatforms.length,'TOTAL',XPO_BLUE);
+
+
+      let yPosition = 58; 
+      const bottomMargin = 270;
+
+      // ==== TABLAS ====
+      function createTable(title, data, startY, showContent = true) {
+          let currentY = startY;
+          if (data.length === 0) return currentY;
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(14);
+          doc.setTextColor(...DARK_TEXT);
+          doc.text(title.toUpperCase() + ' (' + data.length + ')', 15, currentY);
+          currentY += 8;
+
+          // Header row
+          doc.setFillColor(248, 248, 250);
+          doc.rect(15, currentY - 5, 180, 8, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(...DARK_TEXT);
+          doc.text('MATRICULA', 17, currentY);
+          doc.text('HORA', 55, currentY);
+          if (showContent) {
+              doc.text('DESCRIPCION', 90, currentY);
+          }
+          currentY += 8;
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(...DARK_TEXT);
+
+          data.forEach((platform) => {
+              // Line separator
+              doc.setDrawColor(240, 240, 245);
+              doc.line(15, currentY - 3, 195, currentY - 3);
+
+              doc.text(platform.matricula.toUpperCase(), 17, currentY + 2);
+              doc.text(platform.timestamp, 55, currentY + 2);
+              
+              if (showContent && platform.contenido && platform.contenido !== 'Vacía') {
+                  const lines = doc.splitTextToSize(platform.contenido, 100);
+                  doc.text(lines, 90, currentY + 2);
+                  currentY += (lines.length - 1) * 3;
               }
-              currentY+=6;
-              if(currentY>bottomMargin){ doc.addPage(); currentY=30; }
+              currentY += 6;
+
+              if (currentY > bottomMargin) {
+                  doc.addPage();
+                  currentY = 30; // Reset Y position for new page
+              }
           });
-          return currentY+10;
+          currentY += 6; // Space after table
+          return currentY;
       }
-      const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
-      const vacias = plataformas.filter(p => p.estado === 'VACÍA');
-      const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
-      if(cargadas.length>0||vacias.length>0){
-          yPosition=createTwoColumnTables('PLATAFORMAS CARGADAS '+cargadas.length,cargadas,'PLATAFORMAS VACÍAS '+vacias.length,vacias,yPosition);
-      }
-      if(averiadas.length>0){
-          yPosition=createSingleTable('PLATAFORMAS AVERIADAS ('+averiadas.length+')',averiadas,yPosition);
-      }
+
+      yPosition = createTable('Plataformas Cargadas', cargadas, yPosition, true);
+      yPosition = createTable('Plataformas Vacías', vacias, yPosition, false); 
+      yPosition = createTable('Plataformas Averíadas', averiadas, yPosition, true);
+
+
+      // ==== FOOTER (iOS THEME) ====
       const pageCount=doc.internal.getNumberOfPages();
       for(let i=1;i<=pageCount;i++){
-          doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8);
-          doc.setTextColor(100,100,110); doc.text('© 2025 XPO LOGISTICS – Informe interno',20,285);
-          doc.setTextColor(60,90,180); doc.textWithLink('https://vbenyx.github.io/XPO-LOGISTICS/',105,285,{ url:'https://vbenyx.github.io/XPO-LOGISTICS/', align:'center' });
-          doc.setTextColor(100,100,110); doc.text('Página '+i+' de '+pageCount,190,285,{align:'right'});
+          doc.setPage(i);
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(8);
+          doc.setTextColor(100,100,110);
+          doc.text('© XPO Logistics. Documento de registro interno.',20,285);
+          
+          doc.setFont('helvetica','bold');
+          doc.setTextColor(...XPO_BLUE);
+          doc.text('REPORTE', 105, 285, { align: 'center' });
+          
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(100,100,110);
+          doc.text('Página '+i+' de '+pageCount,190,285,{align:'right'});
       }
-      const exportDateForName = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
-      doc.save(`reporte_plataformas_${exportDateForName}.pdf`);
+
+      
+      const exportDateForName = new Date().toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+      }).replace(/\//g, '-');
+      doc.save(`reporte_plataformas_${exportDateForName}_apple.pdf`);
+      
   }
 
-  // ===== Init =====
+  // ===== Init & Listeners =====
   window.addEventListener('DOMContentLoaded', () => {
     $('currentDate').textContent = fmtDateLong().toUpperCase();
-    loadData(); updateAll(); renderTable(activeFilter);
+    loadData(); updateAll();
+    $('matriculaInput').focus(); 
 
+    // Eventos del flujo
     $('toS2').addEventListener('click', nextFromS1);
     $('back1').addEventListener('click', ()=>showStep(1,'back'));
     $('back2').addEventListener('click', ()=>showStep(2,'back'));
-    $('optCarg').addEventListener('click', ()=>chooseEstado('CARGADA'));
-    $('optVacia').addEventListener('click', ()=>chooseEstado('VACÍA'));
-    $('optAver').addEventListener('click',  ()=>chooseEstado('AVERIADA'));
+    
+    // Eventos de estado (usa dataset)
+    $$('#s2 .btn-status').forEach(btn => {
+        btn.addEventListener('click', (e) => selectEstado(e.currentTarget.dataset.estado));
+    });
+
     $('btnRegistrar').addEventListener('click', registrar);
-
-    // tabs
-    document.querySelectorAll('.tab').forEach(t=>{
-      t.onclick = () => {
-        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-        t.classList.add('active');
-        renderTable(t.dataset.filter);
-      };
-    });
-
     $('genPdf').addEventListener('click', generatePDF);
-    $('clearAll').addEventListener('click', ()=>{
-      if(!plataformas.length){ alert('No hay registros para limpiar'); return; }
-      if(confirm('¿Seguro que quieres eliminar todos los registros?')){
-        plataformas = []; saveData(); updateAll(); renderTable(activeFilter); resetFlow();
-      }
+    
+    // Evento de búsqueda (Filtro por matrícula)
+    $('searchInput').addEventListener('input', (e) => {
+        filteredMatricula = e.target.value.trim().toUpperCase();
+        updateAll(false);
     });
 
+    // Limpiar todos los registros
+    $('clearAll').addEventListener('click', ()=>{
+      if(!plataformas.length){ showMessage('Sin Registros', 'No hay registros para limpiar', 'alert'); return; }
+      
+      showMessage(
+        'Confirmación Necesaria', 
+        '¿Seguro que quieres eliminar **todos** los registros de la aplicación? Esta acción es irreversible.', 
+        'confirm', 
+        () => {
+          plataformas=[]; saveData(); updateAll(true); resetFlow();
+        }
+      );
+    });
+
+    // Asegurar guardado en localStorage
     document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') saveData(); });
     window.addEventListener('beforeunload', saveData);
   });
