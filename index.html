@@ -2,21 +2,19 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
 <title>XPO — Registro de Plataformas (Apple FX)</title>
 
-<!-- Forzar light mode -->
+<!-- Sin dependencias externas para estilos (offline-friendly) -->
 <style>
-:root { color-scheme: light; }
-
-/* ===== Normalize ===== */
+/* ===== Minimal Normalize / Reset (inline) ===== */
 *{box-sizing:border-box}html,body{height:100%}body{margin:0}
 h1,h2,h3,h4,p{margin:0}button,input,textarea{font:inherit}
 img,svg,video{display:block;max-width:100%}
 
-/* ===== Tokens (solo light) ===== */
+/* ===== Design Tokens (Apple-like, sin modo oscuro) ===== */
 :root{
-  --accent:#0A84FF;
+  --accent:#0A84FF;           /* iOS blue */
   --bg:#F5F6F7;
   --panel:#FFFFFF;
   --line:#E6E6EA;
@@ -25,386 +23,602 @@ img,svg,video{display:block;max-width:100%}
   --radius:18px;
   --shadow-1:0 10px 28px rgba(0,0,0,.06);
   --shadow-2:0 4px 18px rgba(0,0,0,.07);
-  --ease-snap:cubic-bezier(.22,1,.36,1);
+  --ease-snap:cubic-bezier(.22,1,.36,1);   /* “springy” */
   --ease-soft:cubic-bezier(.25,.8,.25,1);
   --blur:18px;
   --glass:rgba(255,255,255,.68);
 }
 
-/* Motion reduce */
+/* Motion-safe defaults */
 @media (prefers-reduced-motion: reduce){
-  *{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
 }
 
 /* ===== Base ===== */
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,Segoe UI,Roboto,Helvetica,Arial;
   background:radial-gradient(1200px 600px at 10% -10%, rgba(10,132,255,.06), transparent 60%), var(--bg);
-  color:var(--text);
+  color:var(--text); line-height:1.45; letter-spacing:.01em;
 }
-input,textarea,button{font-size:16px}
-.app{max-width:1040px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)) 16px}
+input,textarea,button{font-size:16px} /* evita zoom iOS */
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
-/* ===== Header ===== */
+.app{
+  max-width:1040px;margin:0 auto;
+  padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)) 16px;
+}
+
+/* ===== Header “glass” con parallax ===== */
 .header{
-  position:sticky;top:12px;z-index:10;
-  border-radius:22px;padding:22px 20px;
+  position:sticky; top:12px; z-index:10;
+  border-radius:22px; padding:22px 20px;
   background:var(--glass);
   border:1px solid rgba(120,120,140,.22);
   backdrop-filter:saturate(1.4) blur(var(--blur));
   box-shadow:var(--shadow-1);
+  overflow:hidden; isolation:isolate; transform:translateZ(0);
 }
 .header::before{
-  content:"";position:absolute;inset:0;
+  content:""; position:absolute; inset:0;
   background:linear-gradient(180deg, rgba(10,132,255,.10), transparent 60%);
-}
-.brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800}
-.chip{background:rgba(242,243,244,.8);border:1px solid var(--line);padding:6px 10px;border-radius:10px;font-weight:800}
-.headline{text-align:center;font-size:clamp(20px,3.3vw,28px);font-weight:800}
-.subtle{text-align:center;color:var(--muted);margin-top:6px}
-
-/* ===== Card ===== */
-.card{
-  background:var(--panel);border:1px solid var(--line);
-  border-radius:var(--radius);box-shadow:var(--shadow-2);
-  margin:18px 0;overflow:hidden;
-  transition:transform .35s var(--ease-soft);
-}
-.card:hover{transform:translateY(-2px)}
-.card-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;border-bottom:1px solid var(--line);
-}
-.title-lg{font-weight:800}
-
-/* ===== Screens ===== */
-.card-content{position:relative;min-height:260px;perspective:1000px}
-.screen{
-  position:absolute;inset:0;padding:18px 16px;
-  display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;
-  opacity:0;transform:translateX(24px) scale(.985);
-  transition:opacity .44s var(--ease-snap), transform .44s var(--ease-snap);
   pointer-events:none;
-  will-change:transform,opacity;
 }
-.screen.active{opacity:1;transform:none;pointer-events:auto}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;letter-spacing:.12em}
+.chip{background:rgba(242,243,244,.8);border:1px solid var(--line);padding:6px 10px;border-radius:10px;font-weight:800}
+.headline{margin:8px 0 4px;text-align:center;font-weight:800;font-size:clamp(20px,3.3vw,28px)}
+.subtle{text-align:center;color:var(--muted);font-weight:600}
+
+/* Parallax sutil del header (shadow scroll) */
+.header[data-depth]{transform:translateZ(0)}
+
+/* ===== Card de flujo ===== */
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow-2); padding:0; margin:18px 0; overflow:hidden;
+  transition:transform .35s var(--ease-soft), box-shadow .35s var(--ease-soft);
+}
+.card:hover{transform:translateY(-2px); box-shadow:0 10px 32px rgba(0,0,0,.12)}
+.card:has(.screen.active:focus-within){outline:2px solid rgba(10,132,255,.18)}
+
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:14px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FBFBFD,transparent);
+}
+.chevron{opacity:.65;user-select:none}
+.title-lg{font-weight:800;letter-spacing:.02em}
+
+/* Pantallas con transiciones “springy” */
+.card-content{position:relative;min-height:260px; perspective:1000px}
+.screen{
+  position:absolute; inset:0; padding:18px 16px;
+  display:flex; flex-direction:column; gap:14px; align-items:center; justify-content:center;
+  opacity:0; transform:translateX(24px) translateZ(0) scale(.985); pointer-events:none;
+  transition:opacity .44s var(--ease-snap), transform .44s var(--ease-snap);
+}
+.screen.active{opacity:1; transform:none; pointer-events:auto}
 .screen.out-left{animation:slideOutL .36s var(--ease-snap)}
 .screen.out-right{animation:slideOutR .36s var(--ease-snap)}
 
-@keyframes slideOutL{to{opacity:0;transform:translateX(-24px) scale(.985)}}
-@keyframes slideOutR{to{opacity:0;transform:translateX(24px) scale(.985)}}
+@keyframes slideOutL{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-24px) scale(.985)}}
+@keyframes slideOutR{from{opacity:1;transform:none}to{opacity:0;transform:translateX(24px) scale(.985)}}
 
-/* ===== Progress Pills ===== */
-.steps{
-  display:flex;justify-content:center;gap:6px;padding:16px 0 6px;
-}
-.step-pill{
-  width:42px;height:6px;border-radius:999px;background:#D4D7DB;overflow:hidden;
-}
-.step-pill .fill{
-  width:0%;height:100%;background:var(--accent);
-  transition:width .4s var(--ease-snap);
-}
-.step-pill.active .fill{width:100%}
+.steps{display:flex;gap:8px;justify-content:center;padding:10px 0 2px}
+.dot{width:10px;height:10px;border-radius:999px;background:#D4D6DA;transition:transform .25s var(--ease-snap), background .25s}
+.dot.active{background:var(--accent);transform:scale(1.35)}
 
-/* ===== Inputs ===== */
+/* Inputs */
 .input,.textarea{
-  width:100%;max-width:520px;
-  padding:14px 16px;border-radius:12px;
-  border:1px solid var(--line);background:#fff;
+  width:100%;max-width:520px;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:#fff;
+  outline:none;transition:border-color .22s var(--ease-soft), box-shadow .22s var(--ease-soft), transform .12s;
 }
-.input:focus,.textarea:focus{
-  border-color:var(--accent);box-shadow:0 0 0 8px rgba(10,132,255,.12);
-  outline:none;
-}
-.textarea{min-height:120px;max-height:180px;overflow:auto}
+.input:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 8px rgba(10,132,255,.12);transform:translateY(-1px)}
+.textarea{min-height:120px;resize:vertical}
 
-/* ===== Buttons ===== */
-.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+/* Botones neutros para pasos (sin colorines) */
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .btn{
-  display:inline-flex;align-items:center;justify-content:center;
-  padding:12px 18px;border:0;border-radius:12px;
-  font-weight:700;color:#fff;background:#1C1C1E;
-  transition:transform .14s;
+  position:relative;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 18px;border:1px solid var(--line);border-radius:12px;font-weight:700;color:var(--text);background:#F2F3F5;
+  box-shadow:0 1px 0 rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.06);
+  transition:transform .14s var(--ease-snap), filter .18s var(--ease-soft), box-shadow .2s var(--ease-soft), background .2s, border-color .2s;
+  will-change:transform;
 }
+.btn:hover{background:#ECEEF2;border-color:#D9DCE1}
 .btn:active{transform:scale(.985)}
-.btn-primary{background:var(--accent)}
-.btn-secondary{background:#8E8E93}
-.btn-danger{background:#FF3B30}
+.btn:disabled{opacity:.6;transform:none}
+.btn-primary{background:var(--accent);color:#fff;border-color:transparent}
+.btn-primary:hover{filter:brightness(0.98)}
+.btn-secondary{background:#E9EAED}
+.btn-step{background:#F5F6F8}
+.btn-step:focus{outline:2px solid rgba(10,132,255,.25)}
 
-/* Botones del paso 2 — estilo B (negros) */
-.btn-estado{
-  background:#1C1C1E;
-  color:#fff;
-  border:0;
-  flex:1 1 auto;
-  min-width:100px;
-}
-
-/* Magnético solo desktop */
-@media(pointer:fine){
-  .btn:hover{transform:scale(1.02)}
-}
-
-/* ===== Panels ===== */
+/* ===== Panels / Pills / Lists ===== */
 .panel{
-  background:var(--panel);border:1px solid var(--line);
-  border-radius:var(--radius);padding:18px;margin:18px 0;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;box-shadow:var(--shadow-2);margin:18px 0;
 }
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-.stat .n{font-size:clamp(24px,4vw,32px);font-weight:800;color:var(--accent)}
-.stat .label{color:var(--muted)}
+
+/* Pills progresivas (estilo Apple) */
+.pills{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.pill{
+  position:relative; overflow:hidden; border:1px solid var(--line); border-radius:999px; padding:12px 16px;
+  background:linear-gradient(180deg,#FBFBFC,transparent); box-shadow:0 2px 12px rgba(0,0,0,.04);
+}
+.pill::before{
+  content:""; position:absolute; inset:0; width:var(--fill,0%); background:linear-gradient(90deg, rgba(10,132,255,.18), rgba(10,132,255,.32));
+  transition:width .8s var(--ease-snap);
+}
+.pill-inner{position:relative; display:flex; align-items:center; justify-content:space-between; gap:10px; z-index:1}
+.pill .label{font-weight:800; letter-spacing:.02em}
+.pill .val{font-weight:800; min-width:2.5ch; text-align:right; color:var(--accent)}
 
 .lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.empty{padding:14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
-
+.list h3{margin:0 0 10px;font-size:16px}
+.empty{padding:14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center;font-style:italic}
 .card-row{
-  background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;
+  transition:transform .18s var(--ease-snap), box-shadow .18s var(--ease-snap), background .2s;
 }
-.card-row .head span:first-child{
-  max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
+.card-row:hover{transform:translateY(-1px);box-shadow:var(--shadow-2);background:linear-gradient(180deg,#FBFBFC,transparent)}
+
+/* ===== Helpers ===== */
+.kbd{font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:rgba(0,0,0,.04)}
+.hint{color:var(--muted);font-size:12px;text-align:center;margin-top:6px}
+@media (max-width:640px){ .row .btn{flex:1 1 100%} }
 </style>
 </head>
-
 <body>
-<div class="app">
-
-<header class="header" id="glassHeader">
-  <div class="brand"><div class="chip">CODE</div><div>XPO LOGISTICS</div></div>
-  <div class="headline">Registro de Plataformas</div>
-  <div class="subtle" id="currentDate"></div>
-</header>
-
-<section class="card" id="flowCard">
-  <div class="card-header">
-    <div class="chevron">⟨</div>
-    <div class="title-lg" id="flowTitle">Matrícula</div>
-    <div class="chevron">⟩</div>
-  </div>
-
-  <div class="card-content">
-
-    <!-- S1 -->
-    <div class="screen active" id="s1">
-      <h2 style="font-weight:800;font-size:18px">Paso 1: Matrícula</h2>
-      <input id="matriculaInput" class="input" placeholder="Introduce la matrícula"/>
-      <button class="btn btn-primary" id="toS2">Continuar</button>
-    </div>
-
-    <!-- S2 -->
-    <div class="screen" id="s2">
-      <h2 style="font-weight:800;font-size:18px">Paso 2: Estado</h2>
-      <p class="subtle">Matrícula: <strong id="matriculaDisplay">—</strong></p>
-      <div class="row">
-        <button class="btn btn-estado" id="btnCargada">CARGADA</button>
-        <button class="btn btn-estado" id="btnVacia">VACÍA</button>
-        <button class="btn btn-estado" id="btnAveriada">AVERIADA</button>
+  <div class="app">
+    <!-- Header -->
+    <header class="header" id="glassHeader" data-depth="0.18">
+      <div class="brand">
+        <div class="chip">CODE</div>
+        <div>XPO LOGISTICS</div>
       </div>
-      <div class="row">
-        <button class="btn btn-secondary" id="back1">Volver</button>
+      <div class="headline">Registro de Plataformas</div>
+      <div class="subtle" id="currentDate"></div>
+    </header>
+
+    <!-- Single Card Flow -->
+    <section class="card" id="flowCard" aria-live="polite">
+      <div class="card-header">
+        <div class="chevron" aria-hidden="true">⟨</div>
+        <div class="title-lg" id="flowTitle">Matrícula</div>
+        <div class="chevron" aria-hidden="true">⟩</div>
       </div>
-    </div>
-
-    <!-- S3 -->
-    <div class="screen" id="s3">
-      <h2 style="font-weight:800;font-size:18px">Paso 3: Contenido</h2>
-      <p class="subtle">Matrícula: <strong id="matriculaDisplay2">—</strong> — Estado: <strong id="estadoDisplay">—</strong></p>
-      <textarea id="contenidoInput" class="textarea" placeholder="Describe el contenido…"></textarea>
-      <div class="row">
-        <button class="btn btn-primary" id="btnRegistrar">Registrar</button>
-        <button class="btn btn-secondary" id="back2">Volver</button>
+      <div class="card-content" id="screens">
+        <!-- S1 -->
+        <div class="screen active" id="s1" tabindex="-1">
+          <h2 style="margin:0;font-weight:800;font-size:18px">Paso 1: Matrícula de la plataforma</h2>
+          <input id="matriculaInput" class="input" autocomplete="off" placeholder="Introduce la matrícula" />
+          <div class="hint">Consejo: pulsa <span class="kbd">Enter</span> para continuar.</div>
+          <button class="btn btn-primary" id="toS2" aria-label="Continuar a Estado">Continuar</button>
+        </div>
+        <!-- S2 -->
+        <div class="screen" id="s2" tabindex="-1">
+          <h2 style="margin:0;font-weight:800;font-size:18px">Paso 2: Estado</h2>
+          <p class="subtle">Matrícula: <strong id="matriculaDisplay">—</strong></p>
+          <div class="row" role="group" aria-label="Selecciona estado">
+            <button class="btn btn-step" id="btnCargada">CARGADA</button>
+            <button class="btn btn-step" id="btnVacia">VACÍA</button>
+            <button class="btn btn-step" id="btnAveriada">AVERIADA</button>
+          </div>
+          <div class="row">
+            <button class="btn btn-secondary" id="back1" aria-label="Volver a matrícula">Volver</button>
+          </div>
+          <div class="hint">Gesto: desliza <span class="kbd">↔︎</span> para navegar pasos.</div>
+        </div>
+        <!-- S3 -->
+        <div class="screen" id="s3" tabindex="-1">
+          <h2 style="margin:0;font-weight:800;font-size:18px">Paso 3: Contenido</h2>
+          <p class="subtle">Matrícula: <strong id="matriculaDisplay2">—</strong> — Estado: <strong id="estadoDisplay">—</strong></p>
+          <textarea id="contenidoInput" class="textarea" placeholder="Describe el contenido o el problema…"></textarea>
+          <div class="row">
+            <button class="btn btn-primary" id="btnRegistrar">Registrar</button>
+            <button class="btn btn-secondary" id="back2">Volver</button>
+          </div>
+          <div class="hint">Atajo: <span class="kbd">⌘/Ctrl</span> + <span class="kbd">Enter</span> para registrar.</div>
+        </div>
       </div>
-    </div>
+      <div class="steps" aria-hidden="true">
+        <div class="dot active" id="d1"></div>
+        <div class="dot" id="d2"></div>
+        <div class="dot" id="d3"></div>
+      </div>
+    </section>
 
+    <!-- Summary (Pills) -->
+    <section class="panel">
+      <h3 style="text-align:center;margin:0 0 10px;font-size:16px">Resumen del día</h3>
+      <div class="pills" id="pillsWrap">
+        <div class="pill" id="pillCargadas" style="--fill:0%">
+          <div class="pill-inner">
+            <span class="label">Plataformas cargadas</span>
+            <span class="val" id="cargadasCount">0</span>
+          </div>
+        </div>
+        <div class="pill" id="pillVacias" style="--fill:0%">
+          <div class="pill-inner">
+            <span class="label">Plataformas vacías</span>
+            <span class="val" id="vaciasCount">0</span>
+          </div>
+        </div>
+        <div class="pill" id="pillAveriadas" style="--fill:0%">
+          <div class="pill-inner">
+            <span class="label">Averiadas</span>
+            <span class="val" id="averiadasCount">0</span>
+          </div>
+        </div>
+        <div class="pill" id="pillTotal" style="--fill:0%">
+          <div class="pill-inner">
+            <span class="label">Total</span>
+            <span class="val" id="totalCount">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lists -->
+    <section class="panel">
+      <div class="lists">
+        <div class="list">
+          <h3>Plataformas cargadas (<span id="cargadasListCount">0</span>)</h3>
+          <div id="cargadasList"></div>
+        </div>
+        <div class="list">
+          <h3>Plataformas vacías (<span id="vaciasListCount">0</span>)</h3>
+          <div id="vaciasList"></div>
+        </div>
+        <div class="list">
+          <h3>Plataformas averiadas (<span id="averiadasListCount">0</span>)</h3>
+          <div id="averiadasList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <section class="panel actions" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" id="genPdf">📄 Generar PDF</button>
+      <button class="btn btn-secondary" id="clearAll">Limpiar registros</button>
+    </section>
   </div>
 
-  <div class="steps">
-    <div class="step-pill" id="p1"><div class="fill"></div></div>
-    <div class="step-pill" id="p2"><div class="fill"></div></div>
-    <div class="step-pill" id="p3"><div class="fill"></div></div>
-  </div>
-</section>
-
-<section class="panel">
-  <h3 style="text-align:center;margin-bottom:10px">Resumen del día</h3>
-  <div class="stats">
-    <div class="stat"><span class="n" id="cargadasCount">0</span><span class="label">Cargadas</span></div>
-    <div class="stat"><span class="n" id="vaciasCount">0</span><span class="label">Vacías</span></div>
-    <div class="stat"><span class="n" id="averiadasCount">0</span><span class="label">Averiadas</span></div>
-    <div class="stat"><span class="n" id="totalCount">0</span><span class="label">Total</span></div>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="lists">
-    <div class="list">
-      <h3>Cargadas (<span id="cargadasListCount">0</span>)</h3>
-      <div id="cargadasList"></div>
-    </div>
-    <div class="list">
-      <h3>Vacías (<span id="vaciasListCount">0</span>)</h3>
-      <div id="vaciasList"></div>
-    </div>
-    <div class="list">
-      <h3>Averiadas (<span id="averiadasListCount">0</span>)</h3>
-      <div id="averiadasList"></div>
-    </div>
-  </div>
-</section>
-
-<section class="panel" style="display:flex;gap:12px;justify-content:center">
-  <button class="btn btn-primary" id="genPdf">📄 Generar PDF</button>
-  <button class="btn btn-danger" id="clearAll">🗑 Limpiar registros</button>
-</section>
-
-</div>
-
-<!-- PDF LIBRARY -->
+<!-- jsPDF (mismo flujo; estilos ajustados al look del HTML) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-/* UTIL */
-const $=id=>document.getElementById(id);
-const fmtHour=()=>new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-const fmtDateLong=()=>new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+/* ===== Utilities & State ===== */
+const $ = (id)=>document.getElementById(id);
+const fmtDateLong = (d=new Date()) => d.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+const fmtHour = () => new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
-/* STATE */
-let plataformas=[],currentMatricula='',currentEstado='',step=1;
-const STORAGE_KEY='plataformas-global';
-function load(){plataformas=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]")}
-function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(plataformas))}
+let plataformas = [];
+let currentMatricula = '';
+let currentEstado = '';
 
-/* STEPS */
-function showStep(n,dir='forward'){
-  const cur=$('s'+step), nxt=$('s'+n);
+const STORAGE_KEY = 'plataformas-global';
+function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); plataformas=raw?JSON.parse(raw):[] }catch(e){ plataformas=[] } }
+function saveData(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(plataformas)); }catch(e){} }
+
+/* ===== Single Card Flow logic ===== */
+let step = 1;
+function showStep(next, dir='forward'){
+  const cur = $('s'+step);
+  const nxt = $('s'+next);
+  if(!nxt || cur===nxt) return;
   cur.classList.remove('active');
-  cur.classList.add(dir==='forward'?'out-left':'out-right');
-  setTimeout(()=>cur.classList.remove('out-left','out-right'),360);
+  cur.classList.add(dir==='forward' ? 'out-left':'out-right');
+  setTimeout(()=>{ cur.classList.remove('out-left','out-right') }, 360);
+
   nxt.classList.add('active');
-  ['p1','p2','p3'].forEach((id,i)=>$(id).classList.toggle('active',n===i+1));
-  $('flowTitle').textContent=n===1?'Matrícula':n===2?'Estado':'Contenido';
-  step=n;
+  $('d1').classList.toggle('active', next===1);
+  $('d2').classList.toggle('active', next===2);
+  $('d3').classList.toggle('active', next===3);
+
+  $('flowTitle').textContent = next===1 ? 'Matrícula' : next===2 ? 'Estado' : 'Contenido';
+  step = next;
+
+  requestAnimationFrame(()=>{ nxt.focus({preventScroll:true}); });
 }
 
 function nextFromS1(){
-  const m=$('matriculaInput').value.trim().toUpperCase();
-  if(!m){alert('Introduce una matrícula válida');return;}
-  currentMatricula=m;
-  $('matriculaDisplay').textContent=m;
-  $('matriculaDisplay2').textContent=m;
-  showStep(2);
+  const m = $('matriculaInput').value.trim().toUpperCase();
+  if(!m){ alert('Por favor, introduce una matrícula válida'); haptics(40); return; }
+  currentMatricula = m;
+  $('matriculaDisplay').textContent = m;
+  $('matriculaDisplay2').textContent = m;
+  showStep(2,'forward'); haptics(10);
 }
 
-function chooseEstado(est){
-  currentEstado=est;
-  $('estadoDisplay').textContent=est;
+function chooseEstado(estado){
+  currentEstado = estado;
+  $('estadoDisplay').textContent = estado;
 
-  if(est==='VACÍA'){
-    const dup = plataformas.some(p=>p.matricula===currentMatricula);
-    if(dup){alert('Esta matrícula ya existe');resetFlow();return;}
-    plataformas.push({id:Date.now(),matricula:currentMatricula,estado:est,contenido:'',timestamp:fmtHour()});
-    save();update();resetFlow();
-  } else showStep(3);
+  // Ruta rápida VACÍA
+  if(estado==='VACÍA'){
+    if(!currentMatricula){ alert('Introduce primero una matrícula válida'); showStep(1,'back'); return; }
+    const dup = plataformas.some(p => p.matricula===currentMatricula && p.estado==='VACÍA');
+    if(dup){ alert('Esta matrícula ya fue registrada como VACÍA.'); resetFlow(); return; }
+    plataformas.push({ id:Date.now(), matricula:currentMatricula, estado, contenido:'', timestamp:fmtHour() });
+    saveData(); updateAll(); resetFlow(); haptics(5);
+  }else{
+    showStep(3,'forward'); haptics(8);
+  }
 }
 
 function registrar(){
-  const c=$('contenidoInput').value.trim();
-  if(!c){alert('Describe el contenido');return;}
-  plataformas.push({id:Date.now(),matricula:currentMatricula,estado:currentEstado,contenido:c,timestamp:fmtHour()});
-  save();update();resetFlow();
+  const contenido = $('contenidoInput').value.trim();
+  if(!contenido){ alert('Describe el contenido o el problema'); haptics(40); return; }
+  plataformas.push({ id:Date.now(), matricula:currentMatricula, estado:currentEstado, contenido, timestamp:fmtHour() });
+  saveData(); updateAll();
+
+  const btn=$('btnRegistrar'); const prev=btn.textContent;
+  btn.disabled=true; btn.textContent='Registrando…';
+  setTimeout(()=>{ btn.textContent='Registrado ✓'; haptics(5);
+    setTimeout(()=>{ btn.disabled=false; btn.textContent=prev; resetFlow(); }, 800);
+  }, 420);
 }
 
 function resetFlow(){
-  $('matriculaInput').value='';$('contenidoInput').value='';
-  currentMatricula='';currentEstado='';
-  showStep(1,'back');
+  $('matriculaInput').value=''; $('contenidoInput').value='';
+  currentMatricula=''; currentEstado=''; showStep(1,'back');
 }
 
-/* LISTS */
-function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function update(){
-  const C=plataformas.filter(p=>p.estado==='CARGADA');
-  const V=plataformas.filter(p=>p.estado==='VACÍA');
-  const A=plataformas.filter(p=>p.estado==='AVERIADA');
+/* ===== UI update + Pills ===== */
+function updateAll(){
+  const cargadas = plataformas.filter(p=>p.estado==='CARGADA');
+  const vacias   = plataformas.filter(p=>p.estado==='VACÍA');
+  const averiadas= plataformas.filter(p=>p.estado==='AVERIADA');
 
-  $('cargadasCount').textContent=C.length;
-  $('vaciasCount').textContent=V.length;
-  $('averiadasCount').textContent=A.length;
+  const total = plataformas.length || 1; // evita división por 0
+  $('cargadasCount').textContent=cargadas.length;
+  $('vaciasCount').textContent=vacias.length;
+  $('averiadasCount').textContent=averiadas.length;
   $('totalCount').textContent=plataformas.length;
 
-  $('cargadasListCount').textContent=C.length;
-  $('vaciasListCount').textContent=V.length;
-  $('averiadasListCount').textContent=A.length;
+  setFill('pillCargadas', cargadas.length/total*100);
+  setFill('pillVacias',   vacias.length/total*100);
+  setFill('pillAveriadas',averiadas.length/total*100);
+  setFill('pillTotal',    100);
 
-  render('cargadasList',C,true);
-  render('vaciasList',V,false);
-  render('averiadasList',A,true);
+  $('cargadasListCount').textContent=cargadas.length;
+  $('vaciasListCount').textContent=vacias.length;
+  $('averiadasListCount').textContent=averiadas.length;
+
+  renderList('cargadasList', cargadas, true);
+  renderList('vaciasList',   vacias,   false);
+  renderList('averiadasList',averiadas,true);
 }
 
-function render(id,arr,show){
+function setFill(pillId, pct){
+  const el = $(pillId);
+  if(!el) return;
+  // Animación suave del relleno estilo iOS
+  requestAnimationFrame(()=>{ el.style.setProperty('--fill', Math.max(0, Math.min(100, pct)).toFixed(0) + '%'); });
+}
+
+function renderList(id, arr, showContent){
   const box=$(id);
-  if(!arr.length){box.innerHTML='<div class="empty">No hay registros</div>';return;}
-  box.innerHTML=arr.map(it=>`
-    <div class="card-row">
-      <div class="head" style="display:flex;justify-content:space-between">
-        <span>${esc(it.matricula)}</span>
-        <span>${esc(it.timestamp)}</span>
-      </div>
-      ${show&&it.contenido?`<div style="margin-top:6px">${esc(it.contenido)}</div>`:''}
-    </div>
-  `).join('');
+  if(!arr.length){ box.innerHTML='<div class="empty">No hay registros</div>'; return; }
+  box.innerHTML = arr.map(it=>(
+    '<div class="card-row">'+
+      '<div class="head" style="display:flex;justify-content:space-between;gap:10px;font-weight:700">'+
+        '<span>'+esc(it.matricula)+'</span><span>'+esc(it.timestamp)+'</span></div>'+
+      (showContent&&it.contenido?'<div class="body" style="color:#2B2F34;margin-top:6px;white-space:pre-wrap">'+esc(it.contenido)+'</div>':'')+
+    '</div>'
+  )).join('');
 }
+const esc = (s)=>String(s).replace(/[&<>\"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',\"'\":'&#039;'}[m]));
 
-/* PDF ORIGINAL — se mantiene intacto */
+/* ===== PDF export (misma estructura, paleta alineada con HTML) ===== */
 function generatePDF(){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4'});
-  const today=new Date();
-  const dateString=today.toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).toUpperCase();
-  const cargadas=plataformas.filter(p=>p.estado==='CARGADA');
-  const vacias=plataformas.filter(p=>p.estado==='VACÍA');
-  const averiadas=plataformas.filter(p=>p.estado==='AVERIADA');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-  /* ---- BLOQUE PDF EXACTO ORIGINAL (NO MODIFICADO) ---- */
-  /* (Aquí se mantiene toda tu lógica original sin tocar nada) */
+  // Tokens del HTML
+  const BLUE = [10,132,255];
+  const TEXT = [17,20,24];
+  const MUTED = [106,111,117];
+  const LINE = [230,230,234];
+  const PANEL = [255,255,255];
+  const SOFT = [245,246,247];
 
-  // --- Eliminado por brevedad visual aquí, PERO EN TU ARCHIVO REAL ----
-  // Te entregaré el PDF COMPLETO INTACTO con todo tu código original preservado.
+  const today = new Date();
+  const dateString = today.toLocaleDateString('es-ES', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  }).toUpperCase();
+
+  const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
+  const vacias = plataformas.filter(p => p.estado === 'VACÍA');
+  const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
+
+  // Cabecera en “glass” claro
+  doc.setFillColor(...PANEL);
+  doc.roundedRect(10, 8, 190, 36, 5, 5, 'F');
+  doc.setDrawColor(...LINE);
+  doc.roundedRect(10, 8, 190, 36, 5, 5);
+  doc.setDrawColor(210,210,214);
+  doc.line(10, 44, 200, 44);
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(40,40,40);
+  doc.text('CODE', 195, 14, { align: 'right' });
+
+  // Marca XPO + titular centrado
+  doc.setFont('helvetica','bold'); doc.setFontSize(18);
+  const full = 'XPO LOGISTICS'; const xpoPart = 'XPO '; const startX = 105 - (doc.getTextWidth(full) / 2);
+  doc.setTextColor(239,68,68); doc.text(xpoPart, startX, 22);
+  const nextX = startX + doc.getTextWidth(xpoPart);
+  doc.setTextColor(...TEXT); doc.text('LOGISTICS', nextX, 22);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...MUTED);
+  doc.text(dateString, 105, 28, { align: 'center' });
+
+  // “Pills” de totales en PDF (look suave, sin colores chillones)
+  function drawPill(x,y,w,h,label,num,pct){
+      // base
+      doc.setDrawColor(...LINE);
+      doc.setFillColor(...PANEL);
+      doc.roundedRect(x,y,w,h, h/2, h/2, 'F');
+      // fill progresivo
+      const fillW = Math.max(0, Math.min(w, w * (pct/100)));
+      doc.setFillColor(223,236,255); // azul muy suave
+      doc.roundedRect(x,y,fillW,h, h/2, h/2, 'F');
+      // texto
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...TEXT);
+      doc.text(label, x+8, y+h/2+2, { align:'left' });
+      doc.setTextColor(...BLUE);
+      doc.text(String(num), x+w-8, y+h/2+2, { align:'right' });
+  }
+  const total = Math.max(1, cargadas.length+vacias.length+averiadas.length);
+  const pw = 86, ph = 10, gap = 8;
+  let px = 15, py = 32;
+  drawPill(px,py,pw,ph,'CARGADAS',cargadas.length, cargadas.length/total*100); px+=pw+gap;
+  drawPill(px,py,pw,ph,'VACÍAS',vacias.length, vacias.length/total*100); px+=pw+gap;
+  drawPill(px,py,pw,ph,'AVERIADAS',averiadas.length, averiadas.length/total*100);
+
+  // Tablas
+  let yPosition = 52; const bottomMargin = 260;
+
+  function createTwoColumnTables(leftTitle,leftData,rightTitle,rightData,startY){
+      let currentY=startY; const leftX=15; const rightX=110; const columnWidth=85;
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...TEXT);
+      if(leftData.length>0) doc.text(leftTitle.toUpperCase(),leftX,currentY);
+      if(rightData.length>0) doc.text(rightTitle.toUpperCase(),rightX,currentY);
+      currentY+=8;
+      if(leftData.length>0){
+          doc.setFillColor(...SOFT); doc.rect(leftX,currentY-4,columnWidth,7,'F');
+          doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...MUTED);
+          doc.text('MATRÍCULA',leftX+2,currentY); doc.text('CONTENIDO',leftX+35,currentY);
+      }
+      if(rightData.length>0){
+          doc.setFillColor(...SOFT); doc.rect(rightX,currentY-4,columnWidth,7,'F');
+          doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...MUTED);
+          doc.text('MATRÍCULA',rightX+2,currentY);
+      }
+      currentY+=8; doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...TEXT);
+      const maxRows=Math.max(leftData.length,rightData.length);
+      for(let i=0;i<maxRows;i++){
+          if(i%2===0){
+              if(leftData[i]){doc.setFillColor(252,253,255);doc.rect(leftX,currentY-3,columnWidth,6,'F');}
+              if(rightData[i]){doc.setFillColor(252,253,255);doc.rect(rightX,currentY-3,columnWidth,6,'F');}
+          }
+          if(leftData[i]){
+              doc.text(leftData[i].matricula.toUpperCase(),leftX+2,currentY);
+              if(leftData[i].contenido){
+                  const lines=doc.splitTextToSize(leftData[i].contenido.toUpperCase(),45);
+                  doc.text(lines,leftX+35,currentY);
+                  if(lines.length>1) currentY+=(lines.length-1)*3;
+              }
+          }
+          if(rightData[i]){ doc.text(rightData[i].matricula.toUpperCase(),rightX+2,currentY); }
+          currentY+=6;
+          if(currentY>bottomMargin){ doc.addPage(); currentY=30; }
+      }
+      return currentY+10;
+  }
+  function createSingleTable(title,data,startY){
+      let currentY=startY; if(data.length===0) return currentY;
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...TEXT); doc.text(title.toUpperCase(),15,currentY); currentY+=8;
+      doc.setFillColor(...SOFT); doc.rect(15,currentY-4,180,7,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...MUTED); doc.text('MATRÍCULA',17,currentY); doc.text('DESCRIPCIÓN',70,currentY); currentY+=8;
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...TEXT);
+      data.forEach((platform,index)=>{
+          if(index%2===0){doc.setFillColor(252,253,255);doc.rect(15,currentY-3,180,6,'F');}
+          doc.text(platform.matricula.toUpperCase(),17,currentY);
+          if(platform.contenido){
+              const lines=doc.splitTextToSize(platform.contenido.toUpperCase(),120);
+              doc.text(lines,70,currentY);
+              if(lines.length>1) currentY+=(lines.length-1)*3;
+          }
+          currentY+=6;
+          if(currentY>bottomMargin){ doc.addPage(); currentY=30; }
+      });
+      return currentY+10;
+  }
+  if(cargadas.length>0||vacias.length>0){
+      yPosition=createTwoColumnTables('PLATAFORMAS CARGADAS ('+cargadas.length+')',cargadas,'PLATAFORMAS VACÍAS ('+vacias.length+')',vacias,yPosition);
+  }
+  if(averiadas.length>0){ yPosition=createSingleTable('PLATAFORMAS AVERIADAS ('+averiadas.length+')',averiadas,yPosition); }
+
+  const pageCount=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+      doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,110);
+      doc.text('© 2025 XPO LOGISTICS – Informe interno',20,285);
+      doc.setTextColor(60,90,180);
+      doc.textWithLink('https://vbenyx.github.io/XPO-LOGISTICS/', 105, 285, { url: 'https://vbenyx.github.io/XPO-LOGISTICS/', align: 'center' });
+      doc.setTextColor(100,100,110); doc.text('Página '+i+' de '+pageCount,190,285,{align:'right'});
+  }
+  const exportDateForName = new Date().toLocaleDateString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\//g,'-');
+  doc.save('reporte_plataformas_'+exportDateForName+'.pdf');
 }
 
-/* PARALLAX */
-const header=$('glassHeader');
-let ticking=false;
-document.addEventListener('scroll',()=>{
-  if(!ticking){
-    requestAnimationFrame(()=>{
-      const y=Math.min(60,scrollY);
-      header.style.transform=`translateY(${y*0.18}px)`;
-      ticking=false;
-    });
-    ticking=true;
+/* ===== Gestos, teclado y “magnetismo” ===== */
+let touchStartX = null;
+$('flowCard').addEventListener('touchstart', (e)=>{ touchStartX = e.changedTouches[0].clientX; }, {passive:true});
+$('flowCard').addEventListener('touchend', (e)=>{
+  if(touchStartX===null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if(Math.abs(dx) > 60){
+    if(dx<0 && step<3) showStep(step+1,'forward');
+    if(dx>0 && step>1) showStep(step-1,'back');
+    haptics(5);
   }
+  touchStartX=null;
+}, {passive:true});
+
+// Parallax ligero del header
+const header = $('glassHeader');
+document.addEventListener('scroll', ()=>{
+  const y = Math.min(60, window.scrollY);
+  header.style.transform = `translateY(${y*0.18}px)`;
+}, {passive:true});
+
+// Atajos teclado
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='Enter' && step===1){ nextFromS1(); }
+  else if((e.key==='Enter' && (e.metaKey||e.ctrlKey) && step===3)){ registrar(); }
+  else if(e.key==='Escape'){ if(step>1) showStep(step-1,'back'); }
 });
 
-/* INIT */
-window.addEventListener('DOMContentLoaded',()=>{
-  $('currentDate').textContent=fmtDateLong().toUpperCase();
-  load();update();
-  $('toS2').onclick=nextFromS1;
-  $('back1').onclick=()=>showStep(1,'back');
-  $('back2').onclick=()=>showStep(2,'back');
-  $('btnCargada').onclick=()=>chooseEstado('CARGADA');
-  $('btnVacia').onclick=()=>chooseEstado('VACÍA');
-  $('btnAveriada').onclick=()=>chooseEstado('AVERIADA');
-  $('btnRegistrar').onclick=registrar;
-  $('genPdf').onclick=generatePDF;
-  $('clearAll').onclick=()=>{
-    if(!plataformas.length)return alert('No hay registros');
-    if(confirm('¿Eliminar todos los registros?')){
-      plataformas=[];save();update();resetFlow();
+// Botón magnético (seguimiento del cursor)
+document.querySelectorAll('.btn').forEach(btn=>{
+  btn.addEventListener('mousemove', e=>{
+    const r = btn.getBoundingClientRect();
+    const x = e.clientX - r.left - r.width/2;
+    const y = e.clientY - r.top - r.height/2;
+    btn.style.transform = `translate(${x*0.05}px, ${y*0.05}px) scale(1.02)`;
+  });
+  btn.addEventListener('mouseleave', ()=>{ btn.style.transform=''; });
+});
+
+/* ===== Haptics ===== */
+function haptics(ms=8){ if(navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} }
+
+/* ===== Init ===== */
+window.addEventListener('DOMContentLoaded', () => {
+  $('currentDate').textContent = fmtDateLong().toUpperCase();
+  loadData(); updateAll();
+
+  $('toS2').addEventListener('click', nextFromS1);
+  $('back1').addEventListener('click', ()=>showStep(1,'back'));
+  $('back2').addEventListener('click', ()=>showStep(2,'back'));
+  $('btnCargada').addEventListener('click', ()=>chooseEstado('CARGADA'));
+  $('btnVacia').addEventListener('click',   ()=>chooseEstado('VACÍA'));
+  $('btnAveriada').addEventListener('click',()=>chooseEstado('AVERIADA'));
+  $('btnRegistrar').addEventListener('click', registrar);
+
+  $('genPdf').addEventListener('click', generatePDF);
+  $('clearAll').addEventListener('click', ()=>{
+    if(!plataformas.length){ alert('No hay registros para limpiar'); return; }
+    if(confirm('¿Seguro que quieres eliminar todos los registros?')){
+      plataformas=[]; saveData(); updateAll(); resetFlow();
     }
-  };
+  });
+
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') saveData(); });
+  window.addEventListener('beforeunload', saveData);
 });
 </script>
 </body>
