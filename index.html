@@ -11,6 +11,50 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- D3.js (para el gráfico de distribución) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<!-- Firebase Imports (Required boilerplate) -->
+<script type="module">
+  // Importaciones de Firebase (Mandatorio para el entorno)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  // Variables globales (Acceso simulado)
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+  const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+  // Configuración de Logging para Debugging
+  setLogLevel('debug'); 
+
+  // Inicialización y Autenticación
+  let app, db, auth, userId = null;
+  
+  if (Object.keys(firebaseConfig).length > 0) {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        userId = user.uid;
+        console.log("Firebase Auth Ready. User ID:", userId);
+      } else if (initialAuthToken) {
+        try {
+          await signInWithCustomToken(auth, initialAuthToken);
+        } catch (error) {
+          console.error("Error signing in with custom token:", error);
+          await signInAnonymously(auth);
+        }
+      } else {
+        await signInAnonymously(auth);
+      }
+    });
+  } else {
+    // Generar un ID temporal si no hay config de Firebase
+    userId = 'guest-' + crypto.randomUUID();
+    console.warn("Firebase config missing. Running in local simulation mode.");
+  }
+</script>
 
 <style>
   /* * ESTILOS APPLE/iOS PRO
@@ -99,15 +143,22 @@
     padding:32px 24px 70px; /* CLAVE: 70px de padding inferior para los dots + espacio */
     display:flex;flex-direction:column;gap:18px;
     align-items:flex-start;justify-content:center; 
-    opacity:0;transform:translateX(100%);pointer-events:none;
+    opacity:0;transform:translateX(100%); /* Base: Todos a la derecha por defecto */
+    pointer-events:none;
     z-index: 5; 
     transition:transform .5s cubic-bezier(.25, 1, .5, 1), opacity .3s;
   }
+  /* Estado Activo: Mueve al centro y lo hace visible */
   .screen.active{opacity:1;transform:none;pointer-events:auto;z-index:10;} 
   
   /* Animaciones de cambio de pantalla (iOS style: slide) */
+  /* out-left: mueve del centro al -100% (sale por la izquierda) */
   .screen.out-left{transform:translateX(-100%);opacity:0;z-index:5;}
+  /* out-right: mueve del centro al 100% (sale por la derecha) */
   .screen.out-right{transform:translateX(100%);opacity:0;z-index:5;}
+
+  /* Clave para la transición de regreso: Inicializa la pantalla entrante a la izquierda */
+  .screen.initial-left { transform: translateX(-100%); }
 
   /* Estilos para los títulos dentro del step */
   .step-header{width: 100%;margin-bottom: 20px;text-align: left; padding: 0 0;}
@@ -432,22 +483,25 @@
 </div>
 
 <script>
-  // Inicialización de Firebase (No se usa, pero se mantiene la estructura)
-  // const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-  // const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-  
+  // Global Firebase/App variables (Placeholder for required Firebase structure)
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+  const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+  // Global variables
+  let plataformas = [];
+  let currentMatricula = '';
+  let currentEstado = '';
+  let filteredMatricula = ''; // Nuevo estado para la búsqueda
+  let step = 1; // El estado de paso actual
+
   // ===== Utilities & State =====
   const $ = (id)=>document.getElementById(id);
   const $$ = (selector)=>document.querySelectorAll(selector);
   const fmtDateLong = (d=new Date()) => d.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   const fmtHour = () => new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const esc = (s)=>String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&quot;',"'":'&#039;'}[m]));
-
-  let plataformas = [];
-  let currentMatricula = '';
-  let currentEstado = '';
-  let filteredMatricula = ''; // Nuevo estado para la búsqueda
-
+  
   const STORAGE_KEY = 'plataformas-xpo-pro-apple';
   function loadData(){ 
     try{ 
@@ -464,6 +518,11 @@
     }catch(e){
       console.error("Error al guardar datos:", e);
     } 
+  }
+  function isToday(timestamp) {
+    const today = new Date().toDateString();
+    const date = new Date(timestamp).toDateString();
+    return today === date;
   }
 
   // Custom Modal implementation (iOS style)
@@ -517,39 +576,60 @@
   });
 
 
-  // ===== Single Card Flow logic (con transiciones iOS) =====
-  let step = 1;
+  // ===== Single Card Flow logic (CORREGIDO Y REFORZADO) =====
   
+  /**
+   * Controla la transición visual entre pasos (S1, S2, S3).
+   * @param {number} next - El número de paso de destino (1, 2, o 3).
+   * @param {string} dir - La dirección de la transición ('forward' o 'back').
+   */
   function showStep(next, dir='forward'){
     const cur = $('s'+step);
     const nxt = $('s'+next);
-    if(!nxt || cur===nxt) return;
+    const oldStep = step;
 
-    console.log('Transition to step', next, 'Direction:', dir); // Debug log
+    if(!nxt || cur===nxt) {
+        console.warn('showStep abortada: Destino no existe o es el mismo paso.', {next, step});
+        return;
+    }
 
-    // 1. Ocultar la pantalla actual
+    console.log(`Transición de S${oldStep} a S${next} (${dir})`);
+
+    // 1. Prepara la pantalla entrante (nxt) para la transición
+    if (dir === 'back') {
+      // Si volvemos, la pantalla entrante debe iniciar fuera por la izquierda.
+      nxt.classList.add('initial-left'); 
+    } else {
+      // Si avanzamos, la pantalla entrante ya está por defecto a la derecha (transform: translateX(100%))
+      nxt.classList.remove('initial-left'); 
+    }
+
+    // 2. Mueve la pantalla actual (cur) fuera y desactívala
     cur.classList.remove('active');
-    cur.classList.add(dir==='forward' ? 'out-left':'out-right');
+    // Aplica la clase de salida (out-left si avanza, out-right si vuelve)
+    cur.classList.add(dir==='forward' ? 'out-left' : 'out-right'); 
     
-    // 2. Mostrar la siguiente pantalla
-    nxt.classList.add('active');
-    nxt.classList.remove(dir==='forward' ? 'out-right':'out-left'); 
-
-    // 3. Actualizar dots
-    $('d1').classList.toggle('active', next===1);
-    $('d2').classList.toggle('active', next===2);
-    $('d3').classList.toggle('active', next===3);
-
-    // 4. Actualizar título
-    $('flowTitle').textContent = next===1 ? 'Matrícula' : next===2 ? 'Estado' : 'Descripción';
+    // 3. Actualiza el estado interno inmediatamente (CRÍTICO)
     step = next;
 
-    // 5. Limpiar clases de transición antiguas 
+    // 4. Activa la pantalla entrante (nxt)
+    // Esto inicia la transición de su posición inicial (left/right) a transform: none (centro)
+    // El 'active' debe aplicarse inmediatamente para que el navegador lo detecte como cambio de estado.
+    nxt.classList.add('active');
+    
+    // 5. Limpia clases de transición en ambas pantallas después de un breve momento
+    // El setTimeout es crucial para que el navegador primero aplique las clases de posición,
+    // inicie la transición, y luego se limpien las clases auxiliares.
     setTimeout(()=>{ 
-      cur.classList.remove('out-left','out-right');
-      // Asegurar que la pantalla de destino no tenga clases de transición antiguas
-      nxt.classList.remove('out-left','out-right');
-    }, 500);
+      nxt.classList.remove('initial-left', 'out-left', 'out-right'); 
+      cur.classList.remove('initial-left', 'out-left', 'out-right'); 
+    }, 550); // Ligeramente mayor que la duración de la transición CSS (0.5s)
+
+    // 6. Actualiza dots & title
+    $$('.dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === next - 1);
+    });
+    $('flowTitle').textContent = next===1 ? 'Matrícula' : next===2 ? 'Estado' : 'Descripción';
   }
 
   function nextFromS1(){
@@ -561,6 +641,8 @@
     currentMatricula = m;
     $('matriculaDisplay').textContent = m;
     $('matriculaDisplay2').textContent = m;
+    
+    // Si la validación es correcta, avanza al paso 2
     showStep(2,'forward');
     // Reiniciar selección de estado
     $$('.btn-status').forEach(btn => btn.classList.remove('selected'));
@@ -568,7 +650,6 @@
   }
 
   function selectEstado(estado){
-    console.log('Estado selected:', estado); // Debug log
     // 1. Limpiar selección y establecer nueva
     $$('.btn-status').forEach(btn => {
         btn.classList.remove('selected');
@@ -621,12 +702,6 @@
       showStep(3,'forward');
       $('contenidoInput').focus();
     }
-  }
-
-  function isToday(timestamp) {
-    const today = new Date().toDateString();
-    const date = new Date(timestamp).toDateString();
-    return today === date;
   }
 
   function registrar(){
@@ -770,6 +845,10 @@
   }
 
   // ===== D3.js Donut Chart Logic =====
+  function getCssColor(prop) {
+      return getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+  }
+
   function updateChart(data) {
     const total = data.length;
     
@@ -779,13 +858,19 @@
         { status: 'Averiadas', count: data.filter(p => p.estado === 'AVERIADA').length, color: getCssColor('--color-averiada') }
     ].filter(d => d.count > 0);
 
+    const container = d3.select("#chartContainer");
     const svg = d3.select("#donutChart");
     svg.selectAll("*").remove(); // Limpiar gráfico anterior
+    container.select(".legend").remove(); // Limpiar leyenda anterior
 
+    const width = 180, height = 180;
+    
     if (total === 0) {
-      svg.append("text")
-        .attr("x", "50%")
-        .attr("y", "50%")
+      svg.attr("width", width)
+         .attr("height", height)
+         .append("text")
+        .attr("x", width/2)
+        .attr("y", height/2)
         .attr("dominant-baseline", "middle")
         .attr("text-anchor", "middle")
         .attr("font-size", "14px")
@@ -794,17 +879,15 @@
       return;
     }
 
-    const width = 180, height = 180;
     const radius = Math.min(width, height) / 2;
     const innerRadius = radius * 0.7; // Para el efecto Donut
     
     svg.attr("width", width)
        .attr("height", height)
-       .attr("viewBox", `0 0 ${width} ${height}`)
-       .append("g")
-       .attr("transform", `translate(${width / 2}, ${height / 2})`);
+       .attr("viewBox", `0 0 ${width} ${height}`);
 
-    const g = svg.select("g");
+    const g = svg.append("g")
+       .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
     const pie = d3.pie()
         .sort(null)
@@ -853,11 +936,15 @@
         .attr("y", 15)
         .text("TOTAL");
 
-    // Leyenda (fuera del gráfico) - Se puede mover a un div aparte si es más grande
-    const legend = d3.select("#chartContainer")
+    // Leyenda (fuera del gráfico) - Se utiliza un div separado
+    const legend = container
         .append("div")
+        .attr("class", "legend")
         .style("margin-left", "20px")
-        .style("align-self", "center");
+        .style("align-self", "center")
+        .style("display", "flex")
+        .style("flex-direction", "column")
+        .style("justify-content", "center");
 
     legend.selectAll(".legend-item")
         .data(chartData)
@@ -867,6 +954,7 @@
         .style("display", "flex")
         .style("align-items", "center")
         .style("margin-bottom", "4px")
+        .style("width", "120px") // Fija el ancho para evitar CLS
         .html(d => {
             const percent = total > 0 ? (d.count / total * 100).toFixed(0) : 0;
             return `<div style="width:10px; height:10px; border-radius:50%; background:${d.color}; margin-right:8px;"></div>
@@ -877,6 +965,8 @@
 
   // ===== PDF Export (Con colores Apple/iOS) =====
   function generatePDF() {
+      // Logic from previous version (omitted for brevity, assume working)
+      // The jspdf library is loaded via script tag at the top.
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: 'mm', format: 'a4' });
       const today = new Date();
@@ -951,7 +1041,7 @@
       // Badges with subtle colors
       drawCard(bx,badgeY,badgeWidth,badgeHeight,cargadas.length,'CARGADAS',RED_STATUS);
       bx+=badgeWidth+gap;
-      drawCard(bx,badgeY,badgeWidth,badgeHeight,vacias.length,'VACÍAS',GREEN_STATUS);
+      drawCard(bx,badgeWidth,badgeHeight,badgeHeight,vacias.length,'VACÍAS',GREEN_STATUS);
       bx+=badgeWidth+gap;
       drawCard(bx,badgeY,badgeWidth,badgeHeight,averiadas.length,'AVERIADAS',YELLOW_STATUS);
       bx+=badgeWidth+gap;
@@ -1092,3 +1182,4 @@
 </script>
 </body>
 </html>
+
