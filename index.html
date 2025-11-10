@@ -1209,6 +1209,100 @@ html{
 }
 </style>
 
+
+<style>
+/* Asegurar que las acciones aparecen */
+.record.expanded .actions{
+  display:flex !important;
+}
+
+/* Botones estilo Apple */
+.record.expanded .actions button{
+  font-size:12px;
+  padding:6px 12px;
+  border-radius:8px;
+  background:#FFFFFF;
+  border:1px solid rgba(0,0,0,.08);
+  transition:background .2s;
+}
+.record.expanded .actions button:hover{
+  background:#F2F2F2;
+}
+</style>
+
+
+<style>
+/* ==== Compact records + last 3 preview (no rompe el flujo) ==== */
+#recordsContainer.records-collapsed .record{display:none;}
+#recordsContainer.records-collapsed .record:nth-last-child(-n+3){display:block;}
+
+/* Botón toggle */
+#toggleAllBtn{
+  width:100%; margin:8px 0 6px; padding:8px 12px;
+  border-radius:12px; border:1px solid rgba(0,0,0,.10);
+  background:#FFFFFF; font-size:14px; font-weight:500;
+  cursor:pointer; transition:background .18s ease;
+}
+#toggleAllBtn:hover{ background:#F4F5F7; }
+
+/* Fila compacta estilo iOS */
+.record{
+  padding:10px 12px; border:1px solid rgba(0,0,0,.06); border-radius:12px;
+  margin-bottom:8px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.record .rowline{
+  display:flex; gap:8px; align-items:center; justify-content:space-between;
+  font-size:13px; font-weight:600; color:#1C1F24;
+}
+.rowline .mat{max-width:46%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.rowline .est{opacity:.85;}
+.rowline .ts{font-weight:500; opacity:.65;}
+
+/* Contenido breve, colapsado por defecto */
+.record .content{display:none; margin-top:6px; font-size:12.5px; color:#2B2F34; opacity:.9;}
+
+/* Barra de acciones rápida (aparece al activar) */
+.quick-actions{
+  display:none; gap:8px; justify-content:flex-end; margin-top:8px;
+}
+.quick-actions .qa{
+  padding:6px 10px; border-radius:10px; border:1px solid rgba(0,0,0,.08);
+  background:#F7F8FA; font-size:12.5px; font-weight:600;
+}
+.quick-actions .qa:hover{ background:#EEF0F4; }
+
+/* Estado activo */
+.record.active{ box-shadow:0 6px 18px rgba(0,0,0,.10); }
+.record.active .content{ display:block; }
+.record.active .quick-actions{ display:flex; }
+
+/* Responsive */
+@media (max-width:600px){
+  .record{ padding:10px 10px; }
+  .rowline{ font-size:13px; }
+  .quick-actions .qa{ font-size:12px; padding:6px 9px; }
+}
+</style>
+
+
+<style>
+/* Compact row visual */
+.rowline{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.rowline .mat{font-weight:600;max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rowline .est{opacity:.85;}
+.rowline .ts{opacity:.65;font-size:12px;}
+.record{padding:10px 12px;border:1px solid rgba(0,0,0,.06);border-radius:12px;margin-bottom:8px;background:#fff;}
+.record .content{font-size:12.5px;margin-top:6px;color:#2B2F34}
+.record .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;}
+.record .actions .action-btn{padding:6px 10px;font-size:12px;border-radius:10px;border:1px solid rgba(0,0,0,.08);background:#F7F8FA;}
+/* Last-3 collapsed view */
+.records-collapsed .record{display:none;}
+.records-collapsed .record:nth-last-child(-n+3){display:block;}
+/* Toggle button */
+.list-toggle{width:100%;margin:8px 0 6px;padding:8px 12px;border-radius:12px;border:1px solid rgba(0,0,0,.1);background:#fff;font-weight:500}
+.list-toggle:hover{background:#F4F5F7}
+</style>
+
 </head>
 <body>
   <div class="app">
@@ -1319,7 +1413,8 @@ html{
           <button type="button" data-tab="AVERIADA" role="tab">Averiadas <span class="badge" id="bAveriadas">0</span></button>
         </div>
       </div>
-      <div class="compact-body" id="recordsContainer"></div>
+      <button type="button" id="toggleAllBtn" class="list-toggle">Ver todas</button>
+      <div class="compact-body" id="recordsContainer" class="records-collapsed"></div>
     </section>
 
     <!-- Acciones -->
@@ -1489,23 +1584,25 @@ function setFill(pillId, pct){
   const el = $(pillId); if(!el) return;
   requestAnimationFrame(()=>{ el.style.setProperty('--fill', Math.max(0, Math.min(100, pct)).toFixed(0) + '%'); });
 }
+
 function renderCompactList(){
   const box = $('recordsContainer');
   const data = currentTab==='TODAS' ? plataformas : plataformas.filter(p=>p.estado===currentTab);
+  if(!box) return;
   if(!data.length){
     box.innerHTML = '<div class="empty">No hay registros</div>';
     return;
   }
-  const map = {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;', "\'":'&#039;'};
-  const esc = (s)=>String(s).replace(/[&<>\"']/g, m=>map[m]);
+  const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;'};
+  const esc = (s)=>String(s).replace(/[&<>"']/g, m=>map[m]);
   box.innerHTML = data.map(it => `
     <div class="record" data-id="${it.id}">
-      <div class="meta">
-        <div class="item">Matrícula: <strong>${esc(it.matricula)}</strong></div>
-        <div class="item"> — Estado: <strong>${esc(it.estado)}</strong></div>
-        <div class="item"> — ${esc(it.timestamp || '')}</div>
+      <div class="rowline">
+        <span class="mat">${esc(it.matricula)}</span>
+        <span class="est">${esc(it.estado)}</span>
+        <span class="ts">${esc(it.timestamp||'')}</span>
       </div>
-      ${it.contenido ? `<div class="content" style="color:#2B2F34;margin-top:6px;white-space:pre-wrap">${esc(it.contenido)}</div>` : ''}
+      ${it.contenido ? `<div class="content" style="white-space:pre-wrap">${esc(it.contenido)}</div>` : ''}
       <div class="actions">
         <button type="button" class="action-btn" data-action="edit">Editar</button>
         <button type="button" class="action-btn" data-action="delete">Eliminar</button>
@@ -1753,7 +1850,7 @@ function setStepVisual(current){
 }
 
 /* Auto highlight state buttons */
-document.addEventListener('click', e=>{
+<!-- old expansion removed -->
   if(e.target.classList.contains('state-button')){
     document.querySelectorAll('.state-button').forEach(b=>b.classList.remove('selected'));
     e.target.classList.add('selected');
@@ -1925,12 +2022,153 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 <script>
-document.addEventListener('click', e=>{
+<!-- old expansion removed -->
   const rec = e.target.closest('.record');
   if(!rec) return;
   rec.classList.toggle('expanded');
 });
 </script>
 
+
+<script>
+// Expansión inteligente: no cerrar al pulsar Editar o Eliminar
+document.addEventListener('click', e=>{
+
+  // Si se pulsa botón de acción → no expandir/cerrar
+  if(e.target.closest('.actions button')){
+    return;
+  }
+
+  // Si se pulsa un registro → expandir/cerrar
+  const rec = e.target.closest('.record');
+  if(rec){
+    rec.classList.toggle('expanded');
+  }
+
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const wrap = $('recordsContainer');
+  if(!wrap) return;
+
+  // Modo "últimas 3"
+  if(!wrap.classList.contains('records-collapsed')){
+    wrap.classList.add('records-collapsed');
+    const btn = document.createElement('button');
+    btn.id='toggleAllBtn'; btn.textContent='Ver todas';
+    wrap.parentNode.insertBefore(btn, wrap);
+    let showingAll = false;
+    btn.addEventListener('click', ()=>{
+      showingAll = !showingAll;
+      wrap.classList.toggle('records-collapsed', !showingAll);
+      btn.textContent = showingAll ? 'Ocultar' : 'Ver todas';
+    });
+  }
+
+  // Expandir/contraer registro tocando la fila (pero no los botones)
+  wrap.addEventListener('click', (e)=>{
+    const qaBtn = e.target.closest('.qa');
+    if(qaBtn) return; // las acciones se manejan abajo
+
+    const row = e.target.closest('.record');
+    if(!row) return;
+    row.classList.toggle('active');
+  });
+
+  // Acciones rápidas
+  wrap.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.qa');
+    if(!btn) return;
+    const rec = e.target.closest('.record');
+    const id = rec ? Number(rec.getAttribute('data-id')) : null;
+    if(!id) return;
+
+    const act = btn.getAttribute('data-action');
+    if(act==='edit'){ openEditModal(id); return; }
+    if(act==='delete'){ deleteRecord(id); return; }
+    if(act==='ask'){
+      const q = prompt('Escribe tu pregunta sobre este registro:');
+      if(q && q.trim()){
+        toast('Pregunta enviada'); // Simple feedback; integra aquí tu canal real si es necesario
+      }
+      return;
+    }
+  });
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const btn = document.getElementById('toggleAllBtn');
+  const wrap = document.getElementById('recordsContainer');
+  if(btn && wrap){
+    // Ensure collapsed by default
+    wrap.classList.add('records-collapsed');
+    btn.addEventListener('click', function(){
+      const collapsed = wrap.classList.toggle('records-collapsed');
+      btn.textContent = collapsed ? 'Ver todas' : 'Ocultar';
+    });
+  }
+});
+</script>
+
 </body>
 </html>
+<style>
+section.card#flowCard {
+  width: 100% !important;
+  max-width: 760px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+section.card#flowCard .card-content,
+section.card#flowCard .screen {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0;
+}
+@media (max-width: 600px){
+  section.card#flowCard {
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    border-radius: 16px !important;
+  }
+  section.card#flowCard .screen {
+    padding: 12px 4px !important;
+  }
+}
+@media (min-width:600px) and (max-width:900px){
+  section.card#flowCard {
+    max-width: 640px !important;
+  }
+  section.card#flowCard .screen {
+    padding: 18px 10px !important;
+  }
+}
+@media (min-width:900px){
+  section.card#flowCard {
+    max-width: 760px !important;
+  }
+  section.card#flowCard .screen {
+    padding: 24px 14px !important;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const all = document.querySelectorAll('#toggleAllBtn');
+  if(all.length > 1){
+    all.forEach((b, i)=>{ if(i>0) b.remove(); });
+  }
+});
+</script>
