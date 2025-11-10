@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
-<title>XPO — Registro de Plataformas (Apple FX)</title>
+<title>XPO — Registro de Plataformas (Apple FX+)</title>
 
 <style>
 /* ===== Reset mínimo ===== */
@@ -26,8 +26,10 @@ img,svg,video{display:block;max-width:100%}
   --ease-soft:cubic-bezier(.25,.8,.25,1);
   --blur:18px;
   --glass:rgba(255,255,255,.68);
+  --ok:#34C759;
 }
 
+/* Respeto a reduce-motion */
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
 }
@@ -55,7 +57,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .header::before{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,132,255,.10), transparent 60%)}
 .brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;letter-spacing:.12em}
 
-/* Chip CODE con efecto translúcido + shimmer */
+/* CODE chip translúcido + shimmer */
 .chip{
   position:relative; overflow:hidden;
   background:rgba(255,255,255,.68);
@@ -75,7 +77,15 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   0%{ transform:translateX(-120%) rotate(12deg); }
   100%{ transform:translateX(220%) rotate(12deg); }
 }
-.headline{margin:6px 0 2px;text-align:center;font-weight:800;font-size:clamp(20px,3.3vw,28px)}
+
+/* Logo XPO rojo en negrita + LOGISTICS negro, animación de entrada */
+.logo-line{display:flex;align-items:center;justify-content:center;gap:4px;font-size:clamp(22px,3.6vw,28px);font-weight:800;letter-spacing:.02em}
+.logo-xpo{color:#E53935; font-weight:900; animation:logoPop .7s var(--ease-snap)}
+.logo-log{color:#111418; font-weight:900; animation:logoFade .9s var(--ease-soft)}
+@keyframes logoPop{0%{transform:translateY(6px) scale(.96); opacity:0} 100%{transform:none;opacity:1}}
+@keyframes logoFade{0%{letter-spacing:.12em; opacity:0} 100%{letter-spacing:.02em; opacity:1}}
+
+.headline{margin:4px 0 2px;text-align:center;font-weight:800;font-size:clamp(20px,3.2vw,26px)}
 
 /* ===== Card flujo ===== */
 .card{
@@ -106,6 +116,19 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @keyframes slideOutL{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-24px) scale(.985)}}
 @keyframes slideOutR{from{opacity:1;transform:none}to{opacity:0;transform:translateX(24px) scale(.985)}}
 
+/* Flash de éxito sobre fondo blanco */
+.flash-once{
+  animation:flashBg .9s var(--ease-soft);
+  background:
+    radial-gradient(240px 80px at 50% 0%, rgba(52,199,89,.10), transparent 70%),
+    linear-gradient(180deg,#FFFFFF, #FFFFFF);
+}
+@keyframes flashBg{
+  0%{box-shadow:inset 0 0 0 0 rgba(52,199,89,.0)}
+  40%{box-shadow:inset 0 0 0 80px rgba(52,199,89,.08)}
+  100%{box-shadow:inset 0 0 0 0 rgba(52,199,89,.0)}
+}
+
 /* Pasos (puntos) */
 .steps{display:flex;gap:8px;justify-content:center;padding:8px 0 10px}
 .dot{width:10px;height:10px;border-radius:999px;background:#D4D6DA;transition:transform .25s var(--ease-snap), background .25s}
@@ -120,20 +143,24 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .input,.textarea{
   width:100%;max-width:560px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;
   outline:none;transition:border-color .22s var(--ease-soft), box-shadow .22s var(--ease-soft), transform .12s;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui;
+  font-weight:600;
 }
 .input:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 8px rgba(10,132,255,.12);transform:translateY(-1px)}
 .textarea{min-height:88px;max-height:220px;resize:vertical}
 @media (max-width:480px){ .textarea{min-height:72px}}
 
-/* Botones */
+/* Botones con tipografía Apple y efecto pulsado */
 .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;max-width:560px}
 .btn{
   position:relative; display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:11px 14px;border:1px solid var(--line);border-radius:12px;font-weight:700;color:var(--text);background:#F2F3F5;
+  padding:11px 14px;border:1px solid var(--line);border-radius:12px;
+  color:var(--text);background:#F2F3F5;
   box-shadow:0 1px 0 rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.06);
   transition:transform .14s var(--ease-snap), box-shadow .2s var(--ease-soft), background .2s, border-color .2s, filter .18s;
-  will-change:transform, box-shadow;
-  overflow:hidden;
+  will-change:transform, box-shadow; overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui;
+  font-weight:700; letter-spacing:.01em;
 }
 .btn:hover{background:#ECEEF2;border-color:#D9DCE1}
 .btn:active{transform:scale(.985)}
@@ -162,19 +189,34 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 /* ===== Panels / Pills ===== */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-2);margin:18px 0}
 
-/* Pills progresivas (HTML) */
+/* Pills progresivas mejoradas */
 .pills{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.pill{position:relative; overflow:hidden; border:1px solid var(--line); border-radius:999px; padding:12px 16px;
-  background:linear-gradient(180deg,#FBFBFC,transparent); box-shadow:0 2px 12px rgba(0,0,0,.04)}
-.pill::before{content:""; position:absolute; inset:0; width:var(--fill,0%); background:linear-gradient(90deg, rgba(10,132,255,.18), rgba(10,132,255,.32)); transition:width .8s var(--ease-snap)}
+.pill{
+  position:relative; overflow:hidden; border:1px solid var(--line); border-radius:999px; padding:12px 16px;
+  background:linear-gradient(180deg,#FBFBFC,transparent); box-shadow:0 2px 12px rgba(0,0,0,.04)
+}
+/* Relleno progresivo */
+.pill::before{
+  content:""; position:absolute; inset:0; width:var(--fill,0%);
+  background:linear-gradient(90deg, rgba(10,132,255,.18), rgba(10,132,255,.32));
+  transition:width .9s var(--ease-snap);
+}
+/* Brillo al actualizar */
+.pill.update::after{
+  content:""; position:absolute; top:0; bottom:0; width:28%; left:-30%;
+  background:linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.7) 50%, rgba(255,255,255,0) 100%);
+  filter:blur(1px);
+  animation:pillShine 1.1s var(--ease-soft);
+}
+@keyframes pillShine{ 0%{left:-30%} 100%{left:110%} }
 .pill-inner{position:relative; display:flex; align-items:center; justify-content:space-between; gap:10px; z-index:1}
-.pill .label{font-weight:800; letter-spacing:.02em}
-.pill .val{font-weight:800; min-width:2.5ch; text-align:right; color:var(--accent)}
+.pill .label{font-weight:800; letter-spacing:.02em; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display"}
+.pill .val{font-weight:900; min-width:2.5ch; text-align:right; color:#0A84FF; font-variant-numeric:tabular-nums}
 
 /* ===== Registros compactos ===== */
 .compact{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-2);}
 .compact-header{
-  position:sticky; top:12px; z-index:5; /* queda visible al hacer scroll */
+  position:sticky; top:12px; z-index:5;
   padding:10px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#FBFBFD,transparent);
   display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
   border-top-left-radius:var(--radius); border-top-right-radius:var(--radius);
@@ -195,6 +237,16 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .action-btn{border:1px solid var(--line); background:#F2F3F5; padding:8px 10px; border-radius:10px; font-weight:700}
 .action-btn:hover{background:#ECEEF2}
 
+/* Toast de éxito */
+.toast{
+  position:fixed; left:50%; top:16px; transform:translateX(-50%) translateY(-16px);
+  background:rgba(52,199,89,.96); color:#fff; padding:10px 14px; border-radius:12px;
+  box-shadow:0 10px 28px rgba(0,0,0,.18); opacity:0; z-index:50;
+  border:1px solid rgba(255,255,255,.6);
+}
+.toast.show{animation:toastIn 1.8s var(--ease-soft)}
+@keyframes toastIn{0%{opacity:0; transform:translateX(-50%) translateY(-16px)} 12%{opacity:1; transform:translateX(-50%) translateY(0)} 88%{opacity:1} 100%{opacity:0; transform:translateX(-50%) translateY(-16px)}}
+
 /* Modal edición */
 .modal{
   position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:30;
@@ -210,7 +262,6 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .modal-actions{display:flex; gap:10px; justify-content:flex-end}
 select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#fff}
 
-.kbd{font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:rgba(0,0,0,.04)}
 @media (max-width:640px){ .row .btn{flex:1 1 100%} .modal-row{grid-template-columns:1fr} }
 </style>
 </head>
@@ -220,7 +271,7 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
     <header class="header" id="glassHeader" data-depth="0.18">
       <div class="brand">
         <div class="chip">CODE</div>
-        <div>XPO LOGISTICS</div>
+        <div class="logo-line"><span class="logo-xpo">XPO</span><span class="logo-log">LOGISTICS</span></div>
       </div>
       <div class="headline">Registro de Plataformas</div>
     </header>
@@ -323,9 +374,7 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
           <button data-tab="AVERIADA" role="tab">Averiadas <span class="badge" id="bAveriadas">0</span></button>
         </div>
       </div>
-      <div class="compact-body" id="recordsContainer">
-        <!-- registros renderizados aquí -->
-      </div>
+      <div class="compact-body" id="recordsContainer"></div>
     </section>
 
     <!-- Acciones -->
@@ -334,6 +383,9 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
       <button class="btn btn-secondary" id="clearAll">Limpiar registros</button>
     </section>
   </div>
+
+<!-- Toast -->
+<div class="toast" id="toast">Registro guardado</div>
 
 <!-- Modal de edición -->
 <div class="modal" id="editModal" aria-hidden="true">
@@ -363,8 +415,7 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
 const $ = (id)=>document.getElementById(id);
 const fmtHour = () => new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 let plataformas = []; let currentMatricula = ''; let currentEstado = '';
-let currentTab = 'TODAS';
-let editingId = null;
+let currentTab = 'TODAS'; let editingId = null;
 
 const STORAGE_KEY = 'plataformas-global';
 function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); plataformas=raw?JSON.parse(raw):[] }catch(e){ plataformas=[] } }
@@ -392,6 +443,29 @@ function attachPressedEffect(el){
   });
 }
 
+/* ===== Toast ===== */
+function toast(msg='Registro guardado'){
+  const t = $('toast'); if(!t) return;
+  t.textContent = msg; t.classList.remove('show'); void t.offsetWidth; // reflow
+  t.classList.add('show');
+}
+
+/* ===== Pills: contador animado ===== */
+function animateNumber(el, to){
+  const from = Number(el.textContent) || 0;
+  if(from === to) return;
+  const duration = 700, start = performance.now();
+  function step(ts){
+    const p = Math.min(1, (ts - start)/duration);
+    const ease = 1 - Math.pow(1-p, 3); // easeOutCubic
+    el.textContent = Math.round(from + (to - from) * ease);
+    if(p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+  // brillo pill
+  const pill = el.closest('.pill'); if(pill){ pill.classList.remove('update'); void pill.offsetWidth; pill.classList.add('update'); }
+}
+
 /* ===== Flow ===== */
 let step = 1;
 function showStep(next, dir='forward'){
@@ -405,9 +479,9 @@ function showStep(next, dir='forward'){
 }
 function nextFromS1(){
   const m = $('matriculaInput').value.trim().toUpperCase();
-  if(!m){ alert('Por favor, introduce una matrícula válida'); haptics(40); keepCardInView(); return; }
+  if(!m){ alert('Por favor, introduce una matrícula válida'); keepCardInView(); return; }
   currentMatricula = m; $('matriculaDisplay').textContent = m; $('matriculaDisplay2').textContent = m;
-  showStep(2,'forward'); haptics(10);
+  showStep(2,'forward');
 }
 function chooseEstado(estado){
   currentEstado = estado; $('estadoDisplay').textContent = estado;
@@ -416,23 +490,30 @@ function chooseEstado(estado){
     const dup = plataformas.some(p => p.matricula===currentMatricula && p.estado==='VACÍA');
     if(dup){ alert('Esta matrícula ya fue registrada como VACÍA.'); resetFlow(); return; }
     plataformas.push({ id:Date.now(), matricula:currentMatricula, estado, contenido:'', timestamp:fmtHour() });
-    saveData(); updateAll(); resetFlow(); haptics(5); keepCardInView();
+    saveData(); updateAll(); flashSuccess(); resetFlow(); keepCardInView();
   }else{
-    showStep(3,'forward'); haptics(8);
+    showStep(3,'forward');
   }
 }
 function registrar(){
   const contenido = $('contenidoInput').value.trim();
-  if(!contenido){ alert('Describe el contenido o el problema'); haptics(40); keepCardInView(); return; }
+  if(!contenido){ alert('Describe el contenido o el problema'); keepCardInView(); return; }
   plataformas.push({ id:Date.now(), matricula:currentMatricula, estado:currentEstado, contenido, timestamp:fmtHour() });
   saveData(); updateAll();
   const btn=$('btnRegistrar'); const prev=btn.textContent;
   btn.disabled=true; btn.textContent='Registrando…';
-  setTimeout(()=>{ btn.textContent='Registrado ✓'; haptics(5);
-    setTimeout(()=>{ btn.disabled=false; btn.textContent=prev; resetFlow(); keepCardInView(); }, 700);
-  }, 380);
+  setTimeout(()=>{ btn.textContent='Registrado ✓';
+    setTimeout(()=>{ btn.disabled=false; btn.textContent=prev; flashSuccess(); resetFlow(); keepCardInView(); }, 600);
+  }, 360);
 }
 function resetFlow(){ $('matriculaInput').value=''; $('contenidoInput').value=''; currentMatricula=''; currentEstado=''; showStep(1,'back'); }
+
+/* Flash visual de éxito en pantalla + toast */
+function flashSuccess(){
+  const active = document.querySelector('.screen.active');
+  if(active){ active.classList.remove('flash-once'); void active.offsetWidth; active.classList.add('flash-once'); }
+  toast('Registro guardado');
+}
 
 /* ===== Update UI + Pills + Compact List ===== */
 function updateAll(){
@@ -441,10 +522,10 @@ function updateAll(){
   const averiadas= plataformas.filter(p=>p.estado==='AVERIADA');
   const total = plataformas.length || 1;
 
-  $('cargadasCount').textContent=cargadas.length;
-  $('vaciasCount').textContent=vacias.length;
-  $('averiadasCount').textContent=averiadas.length;
-  $('totalCount').textContent=plataformas.length;
+  animateNumber($('cargadasCount'), cargadas.length);
+  animateNumber($('vaciasCount'),   vacias.length);
+  animateNumber($('averiadasCount'),averiadas.length);
+  animateNumber($('totalCount'),    plataformas.length);
 
   setFill('pillCargadas', cargadas.length/total*100);
   setFill('pillVacias',   vacias.length/total*100);
@@ -459,8 +540,10 @@ function updateAll(){
 
   renderCompactList();
 }
-function setFill(pillId, pct){ const el = $(pillId); if(!el) return; requestAnimationFrame(()=>{ el.style.setProperty('--fill', Math.max(0, Math.min(100, pct)).toFixed(0) + '%'); }); }
-
+function setFill(pillId, pct){
+  const el = $(pillId); if(!el) return;
+  requestAnimationFrame(()=>{ el.style.setProperty('--fill', Math.max(0, Math.min(100, pct)).toFixed(0) + '%'); });
+}
 function renderCompactList(){
   const box = $('recordsContainer');
   const data = currentTab==='TODAS' ? plataformas : plataformas.filter(p=>p.estado===currentTab);
@@ -507,17 +590,17 @@ function saveEdit(){
   plataformas[idx].matricula = m;
   plataformas[idx].estado = e;
   plataformas[idx].contenido = c;
-  saveData(); updateAll(); closeEditModal();
+  saveData(); updateAll(); closeEditModal(); toast('Registro actualizado');
 }
 function deleteRecord(id){
   const it = plataformas.find(p=>p.id===id);
   if(!it) return;
   if(!confirm(`¿Eliminar el registro de ${it.matricula}?`)) return;
   plataformas = plataformas.filter(p=>p.id!==id);
-  saveData(); updateAll();
+  saveData(); updateAll(); toast('Registro eliminado');
 }
 
-/* ===== PDF (igual que versión anterior, con badges fijos, 3 en línea) ===== */
+/* ===== PDF (badges fijos, 3 en línea) ===== */
 function generatePDF(){
   const { jsPDF } = window.jspdf || {};
   if(!jsPDF){ alert('No se pudo cargar jsPDF. Revisa tu conexión.'); return; }
@@ -535,9 +618,9 @@ function generatePDF(){
   doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(40,40,40); doc.text('CODE', 195, 14, { align: 'right' });
   doc.setFont('helvetica','bold'); doc.setFontSize(18);
   const full = 'XPO LOGISTICS'; const xpoPart = 'XPO '; const startX = 105 - (doc.getTextWidth(full) / 2);
-  doc.setTextColor(239,68,68); doc.text(xpoPart, startX, 22);
+  doc.setTextColor(229,57,53); doc.text(xpoPart, startX, 22); // rojo XPO
   const nextX = startX + doc.getTextWidth(xpoPart);
-  doc.setTextColor(...TEXT); doc.text('LOGISTICS', nextX, 22);
+  doc.setTextColor(...TEXT); doc.text('LOGISTICS', nextX, 22); // negro LOGISTICS
 
   function drawBadge(x,y,w,h,bg,label,num,numColor){
     doc.setFillColor(...bg); doc.roundedRect(x,y,w,h, h/2, h/2, 'F');
@@ -623,9 +706,6 @@ function generatePDF(){
   doc.save('reporte_plataformas_'+exportDateForName+'.pdf');
 }
 
-/* ===== Gestos/Accesos mínimos ===== */
-function haptics(ms=8){ if(navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} }
-
 /* ===== Init ===== */
 window.addEventListener('DOMContentLoaded', () => {
   // Flow
@@ -639,7 +719,7 @@ window.addEventListener('DOMContentLoaded', () => {
   $('genPdf').addEventListener('click', ()=>{ keepCardInView(); generatePDF(); });
   $('clearAll').addEventListener('click', ()=>{
     if(!plataformas.length){ alert('No hay registros para limpiar'); keepCardInView(); return; }
-    if(confirm('¿Seguro que quieres eliminar todos los registros?')){ plataformas=[]; saveData(); updateAll(); resetFlow(); keepCardInView(); }
+    if(confirm('¿Seguro que quieres eliminar todos los registros?')){ plataformas=[]; saveData(); updateAll(); resetFlow(); keepCardInView(); toast('Registros limpiados'); }
   });
 
   // Segmented filter
@@ -675,4 +755,3 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
