@@ -7,7 +7,7 @@
 
 <style>
 /* ===== Reset mínimo ===== */
-*{box-sizing:border-box}html,body{height:100%}body{margin:0}
+*{box-sizing:border-box}html,
 h1,h2,h3,h4,p{margin:0}button,input,textarea,select{font:inherit}
 img,svg,video{display:block;max-width:100%}
 
@@ -36,12 +36,7 @@ img,svg,video{display:block;max-width:100%}
 
 /* ===== Base ===== */
 html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,Segoe UI,Roboto,Helvetica,Arial;
-  background:radial-gradient(1200px 600px at 10% -10%, rgba(10,132,255,.06), transparent 60%), var(--bg);
-  color:var(--text); line-height:1.45; letter-spacing:.01em;
-  scroll-behavior:smooth;
-}
+
 input,textarea,button,select{font-size:16px}
 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
@@ -226,7 +221,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 }
 .segment button.active{background:#FFFFFF; border:1px solid rgba(0,0,0,0.06); color:var(--text)}
 .segment .badge{font-weight:500; margin-left:6px; color:#0A84FF}
-.compact-body{max-height:52vh; overflow:auto; padding:12px}
+.compact-
 .record{
   border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding:12px 12px; margin-bottom:10px; background:#fff;
   display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
@@ -333,9 +328,7 @@ input, textarea{
 /* ===== Color Balance Enhancements ===== */
 
 /* Background refinement */
-body{
-  background:#F7F7F9;
-}
+
 
 /* Card neutrals */
 .card{
@@ -564,7 +557,7 @@ input, textarea{
 /* ===== Cohesión Interna ===== */
 
 /* Whites hierarchy */
-body{background:#F7F7F9;}
+
 .card, .record{background:#FFFFFF;}
 input, textarea{background:#FDFDFD;}
 
@@ -650,9 +643,7 @@ body, input, textarea, button, .record-content{
 }
 
 /* Slight scroll easing for lists */
-.list-body{
-  scroll-behavior:smooth;
-}
+.list-
 
 /* Shade on scroll edges */
 .list-body::before, .list-body::after{
@@ -966,9 +957,7 @@ html{
 
 
 /* === Global Apple Background === */
-body {
-    background: linear-gradient(to bottom, #ffffff 0%, #f5f6f8 100%);
-}
+
 
 /* === Micro-shadows Dynamic === */
 .card:hover, .panel:hover, .pill:hover, .record:hover, .compact:hover {
@@ -1107,17 +1096,13 @@ select {
 
 
 /* === System Typography Apple === */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-}
+
 h1 { font-size:22px; font-weight:600; letter-spacing:-0.3px; }
 h2 { font-size:17px; font-weight:500; letter-spacing:-0.2px; }
 p, span, div { font-size:15px; font-weight:400; }
 
 /* === Ambient Light Background === */
-body {
-    background: linear-gradient(to bottom, #ffffff 0%, #f2f3f7 60%, #eceef3 100%);
-}
+
 
 /* === Header Glass Premium === */
 header, .topbar, .navbar {
@@ -1264,6 +1249,134 @@ header, .topbar, .navbar {
 }
 .menu-apple .item:hover{ background:rgba(255,255,255,.55); border-color:rgba(0,0,0,.06); }
 .menu-apple .divider{ height:1px; margin:6px 4px; background:rgba(0,0,0,.06); border-radius:1px; }
+
+
+/* === Apple Premium Action Buttons === */
+.action-btn{
+    background: linear-gradient(150deg, rgba(255,255,255,0.90), rgba(240,240,245,0.96));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.65);
+    padding: 12px 20px;
+    font-weight: 600;
+    color: #1c1f24;
+    box-shadow:
+        inset 0 1px 3px rgba(255,255,255,0.85),
+        inset 0 6px 12px rgba(255,255,255,0.25),
+        0 10px 18px rgba(0,0,0,0.05),
+        0 3px 8px rgba(0,0,0,0.03);
+    transition: all .22s ease;
+}
+.action-btn:hover{
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 2px 5px rgba(255,255,255,1),
+        inset 0 8px 14px rgba(255,255,255,0.35),
+        0 12px 26px rgba(0,0,0,0.07),
+        0 4px 10px rgba(0,0,0,0.04);
+}
+.action-btn:active{
+    transform: scale(.97);
+    box-shadow:
+        inset 0 2px 8px rgba(200,200,220,0.55),
+        inset 0 4px 10px rgba(220,220,230,0.35),
+        0 3px 8px rgba(0,0,0,0.04);
+}
+.action-btn.danger{
+    color:#b00000;
+}
+
+
+/* Sticky bottom on mobile */
+
+}
+
+/* Compact buttons on mobile */
+@media(max-width:520px){
+  .action-btn{
+    padding:10px 14px;
+    font-size:14px;
+  }
+}
+
+/* Micro-reflection */
+.action-btn{
+    position:relative;
+    overflow:hidden;
+}
+.action-btn::after{
+    content:"";
+    position:absolute;
+    top:0; left:-40%;
+    width:40%; height:100%;
+    background:linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0));
+    transform:skewX(-20deg);
+    transition:transform .4s ease, opacity .4s ease;
+    opacity:0;
+}
+.action-btn:hover::after{
+    transform:translateX(250%) skewX(-20deg);
+    opacity:1;
+}
+
+
+/* === 1. Silver 3D Icons === */
+.icon-pdf, .icon-clear {
+    background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(200,200,210,0.65));
+    mask-size: contain;
+    mask-repeat: no-repeat;
+}
+
+/* === 3. Animated Glass Header === */
+header {
+    transition: backdrop-filter .35s ease, box-shadow .35s ease;
+}
+.scrolled header {
+    backdrop-filter: blur(22px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* === 4. Tap Feedback iOS === */
+.action-btn:active {
+    opacity: .85;
+    transform: scale(.96);
+    transition: transform .08s ease, opacity .08s ease;
+}
+
+
+/* === Compact Premium Buttons === */
+.action-btn{
+    padding:10px 16px !important;
+    border-radius:12px !important;
+    font-size:14.5px !important;
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.75),
+        inset 0 4px 8px rgba(255,255,255,0.18),
+        0 6px 14px rgba(0,0,0,0.04),
+        0 2px 6px rgba(0,0,0,0.03) !important;
+}
+
+/* === Hairline Separator Above Buttons === */
+
+
+/* === Subtler Shadows & Shine === */
+.action-btn:hover{
+    box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.9),
+        inset 0 6px 10px rgba(255,255,255,0.22),
+        0 8px 18px rgba(0,0,0,0.05),
+        0 2px 6px rgba(0,0,0,0.04) !important;
+}
+
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",sans-serif;
+  background: linear-gradient(to bottom, #ffffff 0%, #f2f3f7 70%, #eaecf2 100%);
+  height:100%;
+  scroll-behavior:smooth;
+}
 
 </style>
 
@@ -2551,6 +2664,25 @@ function showIsland(text = "Acción completada", duration = 1800) {
 
 </script>
 
+
+
+<script>
+window.addEventListener('scroll', ()=>{
+    if(window.scrollY>10){
+        document.body.classList.add('scrolled');
+    } else {
+        document.body.classList.remove('scrolled');
+    }
+});
+</script>
+
+
+<style>
+.panel.actions{
+    margin-top:18px !important;
+}
+</style>
+
 </body>
 </html>
 <style>
@@ -2596,4 +2728,103 @@ section.card#flowCard .screen {
   section.card#flowCard .screen {
     padding: 24px 14px !important;
   }
+}
+</style>
+
+<style>
+.panel.actions{
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+</style>
+
+<style>
+/* Force all list-related containers to full width */
+[class*="list"], [class*="reg"], .list-body, .list-wrap, #list, #registros {
+    width:100% !important;
+    max-width:100% !important;
+}
+
+/* Ensure flex parents don't restrict width */
+.list-container, .records, .registros {
+    flex: 1 1 100% !important;
+}
+</style>
+
+<style>
+/* ======= FIX C: Registros totalmente adaptables (vertical y horizontal) ======= */
+
+/* 1) Grid fluido para el contenedor de registros */
+#recordsContainer{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* 2) Escala progresiva por ancho */
+@media (min-width: 700px){
+  #recordsContainer{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px){
+  #recordsContainer{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* 3) Asegurar que las tarjetas se expanden bien y no recortan contenido */
+#recordsContainer .record{
+  width: 100%;
+  min-width: 0;              /* evita overflow por flex/grid */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 4) Texto largo y saltos de línea seguros */
+#recordsContainer .record .content,
+#recordsContainer .record .meta .item,
+#recordsContainer .rowline .mat{
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* 5) Eliminar límites estrechos sólo en pantallas amplias */
+@media (min-width: 700px){
+  #recordsContainer .record .meta .item{ max-width: 100% !important; }
+  #recordsContainer .rowline .mat{ max-width: 100% !important; }
+}
+
+/* 6) Evitar colisiones con el header pegajoso del bloque compacto */
+#compactPanel{
+  contain: content;
+}
+#compactPanel .compact-body{
+  min-width: 0;
+}
+
+/* 7) Botones internos en registros: fila envolvente y compacta */
+#recordsContainer .record .actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+#recordsContainer .record .actions .action-btn{
+  flex: 0 1 auto;
+}
+
+/* 8) Imágenes/medios embebidos dentro del contenido */
+#recordsContainer .record .content img,
+#recordsContainer .record .content video,
+#recordsContainer .record .content iframe{
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 9) Evitar “cortes” de color de fondo creando un único fondo uniforme en body/app */
+body{
+  background: linear-gradient(to bottom, #ffffff 0%, #f2f3f7 70%, #eaecf2 100%) !important;
+}
+.app{
+  background: transparent;
 }
