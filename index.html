@@ -931,17 +931,28 @@ html{
 }
 
 
-/* === Sticky fix ONLY for flowCard (no other containers affected) === */
-#flowCard{
+/* === Sticky Card Flow: Always Visible While Typing === */
+.card-flow, .flow-card, .main-card, .card-principal{
   position:sticky;
-  top:calc(env(safe-area-inset-top) + 0px);
+  top:0;
   z-index:1000;
-  background:rgba(255,255,255,0.9);
-  backdrop-filter:blur(6px);
+  backdrop-filter:blur(10px);
+  background:rgba(255,255,255,0.85);
 }
-/* Prevent scroll jump when typing only in this container */
-#flowCard * {
-  overscroll-behavior: contain;
+
+/* Prevent jump on mobile */
+html, body{
+  height:100%;
+}
+
+
+/* === Sticky for all steps / pasos === */
+[class*="step"], [class*="paso"]{
+  position:sticky;
+  top:0;
+  z-index:900;
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(10px);
 }
 
 </style>
@@ -1891,7 +1902,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const inputs=document.querySelectorAll('input, textarea');
   inputs.forEach(el=>{
     el.addEventListener('focus', ()=>{
-      setTimeout(()=>{/* removed auto-scroll */},120);
+      setTimeout(()=>{el.scrollIntoView({behavior:'smooth', block:'center'});},120);
     });
   });
 });
@@ -2170,7 +2181,7 @@ section.card#flowCard .screen {
 }
 @media (min-width:900px){
   section.card#flowCard {
-    max-width: 760px !imporytant;
+    max-width: 760px !important;
   }
   section.card#flowCard .screen {
     padding: 24px 14px !important;
