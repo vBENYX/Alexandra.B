@@ -1197,6 +1197,74 @@ header, .topbar, .navbar {
 }
 .menu-apple button:hover { background:rgba(255,255,255,0.4); }
 
+
+/* === Dynamic Island — Opción B (morph + progress) === */
+#dynamicIsland{
+  position:fixed; top:12px; left:50%; transform:translateX(-50%) scale(0.96);
+  opacity:0; padding:10px 18px;
+  background:linear-gradient(145deg, rgba(255,255,255,0.82), rgba(245,246,250,0.96));
+  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  border-radius:18px; border:1px solid rgba(255,255,255,0.6);
+  box-shadow:0 10px 28px rgba(0,0,0,0.08), inset 0 1px 3px rgba(255,255,255,0.7);
+  font-weight:600; color:#1c1f24; letter-spacing:.01em;
+  z-index:9999; isolation:isolate; overflow:hidden;
+  min-width:120px; text-align:center;
+}
+#dynamicIsland.di-show{ opacity:1; transform:translateX(-50%) scale(1); animation:diMorph .35s var(--ease-snap, cubic-bezier(.22,1,.36,1)) both; }
+#dynamicIsland.di-hide{ animation:diShrink .32s ease both; }
+#dynamicIsland::after{
+  /* progress bar */
+  content:""; position:absolute; left:10px; right:10px; bottom:6px; height:3px;
+  background:rgba(180,188,194,0.45); border-radius:3px; overflow:hidden;
+}
+#dynamicIsland .bar{
+  position:absolute; left:10px; bottom:6px; height:3px; width:0%;
+  background:#0A84FF; border-radius:3px; transition:width .2s ease;
+}
+
+@keyframes diMorph{
+  0%{transform:translateX(-50%) scale(.94); opacity:0}
+  60%{transform:translateX(-50%) scale(1.02); opacity:1}
+  100%{transform:translateX(-50%) scale(1); opacity:1}
+}
+@keyframes diShrink{
+  0%{transform:translateX(-50%) scale(1); opacity:1}
+  100%{transform:translateX(-50%) scale(.96); opacity:0}
+}
+
+@media (prefers-reduced-motion: reduce){
+  #dynamicIsland{ transition:none; animation:none !important }
+}
+
+/* === Universal silver dropdown menu (Opción B) === */
+.menu-trigger{
+  position:relative;
+  border:1px solid rgba(255,255,255,0.6);
+  background:linear-gradient(150deg, rgba(255,255,255,0.9), rgba(240,240,245,0.95));
+  border-radius:12px; padding:8px 12px; font-weight:600;
+  box-shadow:inset 0 1px 3px rgba(255,255,255,.85), 0 6px 14px rgba(0,0,0,.06);
+}
+.menu-trigger:active{ transform:scale(.98) }
+
+.menu-apple{
+  position:absolute; top:calc(100% + 8px); right:0; min-width:200px;
+  background:linear-gradient(145deg, rgba(255,255,255,0.86), rgba(245,246,250,0.96));
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.65); border-radius:14px; padding:6px;
+  box-shadow:0 18px 36px rgba(0,0,0,.12), inset 0 1px 3px rgba(255,255,255,.75);
+  transform-origin:top right; transform:scale(.96) translateY(-6px);
+  opacity:0; pointer-events:none; transition:all .22s cubic-bezier(.25,.8,.25,1);
+  z-index:5000;
+}
+.menu-apple.show{ transform:scale(1) translateY(0); opacity:1; pointer-events:auto; }
+.menu-apple .item{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 12px; border-radius:10px; font-weight:500; color:#1c1f24;
+  border:1px solid transparent;
+}
+.menu-apple .item:hover{ background:rgba(255,255,255,.55); border-color:rgba(0,0,0,.06); }
+.menu-apple .divider{ height:1px; margin:6px 4px; background:rgba(0,0,0,.06); border-radius:1px; }
+
 </style>
 
 <style>
@@ -1572,9 +1640,7 @@ header, .topbar, .navbar {
 
 </head>
 <body>
-<div id="dynamicIsland" class="di-hidden">
-    <span id="diText">Acción completada</span>
-</div>
+<div id="dynamicIsland" class="di-hidden"><span id="diText">Acción completada</span><div class="bar" id="diBar"></div></div>
 
   <div class="app">
     <!-- Header -->
@@ -1642,6 +1708,11 @@ header, .topbar, .navbar {
         <div class="dot" id="d3"></div>
       </div>
     </section>
+    <section class="panel actions" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+        <button id="genPdf" class="action-btn">Generar PDF</button>
+        <button id="clearAll" class="action-btn danger">Limpiar registros</button>
+    </section>
+
 
     <!-- Resumen -->
     <section class="panel">
@@ -1684,15 +1755,11 @@ header, .topbar, .navbar {
           <button type="button" data-tab="AVERIADA" role="tab">Averiadas <span class="badge" id="bAveriadas">0</span></button>
         </div>
       </div>
-      <button type="button" id="toggleAllBtn" class="list-toggle">Ver todas</button>
+      
       <div class="compact-body" id="recordsContainer" class="records-collapsed"></div>
     </section>
 
-    <!-- Acciones -->
-    <section class="panel actions" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <button type="button" class="btn btn-primary" id="genPdf">Generar PDF</button>
-      <button type="button" class="btn btn-secondary" id="clearAll">Limpiar registros</button>
-    </section>
+    
   </div>
 
 <!-- Toast -->
@@ -1756,9 +1823,7 @@ function attachPressedEffect(el){
 
 /* ===== Toast ===== */
 function toast(msg='Registro guardado'){
-  const t = $('toast'); if(!t) return;
-  t.textContent = msg; t.classList.remove('show'); void t.offsetWidth; // reflow
-  t.classList.add('show');
+  showIsland(msg, 2200);
 }
 
 /* ===== Pills: contador animado ===== */
@@ -2389,18 +2454,101 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <script>
-function showIsland(text){
-    const island=document.getElementById('dynamicIsland');
-    const t=document.getElementById('diText');
-    t.textContent=text;
-    island.classList.remove('di-hidden');
-    island.classList.add('di-show');
-    setTimeout(()=>{ island.classList.remove('di-show'); island.classList.add('di-hidden'); },2200);
+function showIsland(text, duration=2200){
+  const island=document.getElementById('dynamicIsland');
+  const t=document.getElementById('diText');
+  const bar=document.getElementById('diBar');
+  if(!island||!t||!bar) return;
+  t.textContent=text;
+  bar.style.width='0%';
+  island.classList.remove('di-hide');
+  island.classList.remove('di-hidden');
+  island.classList.add('di-show');
+
+  const start=performance.now();
+  function step(ts){
+    const p=Math.min(1,(ts-start)/duration);
+    bar.style.width = Math.round(p*100)+'%';
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  clearTimeout(window.__islandTimer);
+  window.__islandTimer=setTimeout(()=>{
+    island.classList.remove('di-show'); island.classList.add('di-hide');
+    setTimeout(()=>{ island.classList.remove('di-hide'); island.classList.add('di-hidden'); }, 260);
+  }, duration);
+},2200);
 }
 function toggleMenu(){
     const m=document.querySelector('.menu-apple');
     m.classList.toggle('show');
 }
+</script>
+
+
+<script>
+(function(){
+  const btn=document.getElementById('moreActionsBtn');
+  const menu=document.getElementById('moreActionsMenu');
+  if(!btn||!menu) return;
+
+  function openMenu(){
+    menu.classList.add('show');
+    btn.setAttribute('aria-expanded','true');
+    menu.setAttribute('aria-hidden','false');
+  }
+  function closeMenu(){
+    menu.classList.remove('show');
+    btn.setAttribute('aria-expanded','false');
+    menu.setAttribute('aria-hidden','true');
+  }
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    if(menu.classList.contains('show')) closeMenu(); else openMenu();
+  });
+  document.addEventListener('click', ()=>closeMenu());
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+
+  // Actions
+  menu.addEventListener('click', (e)=>{
+    const it=e.target.closest('.item'); if(!it) return;
+    const act=it.getAttribute('data-act');
+    if(act==='pdf'){ const b=document.getElementById('genPdf'); if(b) b.click(); showIsland('Generando PDF…', 1600); }
+    if(act==='csv'){ exportCSV(); showIsland('Exportando CSV…', 1600); }
+    if(act==='clear'){ const b=document.getElementById('clearAll'); if(b) b.click(); }
+    closeMenu();
+  });
+
+  // Simple CSV export from plataformas[]
+  window.exportCSV = function(){
+    try{
+      const rows = [['matricula','estado','contenido','hora']].concat(
+        (window.plataformas||[]).map(p=>[p.matricula,p.estado,(p.contenido||'').replace(/\n/g,' '),p.timestamp||''])
+      );
+      const csv = rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='plataformas.csv'; a.click();
+    }catch(e){ alert('No se pudo exportar CSV'); }
+  }
+})();
+
+function showIsland(text = "Acción completada", duration = 1800) {
+  const island = document.getElementById("dynamicIsland");
+  const textEl = document.getElementById("diText");
+  const bar = document.getElementById("diBar");
+  if (!island) return;
+  textEl.textContent = text;
+  island.classList.remove("di-hide");
+  island.classList.add("di-show");
+  bar.style.width = "0%";
+  setTimeout(() => bar.style.width = "100%", 20);
+  setTimeout(() => {
+    island.classList.remove("di-show");
+    island.classList.add("di-hide");
+  }, duration);
+}
+
 </script>
 
 </body>
