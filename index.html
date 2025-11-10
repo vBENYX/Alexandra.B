@@ -38,6 +38,7 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,Segoe UI,Roboto,Helvetica,Arial;
   background:radial-gradient(1200px 600px at 10% -10%, rgba(10,132,255,.06), transparent 60%), var(--bg);
   color:var(--text); line-height:1.45; letter-spacing:.01em;
+  scroll-behavior:smooth;
 }
 input,textarea,button{font-size:16px}
 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
@@ -46,36 +47,57 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 /* ===== Header ===== */
 .header{
-  position:sticky; top:12px; z-index:10; border-radius:22px; padding:22px 20px;
+  position:sticky; top:12px; z-index:10; border-radius:22px; padding:18px 20px;
   background:var(--glass); border:1px solid rgba(120,120,140,.22);
   backdrop-filter:saturate(1.4) blur(var(--blur));
   box-shadow:var(--shadow-1); overflow:hidden; isolation:isolate; transform:translateZ(0);
 }
 .header::before{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,132,255,.10), transparent 60%)}
 .brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;letter-spacing:.12em}
-.chip{background:rgba(242,243,244,.8);border:1px solid var(--line);padding:6px 10px;border-radius:10px;font-weight:800}
-.headline{margin:8px 0 4px;text-align:center;font-weight:800;font-size:clamp(20px,3.3vw,28px)}
-.subtle{text-align:center;color:var(--muted);font-weight:600}
+
+/* Chip CODE con efecto translúcido + shimmer */
+.chip{
+  position:relative; overflow:hidden;
+  background:rgba(255,255,255,.68);
+  border:1px solid var(--line);
+  padding:6px 10px; border-radius:10px; font-weight:800;
+  backdrop-filter:saturate(1.8) blur(8px);
+  box-shadow:inset 0 0 0 0.5px rgba(255,255,255,.6);
+}
+.chip::after{
+  content:""; position:absolute; top:-50%; left:-30%; width:60%; height:200%;
+  background:linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.65) 50%, rgba(255,255,255,0) 100%);
+  transform:rotate(12deg);
+  animation:shimmer 3.6s infinite linear;
+  pointer-events:none;
+}
+@keyframes shimmer{
+  0%{ transform:translateX(-120%) rotate(12deg); }
+  100%{ transform:translateX(220%) rotate(12deg); }
+}
+.headline{margin:6px 0 2px;text-align:center;font-weight:800;font-size:clamp(20px,3.3vw,28px)}
+.subtle{display:none}
 
 /* ===== Card flujo ===== */
 .card{
   background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
   box-shadow:var(--shadow-2); margin:18px 0; overflow:hidden;
   transition:transform .35s var(--ease-soft), box-shadow .35s var(--ease-soft);
+  scroll-margin-top:14px;
 }
 .card:hover{transform:translateY(-2px); box-shadow:0 10px 32px rgba(0,0,0,.12)}
 .card:has(.screen.active:focus-within){outline:2px solid rgba(10,132,255,.18)}
 .card-header{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:14px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FBFBFD,transparent);
+  padding:12px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FBFBFD,transparent);
 }
 .chevron{opacity:.65;user-select:none}
 .title-lg{font-weight:800;letter-spacing:.02em}
 
-.card-content{position:relative;min-height:280px; perspective:1000px}
+.card-content{position:relative;min-height:260px; perspective:1000px}
 .screen{
-  position:absolute; inset:0; padding:20px 16px 22px;
-  display:flex; flex-direction:column; gap:14px; align-items:center; justify-content:flex-start;
+  position:absolute; inset:0; padding:18px 16px 20px;
+  display:flex; flex-direction:column; gap:12px; align-items:center; justify-content:flex-start;
   opacity:0; transform:translateX(24px) scale(.985); pointer-events:none;
   transition:opacity .44s var(--ease-snap), transform .44s var(--ease-snap);
 }
@@ -86,31 +108,33 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @keyframes slideOutR{from{opacity:1;transform:none}to{opacity:0;transform:translateX(24px) scale(.985)}}
 
 /* Pasos (puntos) */
-.steps{display:flex;gap:8px;justify-content:center;padding:10px 0 12px}
+.steps{display:flex;gap:8px;justify-content:center;padding:10px 0 10px}
 .dot{width:10px;height:10px;border-radius:999px;background:#D4D6DA;transition:transform .25s var(--ease-snap), background .25s}
-.dot.active{background:var(--accent);transform:scale(1.35)}
+.dot.active{background:#0A84FF;transform:scale(1.35)}
 
-/* Meta info limpia (evita solape) */
+/* Meta info limpia */
 .meta{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 10px; max-width:560px}
 .meta .item{color:var(--muted); font-weight:600; white-space:nowrap}
 .meta strong{color:var(--text);}
 
 /* Inputs */
 .input,.textarea{
-  width:100%;max-width:560px;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:#fff;
+  width:100%;max-width:560px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;
   outline:none;transition:border-color .22s var(--ease-soft), box-shadow .22s var(--ease-soft), transform .12s;
 }
 .input:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 8px rgba(10,132,255,.12);transform:translateY(-1px)}
-.textarea{min-height:120px;resize:vertical}
+.textarea{min-height:88px;max-height:220px;resize:vertical}
+@media (max-width:480px){ .textarea{min-height:72px}}
 
 /* Botones */
 .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;max-width:560px}
 .btn{
   position:relative; display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:12px 16px;border:1px solid var(--line);border-radius:12px;font-weight:700;color:var(--text);background:#F2F3F5;
+  padding:11px 14px;border:1px solid var(--line);border-radius:12px;font-weight:700;color:var(--text);background:#F2F3F5;
   box-shadow:0 1px 0 rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.06);
-  transition:transform .14s var(--ease-snap), filter .18s var(--ease-soft), box-shadow .2s var(--ease-soft), background .2s, border-color .2s;
-  will-change:transform;
+  transition:transform .14s var(--ease-snap), box-shadow .2s var(--ease-soft), background .2s, border-color .2s, filter .18s;
+  will-change:transform, box-shadow;
+  overflow:hidden;
 }
 .btn:hover{background:#ECEEF2;border-color:#D9DCE1}
 .btn:active{transform:scale(.985)}
@@ -119,7 +143,20 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .btn-primary:hover{filter:brightness(0.98)}
 .btn-secondary{background:#E9EAED}
 
-/* Botones estado: grid exacto 3 columnas, encajan sin sobresalir */
+/* Efecto pulsado animado (onda sutil) */
+.btn::after{
+  content:""; position:absolute; left:var(--px,50%); top:var(--py,50%);
+  width:0; height:0; border-radius:999px; opacity:0; pointer-events:none;
+  background:rgba(255,255,255,.6); transform:translate(-50%,-50%);
+}
+.btn.pressed::after{ animation:pressPulse .5s var(--ease-snap) forwards; }
+@keyframes pressPulse{
+  0%{opacity:.45; width:0; height:0}
+  70%{opacity:.15; width:200%; height:200%}
+  100%{opacity:0; width:260%; height:260%}
+}
+
+/* Botones estado: grid exacto 3 columnas */
 .row.states{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:10px;width:100%;max-width:560px}
 .row.states .btn{width:100%}
 
@@ -142,7 +179,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .card-row:hover{transform:translateY(-1px);box-shadow:var(--shadow-2);background:linear-gradient(180deg,#FBFBFC,transparent)}
 
 .kbd{font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:rgba(0,0,0,.04)}
-.hint{color:var(--muted);font-size:12px;text-align:center;margin-top:6px}
+.hint{color:var(--muted);font-size:12px;text-align:center;margin-top:2px}
 @media (max-width:640px){ .row .btn{flex:1 1 100%} }
 </style>
 </head>
@@ -155,7 +192,6 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
         <div>XPO LOGISTICS</div>
       </div>
       <div class="headline">Registro de Plataformas</div>
-      <div class="subtle" id="currentDate"></div>
     </header>
 
     <!-- Card de flujo -->
@@ -167,7 +203,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
       </div>
 
       <div class="card-content" id="screens">
-        <!-- S1 (sin título interno) -->
+        <!-- S1 -->
         <div class="screen active" id="s1" tabindex="-1">
           <input id="matriculaInput" class="input" autocomplete="off" placeholder="Introduce la matrícula" />
           <div class="hint">Pulsa <span class="kbd">Enter</span> o toca <strong>Continuar</strong>.</div>
@@ -218,7 +254,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
       </div>
     </section>
 
-    <!-- Resumen (píldoras HTML) -->
+    <!-- Resumen -->
     <section class="panel">
       <h3 style="text-align:center;margin:0 0 10px;font-size:16px">Resumen del día</h3>
       <div class="pills" id="pillsWrap">
@@ -280,12 +316,35 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 <script>
 /* ===== Utils/State ===== */
 const $ = (id)=>document.getElementById(id);
-const fmtDateLong = (d=new Date()) => d.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 const fmtHour = () => new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 let plataformas = []; let currentMatricula = ''; let currentEstado = '';
 const STORAGE_KEY = 'plataformas-global';
 function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); plataformas=raw?JSON.parse(raw):[] }catch(e){ plataformas=[] } }
 function saveData(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(plataformas)); }catch(e){} }
+
+/* ===== Mantener tarjeta a la vista ===== */
+function keepCardInView(){
+  const card = $('flowCard'); if(!card) return;
+  const rect = card.getBoundingClientRect();
+  if(rect.top < 12 || rect.bottom > (window.innerHeight - 12)){
+    card.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+/* ===== Efecto pulsado en botones ===== */
+function attachPressedEffect(el){
+  el.addEventListener('pointerdown', (ev)=>{
+    const r = el.getBoundingClientRect();
+    const x = ev.clientX - r.left, y = ev.clientY - r.top;
+    el.style.setProperty('--px', x+'px'); el.style.setProperty('--py', y+'px');
+    el.classList.add('pressed');
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(evt=>{
+    el.addEventListener(evt, ()=>{
+      setTimeout(()=>el.classList.remove('pressed'), 220);
+    });
+  });
+}
 
 /* ===== Flow ===== */
 let step = 1;
@@ -296,11 +355,11 @@ function showStep(next, dir='forward'){
   nxt.classList.add('active');
   $('d1').classList.toggle('active', next===1); $('d2').classList.toggle('active', next===2); $('d3').classList.toggle('active', next===3);
   $('flowTitle').textContent = next===1 ? 'Matrícula' : next===2 ? 'Estado' : 'Contenido';
-  step = next; requestAnimationFrame(()=>{ nxt.focus({preventScroll:true}); });
+  step = next; requestAnimationFrame(()=>{ nxt.focus({preventScroll:true}); keepCardInView(); });
 }
 function nextFromS1(){
   const m = $('matriculaInput').value.trim().toUpperCase();
-  if(!m){ alert('Por favor, introduce una matrícula válida'); haptics(40); return; }
+  if(!m){ alert('Por favor, introduce una matrícula válida'); haptics(40); keepCardInView(); return; }
   currentMatricula = m; $('matriculaDisplay').textContent = m; $('matriculaDisplay2').textContent = m;
   showStep(2,'forward'); haptics(10);
 }
@@ -311,21 +370,21 @@ function chooseEstado(estado){
     const dup = plataformas.some(p => p.matricula===currentMatricula && p.estado==='VACÍA');
     if(dup){ alert('Esta matrícula ya fue registrada como VACÍA.'); resetFlow(); return; }
     plataformas.push({ id:Date.now(), matricula:currentMatricula, estado, contenido:'', timestamp:fmtHour() });
-    saveData(); updateAll(); resetFlow(); haptics(5);
+    saveData(); updateAll(); resetFlow(); haptics(5); keepCardInView();
   }else{
     showStep(3,'forward'); haptics(8);
   }
 }
 function registrar(){
   const contenido = $('contenidoInput').value.trim();
-  if(!contenido){ alert('Describe el contenido o el problema'); haptics(40); return; }
+  if(!contenido){ alert('Describe el contenido o el problema'); haptics(40); keepCardInView(); return; }
   plataformas.push({ id:Date.now(), matricula:currentMatricula, estado:currentEstado, contenido, timestamp:fmtHour() });
   saveData(); updateAll();
   const btn=$('btnRegistrar'); const prev=btn.textContent;
   btn.disabled=true; btn.textContent='Registrando…';
   setTimeout(()=>{ btn.textContent='Registrado ✓'; haptics(5);
-    setTimeout(()=>{ btn.disabled=false; btn.textContent=prev; resetFlow(); }, 800);
-  }, 420);
+    setTimeout(()=>{ btn.disabled=false; btn.textContent=prev; resetFlow(); keepCardInView(); }, 700);
+  }, 380);
 }
 function resetFlow(){ $('matriculaInput').value=''; $('contenidoInput').value=''; currentMatricula=''; currentEstado=''; showStep(1,'back'); }
 
@@ -354,24 +413,19 @@ function renderList(id, arr, showContent){
   )).join('');
 }
 
-/* ===== PDF (badges fijos, simétricos, sin TOTAL) ===== */
+/* ===== PDF (badges fijos, 3 en línea, sin TOTAL) ===== */
 function generatePDF(){
-  const { jsPDF } = window.jspdf;
+  const { jsPDF } = window.jspdf || {};
+  if(!jsPDF){ alert('No se pudo cargar jsPDF. Revisa tu conexión.'); return; }
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const TEXT=[17,20,24], MUTED=[106,111,117], LINE=[230,230,234], PANEL=[255,255,255], SOFT=[245,246,247];
+  const BADGE_RED=[254,226,226], BADGE_GREEN=[237,249,237], BADGE_ORNG=[255,245,230];
 
-  // Paleta
-  const TEXT = [17,20,24], MUTED=[106,111,117], LINE=[230,230,234], PANEL=[255,255,255], SOFT=[245,246,247];
-  const BADGE_RED   = [254,226,226]; // CARGADAS
-  const BADGE_GREEN = [237,249,237]; // VACÍAS
-  const BADGE_ORNG  = [255,245,230]; // AVERIADAS
-  const BLUE = [10,132,255];
-
-  const dateString = new Date().toLocaleDateString('es-ES',{weekday:'long', year:'numeric', month:'long', day:'numeric'}).toUpperCase();
   const cargadas = plataformas.filter(p => p.estado === 'CARGADA');
   const vacias = plataformas.filter(p => p.estado === 'VACÍA');
   const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
 
-  // Cabecera
+  // Cabecera sin fecha
   doc.setFillColor(...PANEL); doc.roundedRect(10,8,190,36,5,5,'F');
   doc.setDrawColor(...LINE); doc.roundedRect(10,8,190,36,5,5); doc.setDrawColor(210,210,214); doc.line(10,44,200,44);
   doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(40,40,40); doc.text('CODE', 195, 14, { align: 'right' });
@@ -380,9 +434,7 @@ function generatePDF(){
   doc.setTextColor(239,68,68); doc.text(xpoPart, startX, 22);
   const nextX = startX + doc.getTextWidth(xpoPart);
   doc.setTextColor(...TEXT); doc.text('LOGISTICS', nextX, 22);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...MUTED); doc.text(dateString, 105, 28, { align: 'center' });
 
-  // Badges fijos (3 en línea, simétricos, sin relleno progresivo)
   function drawBadge(x,y,w,h,bg,label,num,numColor){
     doc.setFillColor(...bg); doc.roundedRect(x,y,w,h, h/2, h/2, 'F');
     doc.setDrawColor(...LINE); doc.roundedRect(x,y,w,h, h/2, h/2);
@@ -400,8 +452,8 @@ function generatePDF(){
   function createTwoColumnTables(leftTitle,leftData,rightTitle,rightData,startY){
       let currentY=startY; const leftX=15; const rightX=110; const columnWidth=85;
       doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...TEXT);
-      if(leftData.length>0) doc.text(leftTitle.toUpperCase(),leftX,currentY);
-      if(rightData.length>0) doc.text(rightTitle.toUpperCase(),rightX,currentY);
+      if(leftData.length>0) doc.text((leftTitle+' ('+leftData.length+')').toUpperCase(),leftX,currentY);
+      if(rightData.length>0) doc.text((rightTitle+' ('+rightData.length+')').toUpperCase(),rightX,currentY);
       currentY+=8;
       if(leftData.length>0){
           doc.setFillColor(...SOFT); doc.rect(leftX,currentY-4,columnWidth,7,'F');
@@ -436,7 +488,7 @@ function generatePDF(){
   }
   function createSingleTable(title,data,startY){
       let currentY=startY; if(data.length===0) return currentY;
-      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...TEXT); doc.text(title.toUpperCase(),15,currentY); currentY+=8;
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...TEXT); doc.text((title+' ('+data.length+')').toUpperCase(),15,currentY); currentY+=8;
       doc.setFillColor(...SOFT); doc.rect(15,currentY-4,180,7,'F');
       doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...MUTED); doc.text('MATRÍCULA',17,currentY); doc.text('DESCRIPCIÓN',70,currentY); currentY+=8;
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...TEXT);
@@ -453,11 +505,8 @@ function generatePDF(){
       });
       return currentY+10;
   }
-  if(cargadas.length>0||vacias.length>0){
-      yPosition=createTwoColumnTables('PLATAFORMAS CARGADAS ('+cargadas.length+')',cargadas,'PLATAFORMAS VACÍAS ('+vacias.length+')',vacias,yPosition);
-  }
-  if(averiadas.length>0){ yPosition=createSingleTable('PLATAFORMAS AVERIADAS ('+averiadas.length+')',averiadas,yPosition); }
-
+  if(cargadas.length>0||vacias.length>0){ yPosition=createTwoColumnTables('PLATAFORMAS CARGADAS',cargadas,'PLATAFORMAS VACÍAS',vacias,yPosition); }
+  if(averiadas.length>0){ yPosition=createSingleTable('PLATAFORMAS AVERIADAS',averiadas,yPosition); }
   const pageCount=doc.internal.getNumberOfPages();
   for(let i=1;i<=pageCount;i++){
       doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,110);
@@ -471,45 +520,36 @@ function generatePDF(){
 }
 
 /* ===== Gestos/Accesos ===== */
-let touchStartX = null;
-$('flowCard').addEventListener('touchstart', (e)=>{ touchStartX = e.changedTouches[0].clientX; }, {passive:true});
-$('flowCard').addEventListener('touchend', (e)=>{
-  if(touchStartX===null) return;
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if(Math.abs(dx) > 60){ if(dx<0 && step<3) showStep(step+1,'forward'); if(dx>0 && step>1) showStep(step-1,'back'); haptics(5); }
-  touchStartX=null;
-}, {passive:true});
-const header = $('glassHeader');
-document.addEventListener('scroll', ()=>{ const y = Math.min(60, window.scrollY); header.style.transform = `translateY(${y*0.18}px)`; }, {passive:true});
-document.addEventListener('keydown',(e)=>{
-  if(e.key==='Enter' && step===1){ nextFromS1(); }
-  else if((e.key==='Enter' && (e.metaKey||e.ctrlKey) && step===3)){ registrar(); }
-  else if(e.key==='Escape'){ if(step>1) showStep(step-1,'back'); }
-});
-document.querySelectorAll('.btn').forEach(btn=>{
-  btn.addEventListener('mousemove', e=>{ const r = btn.getBoundingClientRect(); const x = e.clientX - r.left - r.width/2; const y = e.clientY - r.top - r.height/2; btn.style.transform = `translate(${x*0.05}px, ${y*0.05}px) scale(1.02)`; });
-  btn.addEventListener('mouseleave', ()=>{ btn.style.transform=''; });
-});
 function haptics(ms=8){ if(navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} }
 
 /* ===== Init ===== */
 window.addEventListener('DOMContentLoaded', () => {
-  $('currentDate').textContent = fmtDateLong().toUpperCase();
-  loadData(); updateAll();
+  // Eventos de flujo
   $('toS2').addEventListener('click', nextFromS1);
-  $('back1').addEventListener('click', ()=>showStep(1,'back'));
-  $('back2').addEventListener('click', ()=>showStep(2,'back'));
+  $('back1').addEventListener('click', ()=>{ showStep(1,'back'); keepCardInView(); });
+  $('back2').addEventListener('click', ()=>{ showStep(2,'back'); keepCardInView(); });
   $('btnCargada').addEventListener('click', ()=>chooseEstado('CARGADA'));
   $('btnVacia').addEventListener('click',   ()=>chooseEstado('VACÍA'));
   $('btnAveriada').addEventListener('click',()=>chooseEstado('AVERIADA'));
   $('btnRegistrar').addEventListener('click', registrar);
-  $('genPdf').addEventListener('click', generatePDF);
+  $('genPdf').addEventListener('click', ()=>{ keepCardInView(); generatePDF(); });
   $('clearAll').addEventListener('click', ()=>{
-    if(!plataformas.length){ alert('No hay registros para limpiar'); return; }
-    if(confirm('¿Seguro que quieres eliminar todos los registros?')){ plataformas=[]; saveData(); updateAll(); resetFlow(); }
+    if(!plataformas.length){ alert('No hay registros para limpiar'); keepCardInView(); return; }
+    if(confirm('¿Seguro que quieres eliminar todos los registros?')){ plataformas=[]; saveData(); updateAll(); resetFlow(); keepCardInView(); }
   });
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') saveData(); });
-  window.addEventListener('beforeunload', saveData);
+
+  // Teclado
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter' && step===1){ nextFromS1(); }
+    else if((e.key==='Enter' && (e.metaKey||e.ctrlKey) && step===3)){ registrar(); }
+    else if(e.key==='Escape'){ if(step>1) showStep(step-1,'back'); }
+  });
+
+  // Efecto pulsado en todos los botones (sin "magnético" para evitar interferencias)
+  document.querySelectorAll('.btn').forEach(btn=>attachPressedEffect(btn));
+
+  // Datos
+  loadData(); updateAll();
 });
 </script>
 </body>
