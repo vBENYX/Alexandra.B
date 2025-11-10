@@ -8,7 +8,7 @@
 <style>
 /* ===== Reset mínimo ===== */
 *{box-sizing:border-box}html,body{height:100%}body{margin:0}
-h1,h2,h3,h4,p{margin:0}button,input,textarea{font:inherit}
+h1,h2,h3,h4,p{margin:0}button,input,textarea,select{font:inherit}
 img,svg,video{display:block;max-width:100%}
 
 /* ===== Tokens (sin modo oscuro) ===== */
@@ -40,7 +40,7 @@ body{
   color:var(--text); line-height:1.45; letter-spacing:.01em;
   scroll-behavior:smooth;
 }
-input,textarea,button{font-size:16px}
+input,textarea,button,select{font-size:16px}
 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 .app{max-width:1040px;margin:0 auto;padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)) 16px}
@@ -76,7 +76,6 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   100%{ transform:translateX(220%) rotate(12deg); }
 }
 .headline{margin:6px 0 2px;text-align:center;font-weight:800;font-size:clamp(20px,3.3vw,28px)}
-.subtle{display:none}
 
 /* ===== Card flujo ===== */
 .card{
@@ -94,9 +93,9 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .chevron{opacity:.65;user-select:none}
 .title-lg{font-weight:800;letter-spacing:.02em}
 
-.card-content{position:relative;min-height:260px; perspective:1000px}
+.card-content{position:relative;min-height:240px; perspective:1000px}
 .screen{
-  position:absolute; inset:0; padding:18px 16px 20px;
+  position:absolute; inset:0; padding:18px 16px 18px;
   display:flex; flex-direction:column; gap:12px; align-items:center; justify-content:flex-start;
   opacity:0; transform:translateX(24px) scale(.985); pointer-events:none;
   transition:opacity .44s var(--ease-snap), transform .44s var(--ease-snap);
@@ -108,7 +107,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @keyframes slideOutR{from{opacity:1;transform:none}to{opacity:0;transform:translateX(24px) scale(.985)}}
 
 /* Pasos (puntos) */
-.steps{display:flex;gap:8px;justify-content:center;padding:10px 0 10px}
+.steps{display:flex;gap:8px;justify-content:center;padding:8px 0 10px}
 .dot{width:10px;height:10px;border-radius:999px;background:#D4D6DA;transition:transform .25s var(--ease-snap), background .25s}
 .dot.active{background:#0A84FF;transform:scale(1.35)}
 
@@ -143,7 +142,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .btn-primary:hover{filter:brightness(0.98)}
 .btn-secondary{background:#E9EAED}
 
-/* Efecto pulsado animado (onda sutil) */
+/* Efecto pulsado */
 .btn::after{
   content:""; position:absolute; left:var(--px,50%); top:var(--py,50%);
   width:0; height:0; border-radius:999px; opacity:0; pointer-events:none;
@@ -160,7 +159,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .row.states{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:10px;width:100%;max-width:560px}
 .row.states .btn{width:100%}
 
-/* ===== Panels / Pills / Lists ===== */
+/* ===== Panels / Pills ===== */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-2);margin:18px 0}
 
 /* Pills progresivas (HTML) */
@@ -172,15 +171,47 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .pill .label{font-weight:800; letter-spacing:.02em}
 .pill .val{font-weight:800; min-width:2.5ch; text-align:right; color:var(--accent)}
 
-.lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.list h3{margin:0 0 10px;font-size:16px}
-.empty{padding:14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center;font-style:italic}
-.card-row{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;transition:transform .18s var(--ease-snap), box-shadow .18s var(--ease-snap), background .2s}
-.card-row:hover{transform:translateY(-1px);box-shadow:var(--shadow-2);background:linear-gradient(180deg,#FBFBFC,transparent)}
+/* ===== Registros compactos ===== */
+.compact{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-2);}
+.compact-header{
+  position:sticky; top:12px; z-index:5; /* queda visible al hacer scroll */
+  padding:10px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#FBFBFD,transparent);
+  display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+  border-top-left-radius:var(--radius); border-top-right-radius:var(--radius);
+}
+.segment{display:inline-flex; background:#F3F4F6; border:1px solid var(--line); border-radius:999px; padding:4px}
+.segment button{
+  border:0; background:transparent; padding:8px 12px; border-radius:999px; font-weight:700; color:#4B5563;
+}
+.segment button.active{background:#FFFFFF; border:1px solid var(--line); color:var(--text)}
+.segment .badge{font-weight:800; margin-left:6px; color:#0A84FF}
+.compact-body{max-height:52vh; overflow:auto; padding:12px}
+.record{
+  border:1px solid var(--line); border-radius:12px; padding:12px 12px; margin-bottom:10px; background:#fff;
+  display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
+}
+.record .meta{justify-content:flex-start}
+.actions{display:flex; gap:6px}
+.action-btn{border:1px solid var(--line); background:#F2F3F5; padding:8px 10px; border-radius:10px; font-weight:700}
+.action-btn:hover{background:#ECEEF2}
+
+/* Modal edición */
+.modal{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:30;
+  background:rgba(0,0,0,.18);
+}
+.modal.open{display:flex}
+.modal-card{
+  width:min(96vw,560px); background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-1);
+  padding:16px; display:flex; flex-direction:column; gap:10px;
+}
+.modal-title{font-weight:800; font-size:18px}
+.modal-row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.modal-actions{display:flex; gap:10px; justify-content:flex-end}
+select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#fff}
 
 .kbd{font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:rgba(0,0,0,.04)}
-.hint{color:var(--muted);font-size:12px;text-align:center;margin-top:2px}
-@media (max-width:640px){ .row .btn{flex:1 1 100%} }
+@media (max-width:640px){ .row .btn{flex:1 1 100%} .modal-row{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -206,7 +237,6 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
         <!-- S1 -->
         <div class="screen active" id="s1" tabindex="-1">
           <input id="matriculaInput" class="input" autocomplete="off" placeholder="Introduce la matrícula" />
-          <div class="hint">Pulsa <span class="kbd">Enter</span> o toca <strong>Continuar</strong>.</div>
           <div class="row">
             <button class="btn btn-primary" id="toS2" aria-label="Continuar a Estado">Continuar</button>
           </div>
@@ -226,7 +256,6 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
           <div class="row">
             <button class="btn btn-secondary" id="back1" aria-label="Volver a matrícula">Volver</button>
           </div>
-          <div class="hint">Desliza <span class="kbd">↔︎</span> para navegar.</div>
         </div>
 
         <!-- S3 -->
@@ -243,7 +272,6 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
             <button class="btn btn-primary" id="btnRegistrar">Registrar</button>
             <button class="btn btn-secondary" id="back2">Volver</button>
           </div>
-          <div class="hint">Atajo: <span class="kbd">⌘/Ctrl</span> + <span class="kbd">Enter</span>.</div>
         </div>
       </div>
 
@@ -285,21 +313,18 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
       </div>
     </section>
 
-    <!-- Listas -->
-    <section class="panel">
-      <div class="lists">
-        <div class="list">
-          <h3>Plataformas cargadas (<span id="cargadasListCount">0</span>)</h3>
-          <div id="cargadasList"></div>
+    <!-- Registros compactos con menú fijo -->
+    <section class="compact" id="compactPanel">
+      <div class="compact-header">
+        <div class="segment" role="tablist" aria-label="Filtrar registros">
+          <button class="active" data-tab="TODAS" role="tab" aria-selected="true">Todas <span class="badge" id="bAll">0</span></button>
+          <button data-tab="CARGADA" role="tab">Cargadas <span class="badge" id="bCargadas">0</span></button>
+          <button data-tab="VACÍA" role="tab">Vacías <span class="badge" id="bVacias">0</span></button>
+          <button data-tab="AVERIADA" role="tab">Averiadas <span class="badge" id="bAveriadas">0</span></button>
         </div>
-        <div class="list">
-          <h3>Plataformas vacías (<span id="vaciasListCount">0</span>)</h3>
-          <div id="vaciasList"></div>
-        </div>
-        <div class="list">
-          <h3>Plataformas averiadas (<span id="averiadasListCount">0</span>)</h3>
-          <div id="averiadasList"></div>
-        </div>
+      </div>
+      <div class="compact-body" id="recordsContainer">
+        <!-- registros renderizados aquí -->
       </div>
     </section>
 
@@ -310,6 +335,26 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     </section>
   </div>
 
+<!-- Modal de edición -->
+<div class="modal" id="editModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="modal-title" id="editTitle">Editar registro</div>
+    <div class="modal-row">
+      <input id="editMatricula" class="input" placeholder="Matrícula" />
+      <select id="editEstado">
+        <option value="CARGADA">CARGADA</option>
+        <option value="VACÍA">VACÍA</option>
+        <option value="AVERIADA">AVERIADA</option>
+      </select>
+    </div>
+    <textarea id="editContenido" class="textarea" placeholder="Contenido / problema"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="editCancel">Cancelar</button>
+      <button class="btn btn-primary" id="editSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -318,6 +363,9 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 const $ = (id)=>document.getElementById(id);
 const fmtHour = () => new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 let plataformas = []; let currentMatricula = ''; let currentEstado = '';
+let currentTab = 'TODAS';
+let editingId = null;
+
 const STORAGE_KEY = 'plataformas-global';
 function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); plataformas=raw?JSON.parse(raw):[] }catch(e){ plataformas=[] } }
 function saveData(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(plataformas)); }catch(e){} }
@@ -340,9 +388,7 @@ function attachPressedEffect(el){
     el.classList.add('pressed');
   });
   ['pointerup','pointerleave','pointercancel'].forEach(evt=>{
-    el.addEventListener(evt, ()=>{
-      setTimeout(()=>el.classList.remove('pressed'), 220);
-    });
+    el.addEventListener(evt, ()=>setTimeout(()=>el.classList.remove('pressed'), 220));
   });
 }
 
@@ -388,32 +434,90 @@ function registrar(){
 }
 function resetFlow(){ $('matriculaInput').value=''; $('contenidoInput').value=''; currentMatricula=''; currentEstado=''; showStep(1,'back'); }
 
-/* ===== Update UI + Pills ===== */
+/* ===== Update UI + Pills + Compact List ===== */
 function updateAll(){
   const cargadas = plataformas.filter(p=>p.estado==='CARGADA');
   const vacias   = plataformas.filter(p=>p.estado==='VACÍA');
   const averiadas= plataformas.filter(p=>p.estado==='AVERIADA');
   const total = plataformas.length || 1;
-  $('cargadasCount').textContent=cargadas.length; $('vaciasCount').textContent=vacias.length; $('averiadasCount').textContent=averiadas.length; $('totalCount').textContent=plataformas.length;
-  setFill('pillCargadas', cargadas.length/total*100); setFill('pillVacias',   vacias.length/total*100); setFill('pillAveriadas',averiadas.length/total*100); setFill('pillTotal', 100);
-  $('cargadasListCount').textContent=cargadas.length; $('vaciasListCount').textContent=vacias.length; $('averiadasListCount').textContent=averiadas.length;
-  renderList('cargadasList', cargadas, true); renderList('vaciasList', vacias, false); renderList('averiadasList', averiadas, true);
+
+  $('cargadasCount').textContent=cargadas.length;
+  $('vaciasCount').textContent=vacias.length;
+  $('averiadasCount').textContent=averiadas.length;
+  $('totalCount').textContent=plataformas.length;
+
+  setFill('pillCargadas', cargadas.length/total*100);
+  setFill('pillVacias',   vacias.length/total*100);
+  setFill('pillAveriadas',averiadas.length/total*100);
+  setFill('pillTotal',    100);
+
+  // Badges del segmento
+  $('bAll').textContent = plataformas.length;
+  $('bCargadas').textContent = cargadas.length;
+  $('bVacias').textContent = vacias.length;
+  $('bAveriadas').textContent = averiadas.length;
+
+  renderCompactList();
 }
 function setFill(pillId, pct){ const el = $(pillId); if(!el) return; requestAnimationFrame(()=>{ el.style.setProperty('--fill', Math.max(0, Math.min(100, pct)).toFixed(0) + '%'); }); }
-function renderList(id, arr, showContent){
-  const box=$(id); if(!arr.length){ box.innerHTML='<div class="empty">No hay registros</div>'; return; }
+
+function renderCompactList(){
+  const box = $('recordsContainer');
+  const data = currentTab==='TODAS' ? plataformas : plataformas.filter(p=>p.estado===currentTab);
+  if(!data.length){ box.innerHTML = '<div class="empty">No hay registros</div>'; return; }
   const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;'};
   const esc = (s)=>String(s).replace(/[&<>"']/g, m=>map[m]);
-  box.innerHTML = arr.map(it=>(
-    '<div class="card-row">'+
-      '<div class="head" style="display:flex;justify-content:space-between;gap:10px;font-weight:700">'+
-        '<span>'+esc(it.matricula)+'</span><span>'+esc(it.timestamp)+'</span></div>'+
-      (showContent&&it.contenido?'<div class="body" style="color:#2B2F34;margin-top:6px;white-space:pre-wrap">'+esc(it.contenido)+'</div>':'')+
-    '</div>'
+  box.innerHTML = data.map(it=>(
+    `<div class="record" data-id="${it.id}">
+       <div class="meta">
+         <div class="item">Matrícula: <strong>${esc(it.matricula)}</strong></div>
+         <div class="item"> — Estado: <strong>${esc(it.estado)}</strong></div>
+         <div class="item"> — ${esc(it.timestamp)}</div>
+         ${it.contenido?`<div class="item" style="display:block;color:#2B2F34;margin-top:6px;white-space:pre-wrap">${esc(it.contenido)}</div>`:''}
+       </div>
+       <div class="actions">
+         <button class="action-btn" data-action="edit">Editar</button>
+         <button class="action-btn" data-action="delete">Eliminar</button>
+       </div>
+     </div>`
   )).join('');
 }
 
-/* ===== PDF (badges fijos, 3 en línea, sin TOTAL) ===== */
+/* ===== Edit/Delete ===== */
+function openEditModal(id){
+  const it = plataformas.find(p=>p.id===id); if(!it) return;
+  editingId = id;
+  $('editMatricula').value = it.matricula;
+  $('editEstado').value = it.estado;
+  $('editContenido').value = it.contenido || '';
+  $('editModal').classList.add('open'); $('editModal').setAttribute('aria-hidden','false');
+}
+function closeEditModal(){
+  $('editModal').classList.remove('open'); $('editModal').setAttribute('aria-hidden','true');
+  editingId = null;
+}
+function saveEdit(){
+  if(editingId==null) return;
+  const idx = plataformas.findIndex(p=>p.id===editingId);
+  if(idx<0) return;
+  const m = $('editMatricula').value.trim().toUpperCase();
+  const e = $('editEstado').value;
+  const c = $('editContenido').value.trim();
+  if(!m){ alert('La matrícula no puede estar vacía'); return; }
+  plataformas[idx].matricula = m;
+  plataformas[idx].estado = e;
+  plataformas[idx].contenido = c;
+  saveData(); updateAll(); closeEditModal();
+}
+function deleteRecord(id){
+  const it = plataformas.find(p=>p.id===id);
+  if(!it) return;
+  if(!confirm(`¿Eliminar el registro de ${it.matricula}?`)) return;
+  plataformas = plataformas.filter(p=>p.id!==id);
+  saveData(); updateAll();
+}
+
+/* ===== PDF (igual que versión anterior, con badges fijos, 3 en línea) ===== */
 function generatePDF(){
   const { jsPDF } = window.jspdf || {};
   if(!jsPDF){ alert('No se pudo cargar jsPDF. Revisa tu conexión.'); return; }
@@ -425,7 +529,7 @@ function generatePDF(){
   const vacias = plataformas.filter(p => p.estado === 'VACÍA');
   const averiadas = plataformas.filter(p => p.estado === 'AVERIADA');
 
-  // Cabecera sin fecha
+  // Cabecera
   doc.setFillColor(...PANEL); doc.roundedRect(10,8,190,36,5,5,'F');
   doc.setDrawColor(...LINE); doc.roundedRect(10,8,190,36,5,5); doc.setDrawColor(210,210,214); doc.line(10,44,200,44);
   doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(40,40,40); doc.text('CODE', 195, 14, { align: 'right' });
@@ -519,12 +623,12 @@ function generatePDF(){
   doc.save('reporte_plataformas_'+exportDateForName+'.pdf');
 }
 
-/* ===== Gestos/Accesos ===== */
+/* ===== Gestos/Accesos mínimos ===== */
 function haptics(ms=8){ if(navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} }
 
 /* ===== Init ===== */
 window.addEventListener('DOMContentLoaded', () => {
-  // Eventos de flujo
+  // Flow
   $('toS2').addEventListener('click', nextFromS1);
   $('back1').addEventListener('click', ()=>{ showStep(1,'back'); keepCardInView(); });
   $('back2').addEventListener('click', ()=>{ showStep(2,'back'); keepCardInView(); });
@@ -538,18 +642,37 @@ window.addEventListener('DOMContentLoaded', () => {
     if(confirm('¿Seguro que quieres eliminar todos los registros?')){ plataformas=[]; saveData(); updateAll(); resetFlow(); keepCardInView(); }
   });
 
-  // Teclado
-  document.addEventListener('keydown',(e)=>{
-    if(e.key==='Enter' && step===1){ nextFromS1(); }
-    else if((e.key==='Enter' && (e.metaKey||e.ctrlKey) && step===3)){ registrar(); }
-    else if(e.key==='Escape'){ if(step>1) showStep(step-1,'back'); }
+  // Segmented filter
+  document.querySelectorAll('.segment button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.segment button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = btn.getAttribute('data-tab');
+      renderCompactList();
+    });
   });
 
-  // Efecto pulsado en todos los botones (sin "magnético" para evitar interferencias)
-  document.querySelectorAll('.btn').forEach(btn=>attachPressedEffect(btn));
+  // Delegación de acciones Edit/Delete
+  $('recordsContainer').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-action]'); if(!btn) return;
+    const rec = e.target.closest('.record'); const id = rec ? Number(rec.getAttribute('data-id')) : null;
+    if(!id) return;
+    const action = btn.getAttribute('data-action');
+    if(action==='edit'){ openEditModal(id); }
+    else if(action==='delete'){ deleteRecord(id); }
+  });
+
+  // Modal edición
+  $('editCancel').addEventListener('click', closeEditModal);
+  $('editSave').addEventListener('click', saveEdit);
+  $('editModal').addEventListener('click', (e)=>{ if(e.target.id==='editModal') closeEditModal(); });
+
+  // Efecto pulsado en todos los botones
+  document.querySelectorAll('button').forEach(attachPressedEffect);
 
   // Datos
   loadData(); updateAll();
 });
 </script>
 </body>
+</html>
