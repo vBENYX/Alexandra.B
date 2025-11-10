@@ -55,13 +55,13 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   box-shadow:var(--shadow-1); overflow:hidden; isolation:isolate; transform:translateZ(0);
 }
 .header::before{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,132,255,.10), transparent 60%)}
-.brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;letter-spacing:.12em}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:500;letter-spacing:.08em}
 
 /* CODE chip translúcido + shimmer */
 .chip{
   position:relative; overflow:hidden;
   background:rgba(255,255,255,.68);
-  border:1px solid var(--line);
+  border:1px solid rgba(0,0,0,0.06);
   padding:6px 10px; border-radius:10px; font-weight:800;
   backdrop-filter:saturate(1.8) blur(8px);
   box-shadow:inset 0 0 0 0.5px rgba(255,255,255,.6);
@@ -85,30 +85,30 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @keyframes logoPop{0%{transform:translateY(6px) scale(.96); opacity:0} 100%{transform:none;opacity:1}}
 @keyframes logoFade{0%{letter-spacing:.12em; opacity:0} 100%{letter-spacing:.02em; opacity:1}}
 
-.headline{margin:4px 0 2px;text-align:center;font-weight:800;font-size:clamp(20px,3.2vw,26px)}
+.headline{margin:4px 0 2px;text-align:center;font-weight:500;font-size:clamp(20px,3.2vw,26px)}
 
 /* ===== Card flujo ===== */
 .card{
-  background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-  box-shadow:var(--shadow-2); margin:18px 0; overflow:hidden;
-  transition:transform .35s var(--ease-soft), box-shadow .35s var(--ease-soft);
+  background:var(--panel); border:1px solid rgba(0,0,0,0.06); border-radius:var(--radius);
+  box-shadow:0 4px 12px rgba(0,0,0,0.05); margin:18px 0; overflow:hidden;
+  transition: all 0.22s cubic-bezier(.25,.8,.25,1);
   scroll-margin-top:14px;
 }
-.card:hover{transform:translateY(-2px); box-shadow:0 10px 32px rgba(0,0,0,.12)}
+.card:hover{transform:translateY(-3px); box-shadow:0 10px 32px rgba(0,0,0,.12)}
 .card:has(.screen.active:focus-within){outline:2px solid rgba(10,132,255,.18)}
 .card-header{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:12px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FBFBFD,transparent);
 }
 .chevron{opacity:.65;user-select:none}
-.title-lg{font-weight:800;letter-spacing:.02em}
+.title-lg{font-weight:600;letter-spacing:.01em}
 
 .card-content{position:relative;min-height:240px; perspective:1000px}
 .screen{
   position:absolute; inset:0; padding:18px 16px 18px;
   display:flex; flex-direction:column; gap:12px; align-items:center; justify-content:flex-start;
   opacity:0; transform:translateX(24px) scale(.985); pointer-events:none;
-  transition:opacity .44s var(--ease-snap), transform .44s var(--ease-snap);
+  transition: all 0.22s cubic-bezier(.25,.8,.25,1);
 }
 .screen.active{opacity:1; transform:none; pointer-events:auto}
 .screen.out-left{animation:slideOutL .36s var(--ease-snap)}
@@ -131,20 +131,19 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 /* Pasos (puntos) */
 .steps{display:flex;gap:8px;justify-content:center;padding:8px 0 10px}
-.dot{width:10px;height:10px;border-radius:999px;background:#D4D6DA;transition:transform .25s var(--ease-snap), background .25s}
-.dot.active{background:#0A84FF;transform:scale(1.35)}
+.dot{width:10px;height:10px;border-radius:999px;background:#D4D6DA;transition: all 0.22s cubic-bezier(.25,.8,.25,1);transform:scale(1.35)}
 
 /* Meta info limpia */
 .meta{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 10px; max-width:560px}
-.meta .item{color:var(--muted); font-weight:600; white-space:nowrap}
+.meta .item{color:var(--muted); font-weight:500; white-space:nowrap}
 .meta strong{color:var(--text);}
 
 /* Inputs */
 .input,.textarea{
-  width:100%;max-width:560px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;
-  outline:none;transition:border-color .22s var(--ease-soft), box-shadow .22s var(--ease-soft), transform .12s;
+  width:100%;max-width:560px;padding:12px 14px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);background:#fff;
+  outline:none;transition: all 0.22s cubic-bezier(.25,.8,.25,1);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui;
-  font-weight:600;
+  font-weight:500;
 }
 .input:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 8px rgba(10,132,255,.12);transform:translateY(-1px)}
 .textarea{min-height:88px;max-height:220px;resize:vertical}
@@ -154,16 +153,16 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;max-width:560px}
 .btn{
   position:relative; display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:11px 14px;border:1px solid var(--line);border-radius:12px;
-  color:var(--text);background:#F2F3F5;
+  padding:11px 14px;border:1px solid rgba(0,0,0,0.06);border-radius:12px;
+  color:var(--text);background:#F3F4F6;
   box-shadow:0 1px 0 rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.06);
-  transition:transform .14s var(--ease-snap), box-shadow .2s var(--ease-soft), background .2s, border-color .2s, filter .18s;
+  transition: all 0.22s cubic-bezier(.25,.8,.25,1);
   will-change:transform, box-shadow; overflow:hidden;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui;
-  font-weight:700; letter-spacing:.01em;
+  font-weight:500; letter-spacing:.01em;
 }
-.btn:hover{background:#ECEEF2;border-color:#D9DCE1}
-.btn:active{transform:scale(.985)}
+.btn:hover{background:#E8E9EB;border-color:#D9DCE1}
+.btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.6;transform:none}
 .btn-primary{background:var(--accent);color:#fff;border-color:transparent}
 .btn-primary:hover{filter:brightness(0.98)}
@@ -187,19 +186,19 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .row.states .btn{width:100%}
 
 /* ===== Panels / Pills ===== */
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-2);margin:18px 0}
+.panel{background:var(--panel);border:1px solid rgba(0,0,0,0.06);border-radius:var(--radius);padding:18px;box-shadow:0 4px 12px rgba(0,0,0,0.05);margin:18px 0}
 
 /* Pills progresivas mejoradas */
 .pills{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .pill{
-  position:relative; overflow:hidden; border:1px solid var(--line); border-radius:999px; padding:12px 16px;
+  position:relative; overflow:hidden; border:1px solid rgba(0,0,0,0.06); border-radius:999px; padding:12px 16px;
   background:linear-gradient(180deg,#FBFBFC,transparent); box-shadow:0 2px 12px rgba(0,0,0,.04)
 }
 /* Relleno progresivo */
 .pill::before{
   content:""; position:absolute; inset:0; width:var(--fill,0%);
   background:linear-gradient(90deg, rgba(10,132,255,.18), rgba(10,132,255,.32));
-  transition:width .9s var(--ease-snap);
+  transition: all 0.22s cubic-bezier(.25,.8,.25,1);
 }
 /* Brillo al actualizar */
 .pill.update::after{
@@ -210,32 +209,32 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 }
 @keyframes pillShine{ 0%{left:-30%} 100%{left:110%} }
 .pill-inner{position:relative; display:flex; align-items:center; justify-content:space-between; gap:10px; z-index:1}
-.pill .label{font-weight:800; letter-spacing:.02em; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display"}
-.pill .val{font-weight:900; min-width:2.5ch; text-align:right; color:#0A84FF; font-variant-numeric:tabular-nums}
+.pill .label{font-weight:500; letter-spacing:.01em; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display"}
+.pill .val{font-weight:700; min-width:2.5ch; text-align:right; color:#0A84FF; font-variant-numeric:tabular-nums}
 
 /* ===== Registros compactos ===== */
-.compact{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-2);}
+.compact{background:var(--panel);border:1px solid rgba(0,0,0,0.06);border-radius:var(--radius);box-shadow:0 4px 12px rgba(0,0,0,0.05);}
 .compact-header{
   position:sticky; top:12px; z-index:5;
   padding:10px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#FBFBFD,transparent);
   display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
   border-top-left-radius:var(--radius); border-top-right-radius:var(--radius);
 }
-.segment{display:inline-flex; background:#F3F4F6; border:1px solid var(--line); border-radius:999px; padding:4px}
+.segment{display:inline-flex; background:#F3F4F6; border:1px solid rgba(0,0,0,0.06); border-radius:999px; padding:4px}
 .segment button{
-  border:0; background:transparent; padding:8px 12px; border-radius:999px; font-weight:700; color:#4B5563;
+  border:0; background:transparent; padding:8px 12px; border-radius:999px; font-weight:500; color:#4B5563;
 }
-.segment button.active{background:#FFFFFF; border:1px solid var(--line); color:var(--text)}
-.segment .badge{font-weight:800; margin-left:6px; color:#0A84FF}
+.segment button.active{background:#FFFFFF; border:1px solid rgba(0,0,0,0.06); color:var(--text)}
+.segment .badge{font-weight:500; margin-left:6px; color:#0A84FF}
 .compact-body{max-height:52vh; overflow:auto; padding:12px}
 .record{
-  border:1px solid var(--line); border-radius:12px; padding:12px 12px; margin-bottom:10px; background:#fff;
+  border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding:12px 12px; margin-bottom:10px; background:#fff;
   display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
 }
 .record .meta{justify-content:flex-start}
 .actions{display:flex; gap:6px}
-.action-btn{border:1px solid var(--line); background:#F2F3F5; padding:8px 10px; border-radius:10px; font-weight:700}
-.action-btn:hover{background:#ECEEF2}
+.action-btn{border:1px solid rgba(0,0,0,0.06); background:#F3F4F6; padding:8px 10px; border-radius:10px; font-weight:500}
+.action-btn:hover{background:#E8E9EB}
 
 /* Toast de éxito */
 .toast{
@@ -254,15 +253,455 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 }
 .modal.open{display:flex}
 .modal-card{
-  width:min(96vw,560px); background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-1);
+  width:min(96vw,560px); background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:20px; box-shadow:var(--shadow-1);
   padding:16px; display:flex; flex-direction:column; gap:10px;
 }
-.modal-title{font-weight:800; font-size:18px}
+.modal-title{font-weight:500; font-size:18px}
 .modal-row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 .modal-actions{display:flex; gap:10px; justify-content:flex-end}
-select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#fff}
+select{padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,0,0.06); background:#fff}
 
 @media (max-width:640px){ .row .btn{flex:1 1 100%} .modal-row{grid-template-columns:1fr} }
+
+.list-body::before{
+content:""; position:sticky; top:0; left:0; right:0; height:20px;
+background:linear-gradient(to bottom, rgba(245,246,247,1), rgba(245,246,247,0));
+pointer-events:none; z-index:5;}
+.list-body::after{
+content:""; position:sticky; bottom:0; left:0; right:0; height:20px;
+background:linear-gradient(to top, rgba(245,246,247,1), rgba(245,246,247,0));
+pointer-events:none; z-index:5;}
+
+/* Microinteractions typing */
+.typing-pulse{
+  animation: pulseInput 0.25s ease-out;
+}
+@keyframes pulseInput{
+  0%{transform:scale(1); box-shadow:0 0 0 rgba(0,0,0,0);}
+  40%{transform:scale(1.015); box-shadow:0 0 6px rgba(0,0,0,0.06);}
+  100%{transform:scale(1); box-shadow:0 0 0 rgba(0,0,0,0);}
+}
+
+
+/* Rhythm Vertical Enhancements */
+:root{
+  --space-xxs:4px;
+  --space-xs:8px;
+  --space-sm:12px;
+  --space-md:20px;
+  --space-lg:24px;
+  --space-xl:32px;
+}
+
+/* Titles */
+.section-title{
+  margin-top:var(--space-lg);
+  margin-bottom:var(--space-sm);
+}
+
+/* Inputs and labels */
+.group{margin-bottom:var(--space-md);}
+.group label{margin-bottom:var(--space-xs); display:block;}
+input, textarea{
+  margin-bottom:var(--space-sm);
+  padding:var(--space-sm) var(--space-md);
+}
+
+/* Card padding */
+.card{
+  padding:var(--space-md) var(--space-md);
+  margin-bottom:var(--space-lg);
+}
+
+/* Pills and summary spacing */
+.summary-block{
+  margin-top:var(--space-lg);
+  margin-bottom:var(--space-lg);
+}
+.pill{margin-right:var(--space-sm); margin-bottom:var(--space-sm);}
+
+/* Records */
+.record{
+  padding:var(--space-md);
+  margin-bottom:var(--space-sm);
+}
+.record .top-row{margin-bottom:var(--space-xs);}
+.record .content{margin-top:var(--space-xs); margin-bottom:var(--space-sm);}
+.record .actions{margin-top:var(--space-xs);}
+
+
+/* ===== Color Balance Enhancements ===== */
+
+/* Background refinement */
+body{
+  background:#F7F7F9;
+}
+
+/* Card neutrals */
+.card{
+  background:#FFFFFF;
+  border:1px solid rgba(0,0,0,0.06);
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Records */
+.record{
+  background:#FFFFFF;
+  border:1px solid rgba(0,0,0,0.06);
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* State colors refined */
+.state-empty{
+  background:rgba(33,131,255,0.10);
+  border-color:rgba(33,131,255,0.22);
+  color:#1564C0;
+}
+
+.state-loaded{
+  background:rgba(0,180,135,0.10);
+  border-color:rgba(0,180,135,0.22);
+  color:#0A8369;
+}
+
+.state-broken{
+  background:rgba(241,184,58,0.12);
+  border-color:rgba(241,184,58,0.22);
+  color:#8F6200;
+}
+
+/* Pills enhancement */
+.pill{
+  background:#FFFFFF;
+  border:1px solid rgba(0,0,0,0.04);
+}
+
+/* Buttons */
+.btn-primary{
+  background:#0A84FF;
+}
+.btn-primary:hover{
+  background:#0A7AF0;
+}
+.btn-secondary{
+  background:#F3F4F6;
+  border:1px solid #E3E4E6;
+}
+.btn-secondary:hover{
+  background:#ECEEF2;
+}
+
+/* Inputs */
+input, textarea{
+  background:#FDFDFD;
+  border:1px solid #E5E6E7;
+}
+input:focus, textarea:focus{
+  border-color:#0A84FF;
+  box-shadow:0 0 0 2px rgba(10,132,255,0.15);
+}
+
+
+/* ===== Flow Visual Clarity ===== */
+
+/* Step headers */
+.step-title{
+  font-weight:600;
+  margin-bottom:8px;
+  position:relative;
+  display:inline-block;
+}
+.step-title.active{
+  opacity:1;
+}
+.step-title.inactive{
+  opacity:0.45;
+}
+.step-title.active::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-2px;
+  height:2px;
+  background:#0A84FF;
+  border-radius:2px;
+}
+
+/* Smooth step transitions */
+.step-panel{
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity .22s cubic-bezier(.25,.8,.25,1), transform .22s cubic-bezier(.25,.8,.25,1);
+}
+.step-panel.visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* Button consistency */
+.btn-primary, .btn-secondary{
+  height:44px;
+  border-radius:10px;
+  font-weight:500;
+  transition:all .22s cubic-bezier(.25,.8,.25,1);
+}
+
+/* Subtitles */
+.step-sub{
+  font-size:14px;
+  opacity:.7;
+  margin-bottom:16px;
+}
+
+/* Highlight on state selection */
+.state-button.selected{
+  box-shadow:0 0 0 2px rgba(10,132,255,.35);
+  background:rgba(10,132,255,0.08);
+}
+
+
+/* ===== Deep Alignment & Semantic Structure ===== */
+
+/* Master column alignment */
+.main-container, .card, .record, .group, .step-panel{
+  margin-left:auto;
+  margin-right:auto;
+  max-width:440px;
+}
+
+/* Unified left padding */
+.card, .record, .step-panel{
+  padding-left:20px;
+  padding-right:20px;
+}
+
+/* Records internal alignment */
+.record{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.record-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.record-matricula{
+  font-weight:500;
+  font-size:17px;
+}
+
+.record-estado{
+  font-weight:500;
+  opacity:.85;
+}
+
+.record-time{
+  font-size:13px;
+  opacity:.65;
+  margin-top:4px;
+}
+
+.record-content{
+  line-height:1.45;
+  margin-top:4px;
+}
+
+.record-actions{
+  text-align:right;
+  margin-top:4px;
+}
+
+/* State bar alignment */
+.record{
+  position:relative;
+}
+.record::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:3px;
+  border-radius:3px;
+  background:var(--record-state-color, rgba(0,0,0,0.1));
+}
+
+/* Apply state color */
+.record.state-empty::before{
+  background:rgba(33,131,255,0.45);
+}
+.record.state-loaded::before{
+  background:rgba(0,180,135,0.45);
+}
+.record.state-broken::before{
+  background:rgba(241,184,58,0.55);
+}
+
+/* Inputs width alignment */
+input, textarea{
+  width:100%;
+  max-width:100%;
+  display:block;
+}
+
+/* Step title alignment */
+.step-title{
+  display:block;
+  text-align:left;
+  margin-left:0;
+}
+
+/* Better spacing in panels */
+.step-panel.visible{
+  padding-top:12px;
+}
+
+
+/* ===== Cohesión Interna ===== */
+
+/* Whites hierarchy */
+body{background:#F7F7F9;}
+.card, .record{background:#FFFFFF;}
+input, textarea{background:#FDFDFD;}
+
+/* Borders unified */
+.card, .record{border:1px solid rgba(0,0,0,0.06);}
+input, textarea{border:1px solid #E5E6E7;}
+
+/* Radii */
+.card, .record{border-radius:20px;}
+input, textarea, .btn-primary, .btn-secondary{border-radius:14px;}
+.state-button, .pill, .state-chip{border-radius:10px;}
+
+/* Typography consistency */
+input, textarea, .record-content, .record-time{font-weight:400;}
+.btn-primary{font-weight:500;}
+.state-chip, .record-matricula{font-weight:500;}
+.pill .val{font-weight:600;}
+.step-title{font-weight:600;}
+
+/* Animation consistency */
+*{transition:all .22s cubic-bezier(.25,.8,.25,1);}
+
+/* Unified component behavior */
+.card:hover, .record:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 16px rgba(0,0,0,0.07);
+}
+
+/* Semantic internal structure */
+.record-header, .record-body, .record-footer{
+  display:block;
+  width:100%;
+}
+
+
+/* ===== Pulido Maestro ===== */
+
+/* Micro-line-height balance */
+body, input, textarea, button, .record-content{
+  line-height:1.46;
+}
+
+/* Micro-spacings refined */
+.record-content{margin-top:4px; margin-bottom:12px;}
+.record-time{margin-top:2px;}
+.record-actions{margin-top:6px;}
+
+/* Button text vertical centering */
+.btn-primary, .btn-secondary{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding-top:0; padding-bottom:0;
+}
+
+/* Subtle hover-shadows */
+.card:hover, .record:hover{
+  box-shadow:0 6px 18px rgba(0,0,0,0.07);
+}
+
+/* New record gentle entry */
+.record{
+  animation:recordEntry .3s ease-out;
+}
+@keyframes recordEntry{
+  0%{opacity:0; transform:translateY(8px);}
+  100%{opacity:1; transform:translateY(0);}
+}
+
+/* Pills counter micro-pulse */
+.pill-val-update{
+  animation:pulseVal .28s ease-out;
+}
+@keyframes pulseVal{
+  0%{transform:scale(1);}
+  45%{transform:scale(1.08);}
+  100%{transform:scale(1);}
+}
+
+/* Step transitions refined */
+.step-panel.visible{
+  transition:opacity .20s cubic-bezier(.25,.8,.25,1), transform .20s cubic-bezier(.25,.8,.25,1);
+}
+
+/* Slight scroll easing for lists */
+.list-body{
+  scroll-behavior:smooth;
+}
+
+/* Shade on scroll edges */
+.list-body::before, .list-body::after{
+  opacity:.9;
+}
+
+
+/* ===== Accesibilidad Mejorada ===== */
+
+/* Contrastes suaves pero legibles */
+body, input, textarea, .record-content{
+  color:#5A5F63;
+}
+.record-time, .step-sub{
+  color:#7A7F85;
+}
+
+/* Touch targets ampliados */
+.btn-primary, .btn-secondary, .state-button{
+  min-height:48px;
+  padding:0 18px;
+}
+
+/* Input focus claro */
+input:focus, textarea:focus{
+  border-color:#0A84FF;
+  box-shadow:0 0 0 3px rgba(10,132,255,0.20);
+}
+
+/* Suave aviso de error */
+.input-error{
+  border-color:#FF4D4F !important;
+  box-shadow:0 0 0 2px rgba(255,77,79,0.20);
+}
+
+/* Espacios seguros */
+.group{margin-bottom:20px;}
+.step-sub{margin-bottom:18px;}
+
+/* Registro más legible */
+.record{padding-top:18px; padding-bottom:18px;}
+.record-header{margin-bottom:6px;}
+.record-content{margin-top:6px; margin-bottom:14px;}
+
+/* Auto-scroll suave */
+html{
+  scroll-behavior:smooth;
+}
+
 </style>
 </head>
 <body>
@@ -289,7 +728,7 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
         <div class="screen active" id="s1" tabindex="-1">
           <input id="matriculaInput" class="input" autocomplete="off" placeholder="Introduce la matrícula" />
           <div class="row">
-            <button class="btn btn-primary" id="toS2" aria-label="Continuar a Estado">Continuar</button>
+            <button type="button" class="btn btn-primary" id="toS2" aria-label="Continuar a Estado">Continuar</button>
           </div>
         </div>
 
@@ -300,12 +739,12 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
             <div class="item"><strong id="matriculaDisplay">—</strong></div>
           </div>
           <div class="row states" role="group" aria-label="Selecciona estado">
-            <button class="btn" id="btnCargada">CARGADA</button>
-            <button class="btn" id="btnVacia">VACÍA</button>
-            <button class="btn" id="btnAveriada">AVERIADA</button>
+            <button type="button" class="btn" id="btnCargada">CARGADA</button>
+            <button type="button" class="btn" id="btnVacia">VACÍA</button>
+            <button type="button" class="btn" id="btnAveriada">AVERIADA</button>
           </div>
           <div class="row">
-            <button class="btn btn-secondary" id="back1" aria-label="Volver a matrícula">Volver</button>
+            <button type="button" class="btn btn-secondary" id="back1" aria-label="Volver a matrícula">Volver</button>
           </div>
         </div>
 
@@ -320,8 +759,8 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
           </div>
           <textarea id="contenidoInput" class="textarea" placeholder="Describe el contenido o el problema…"></textarea>
           <div class="row">
-            <button class="btn btn-primary" id="btnRegistrar">Registrar</button>
-            <button class="btn btn-secondary" id="back2">Volver</button>
+            <button type="button" class="btn btn-primary" id="btnRegistrar">Registrar</button>
+            <button type="button" class="btn btn-secondary" id="back2">Volver</button>
           </div>
         </div>
       </div>
@@ -368,10 +807,10 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
     <section class="compact" id="compactPanel">
       <div class="compact-header">
         <div class="segment" role="tablist" aria-label="Filtrar registros">
-          <button class="active" data-tab="TODAS" role="tab" aria-selected="true">Todas <span class="badge" id="bAll">0</span></button>
-          <button data-tab="CARGADA" role="tab">Cargadas <span class="badge" id="bCargadas">0</span></button>
-          <button data-tab="VACÍA" role="tab">Vacías <span class="badge" id="bVacias">0</span></button>
-          <button data-tab="AVERIADA" role="tab">Averiadas <span class="badge" id="bAveriadas">0</span></button>
+          <button type="button" class="active" data-tab="TODAS" role="tab" aria-selected="true">Todas <span class="badge" id="bAll">0</span></button>
+          <button type="button" data-tab="CARGADA" role="tab">Cargadas <span class="badge" id="bCargadas">0</span></button>
+          <button type="button" data-tab="VACÍA" role="tab">Vacías <span class="badge" id="bVacias">0</span></button>
+          <button type="button" data-tab="AVERIADA" role="tab">Averiadas <span class="badge" id="bAveriadas">0</span></button>
         </div>
       </div>
       <div class="compact-body" id="recordsContainer"></div>
@@ -379,8 +818,8 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
 
     <!-- Acciones -->
     <section class="panel actions" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <button class="btn btn-primary" id="genPdf">Generar PDF</button>
-      <button class="btn btn-secondary" id="clearAll">Limpiar registros</button>
+      <button type="button" class="btn btn-primary" id="genPdf">Generar PDF</button>
+      <button type="button" class="btn btn-secondary" id="clearAll">Limpiar registros</button>
     </section>
   </div>
 
@@ -401,8 +840,8 @@ select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); back
     </div>
     <textarea id="editContenido" class="textarea" placeholder="Contenido / problema"></textarea>
     <div class="modal-actions">
-      <button class="btn btn-secondary" id="editCancel">Cancelar</button>
-      <button class="btn btn-primary" id="editSave">Guardar</button>
+      <button type="button" class="btn btn-secondary" id="editCancel">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="editSave">Guardar</button>
     </div>
   </div>
 </div>
@@ -559,8 +998,8 @@ function renderCompactList(){
          ${it.contenido?`<div class="item" style="display:block;color:#2B2F34;margin-top:6px;white-space:pre-wrap">${esc(it.contenido)}</div>`:''}
        </div>
        <div class="actions">
-         <button class="action-btn" data-action="edit">Editar</button>
-         <button class="action-btn" data-action="delete">Eliminar</button>
+         <button type="button" class="action-btn" data-action="edit">Editar</button>
+         <button type="button" class="action-btn" data-action="delete">Eliminar</button>
        </div>
      </div>`
   )).join('');
@@ -754,4 +1193,82 @@ window.addEventListener('DOMContentLoaded', () => {
   loadData(); updateAll();
 });
 </script>
-</body>
+<script>
+/* Microinteractions typing */
+function addTypingMicroInteraction(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('input', ()=>{
+    el.classList.remove('typing-pulse');
+    void el.offsetWidth;
+    el.classList.add('typing-pulse');
+  });
+}
+window.addEventListener('DOMContentLoaded', ()=>{
+  addTypingMicroInteraction('matriculaInput');
+  addTypingMicroInteraction('contenidoInput');
+});
+</script><script>
+/* ===== Flow Visual Enhancement JS ===== */
+function setStepVisual(current){
+  const titles = document.querySelectorAll('.step-title');
+  titles.forEach(t=>{
+    t.classList.remove('active','inactive');
+    if(t.dataset.step == current){
+      t.classList.add('active');
+    } else {
+      t.classList.add('inactive');
+    }
+  });
+
+  const panels = document.querySelectorAll('.step-panel');
+  panels.forEach(p=>{
+    p.classList.remove('visible');
+    if(p.dataset.step == current){
+      setTimeout(()=>p.classList.add('visible'),50);
+    }
+  });
+}
+
+/* Auto highlight state buttons */
+document.addEventListener('click', e=>{
+  if(e.target.classList.contains('state-button')){
+    document.querySelectorAll('.state-button').forEach(b=>b.classList.remove('selected'));
+    e.target.classList.add('selected');
+  }
+});
+
+/* Call after DOM ready */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Assuming step 1 on load
+  setStepVisual("1");
+});
+</script><script>
+/* Pulsar contador cuando cambia */
+function pulseCounter(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('pill-val-update');
+  void el.offsetWidth;
+  el.classList.add('pill-val-update');
+}
+</script><script>
+/* Auto-focus y auto-scroll en pasos */
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inputs=document.querySelectorAll('input, textarea');
+  inputs.forEach(el=>{
+    el.addEventListener('focus', ()=>{
+      setTimeout(()=>{el.scrollIntoView({behavior:'smooth', block:'center'});},120);
+    });
+  });
+});
+
+/* Validación suave */
+function markError(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.add('input-error');
+  setTimeout(()=>el.classList.remove('input-error'),400);
+}
+</script></body>
+</html>
