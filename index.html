@@ -1,3 +1,18 @@
+
+<style>
+#confirmClear {
+  position: relative;
+  overflow: hidden;
+}
+#confirmClear .hold-progress {
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:0%;
+  background:rgba(255,255,255,0.35);
+  transition:width 1s linear;
+  pointer-events:none;
+}
+</style>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2664,7 +2679,7 @@ window.addEventListener('scroll', ()=>{
     <p>Esta acción no se puede deshacer.</p>
     <div class="modal-actions">
       <button id="cancelClear" class="btn btn-secondary">Cancelar</button>
-      <button id="confirmClear" class="btn btn-primary" style="background:#d40000;">Borrar</button>
+      <button id="confirmClear" class="btn btn-primary" style="background:#d40000;"><div class="hold-progress"></div>Borrar</button>
     </div>
   </div>
 </div>
@@ -2695,6 +2710,39 @@ if(confirmClear){
     if(typeof clearAllRecords === "function"){ clearAllRecords(); }
   });
 }
+</script>
+<script>
+// === Mejoras avanzadas ===
+
+// 2) Animación suave estilo iOS al abrir el modal
+modalClear.querySelector('.modal-card').style.transition = "transform .25s cubic-bezier(.25,.8,.25,1), opacity .25s";
+modalClear.addEventListener("transitionstart", ()=>{
+  modalClear.querySelector('.modal-card').style.transform = "scale(1)";
+  modalClear.querySelector('.modal-card').style.opacity = "1";
+});
+modalClear.addEventListener("transitionend", ()=>{});
+
+// 3) Dynamic Island Feedback
+function di(msg){
+  if(typeof showIsland === "function"){ showIsland(msg, 1800); }
+}
+
+// 4) Mantener pulsado para confirmar
+let holdTimer = null;
+confirmClear.addEventListener("touchstart", ()=>{
+  confirmClear.textContent = "Mantén 1s…";
+  holdTimer = setTimeout(()=>{
+    modalClear.classList.remove("open");
+    di("Registros eliminados");
+    clearAllRecords();
+  }, 1000);
+});
+confirmClear.addEventListener("touchend", ()=>{
+  if(holdTimer){
+    clearTimeout(holdTimer);
+    confirmClear.textContent = "Borrar";
+  }
+});
 </script>
 
 </body>
@@ -2842,3 +2890,14 @@ body{
 .app{
   background: transparent;
 }
+</style>
+
+<script>
+// progreso visual
+const holdBar = document.querySelector("#confirmClear .hold-progress");
+confirmClear.addEventListener("touchstart", ()=>{
+  if(holdBar){ holdBar.style.width="100%"; }
+});
+confirmClear.addEventListener("touchend", ()=>{
+  if(holdBar){ holdBar.style.width="0%"; }
+});
