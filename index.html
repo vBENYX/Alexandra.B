@@ -1,3 +1,4 @@
+
 <style>
 #confirmClear {
   position: relative;
@@ -1889,6 +1890,8 @@ let currentTab = 'TODAS'; let editingId = null;
 
 const STORAGE_KEY = 'plataformas-global';
 function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); plataformas=raw?JSON.parse(raw):[] }catch(e){ plataformas=[] } }
+loadData();
+
 function saveData(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(plataformas)); }catch(e){} }
 
 /* ===== Mantener tarjeta a la vista ===== */
@@ -2297,7 +2300,6 @@ function pulseCounter(id){
 }
 </script><script>
 /* Auto-focus y auto-scroll en pasos */
-document.addEventListener('DOMContentLoaded', ()=>{
   const inputs=document.querySelectorAll('input, textarea');
   inputs.forEach(el=>{
     el.addEventListener('focus', ()=>{
@@ -2326,7 +2328,6 @@ function updateStepCircles(step){
   });
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
   updateStepCircles(1);
 });</script><script>
 /* === Line Animation === */
@@ -2343,7 +2344,6 @@ updateStepCircles = function(step){
   setTimeout(()=>updateStepLine(step),150);
 };
 
-document.addEventListener('DOMContentLoaded', ()=>{
   updateStepLine(1);
 });
 </script><script>
@@ -2470,7 +2470,6 @@ document.addEventListener('click', e=>{
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', ()=>{
   const wrap = $('recordsContainer');
   if(!wrap) return;
 
@@ -2613,20 +2612,7 @@ function toggleMenu(){
   }
 })();
 
-function showIsland(text = "Acción completada", duration = 1800) {
-  const island = document.getElementById("dynamicIsland");
-  const textEl = document.getElementById("diText");
-  const bar = document.getElementById("diBar");
-  if (!island) return;
-  textEl.textContent = text;
-  island.classList.remove("di-hide");
-  island.classList.add("di-show");
-  bar.style.width = "0%";
-  setTimeout(() => bar.style.width = "100%", 20);
-  setTimeout(() => {
-    island.classList.remove("di-show");
-    island.classList.add("di-hide");
-  }, duration);
+, duration);
 }
 
 </script>
@@ -2770,7 +2756,7 @@ function clearAllRecords(){
     if(typeof saveData === 'function') {
       try{ saveData(); } catch(e){ console.warn('saveData() failed:', e); }
     } else {
-      try { localStorage.removeItem('plataformas'); } catch(e) { /* ignore */ }
+      try {  } catch(e) { /* ignore */ }
     }
     // update UI counters/lists
     if(typeof updateAll === 'function') {
