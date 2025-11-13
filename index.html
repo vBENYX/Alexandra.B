@@ -2657,27 +2657,56 @@ window.addEventListener('scroll', ()=>{
 </style>
 
 
+<style>
+#clearHoldBar{
+  position:absolute;
+  left:0; bottom:0;
+  height:3px;
+  width:0%;
+  background:#ff3b30;
+  transition:width 0.7s linear;
+  border-radius:2px;
+}
+#clearAll{ position:relative; overflow:hidden; }
+</style>
+
 <script>
-// Long press clearAll
+// Long press with progress animation for clearAll
 (function(){
   const btn = document.getElementById('clearAll');
   if(!btn) return;
+
+  let bar = document.createElement('div');
+  bar.id = "clearHoldBar";
+  btn.appendChild(bar);
+
   let timer=null;
-  const hold=800;
-  const start = ()=>{
-    if(timer) clearTimeout(timer);
+  const hold=700;
+
+  function start(){
+    bar.style.transition="none";
+    bar.style.width="0%";
+    void bar.offsetWidth;
+    bar.style.transition="width 0.7s linear";
+    bar.style.width="100%";
+
     timer=setTimeout(()=>{
-      // clear all logic
       if(!window.plataformas) window.plataformas=[];
       plataformas.length=0;
-      try{ if(typeof saveData==='function') saveData(); }catch(e){}
-      try{ if(typeof updateAll==='function') updateAll(); }catch(e){}
-      try{ if(typeof resetFlow==='function') resetFlow(); }catch(e){}
-      try{ if(typeof keepCardInView==='function') keepCardInView(); }catch(e){}
-      try{ if(typeof toast==='function') toast('Registros limpiados'); }catch(e){}
+      try{ saveData(); }catch(e){}
+      try{ updateAll(); }catch(e){}
+      try{ resetFlow(); }catch(e){}
+      try{ keepCardInView(); }catch(e){}
+      try{ toast('Registros eliminados'); }catch(e){}
     }, hold);
-  };
-  const cancel = ()=>{ if(timer){ clearTimeout(timer); timer=null; } };
+  }
+
+  function cancel(){
+    if(timer){ clearTimeout(timer); timer=null; }
+    bar.style.transition="none";
+    bar.style.width="0%";
+  }
+
   btn.addEventListener('mousedown', start);
   btn.addEventListener('touchstart', start);
   btn.addEventListener('mouseup', cancel);
