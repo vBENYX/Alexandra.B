@@ -2088,7 +2088,7 @@ function saveEdit(){
 function deleteRecord(id){
   const it = plataformas.find(p=>p.id===id);
   if(!it) return;
-  if(!confirm('¿Eliminar este registro?')) return;
+  // removed old confirm
   plataformas = plataformas.filter(p=>p.id!==id);
   saveData(); updateAll(); toast('Registro eliminado');
 }
@@ -2745,6 +2745,54 @@ confirmClear.addEventListener("touchend", ()=>{
 });
 </script>
 
+
+<!-- Modal confirmación V4 -->
+<div id="confirmClearModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-title">¿Borrar todos los registros?</div>
+    <p style="font-size:14px; opacity:.85;">Mantén pulsado <strong>1 segundo</strong> para confirmar.</p>
+    <div class="modal-actions">
+      <button id="cancelClear" class="btn btn-secondary">Cancelar</button>
+      <button id="confirmClear" class="btn btn-primary" style="background:#d40000;">
+        <span class="label">Mantener 1s para borrar</span>
+        <div class="hold-progress"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Sistema nuevo exclusivo
+const modalClear=document.getElementById("confirmClearModal");
+const clearAllBtn=document.getElementById("clearAll");
+const cancelClear=document.getElementById("cancelClear");
+const confirmClear=document.getElementById("confirmClear");
+const holdBar=confirmClear.querySelector(".hold-progress");
+let holdTimer=null;
+
+clearAllBtn.onclick=(e)=>{e.preventDefault();modalClear.classList.add("open");}
+
+cancelClear.onclick=()=>{modalClear.classList.remove("open");holdBar.style.width="0%"}
+
+confirmClear.addEventListener("touchstart",()=>{
+  confirmClear.querySelector(".label").textContent="Manteniendo…";
+  holdBar.style.transition="width 1s linear";
+  holdBar.style.width="100%";
+  holdTimer=setTimeout(()=>{
+    modalClear.classList.remove("open");
+    if(typeof showIsland==="function") showIsland("Registros eliminados",1800);
+    clearAllRecords();
+  },1000);
+});
+
+confirmClear.addEventListener("touchend",()=>{
+  clearTimeout(holdTimer);
+  holdBar.style.transition="width .2s";
+  holdBar.style.width="0%";
+  confirmClear.querySelector(".label").textContent="Mantener 1s para borrar";
+});
+</script>
+
 </body>
 </html>
 <style>
@@ -2901,3 +2949,4 @@ confirmClear.addEventListener("touchstart", ()=>{
 confirmClear.addEventListener("touchend", ()=>{
   if(holdBar){ holdBar.style.width="0%"; }
 });
+</script>
