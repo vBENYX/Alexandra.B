@@ -1,4 +1,3 @@
-
 <style>
 #confirmClear {
   position: relative;
@@ -2959,6 +2958,121 @@ confirmClear.addEventListener("touchend",()=>{
   // Also ensure any existing menu that triggers clearAll uses modal (menu code uses element with data-act='clear' -> clicks clearAll)
   // We already set clearAllBtn to open modal above.
 
+})();
+</script>
+
+
+<!-- Modal iOS17 Modern -->
+<style>
+#iosModal{
+  position:fixed;inset:0;display:flex;align-items:flex-end;
+  justify-content:center;background:rgba(0,0,0,.25);
+  backdrop-filter:blur(12px);opacity:0;pointer-events:none;
+  transition:opacity .25s ease;
+}
+#iosModal.open{opacity:1;pointer-events:auto;}
+#iosModal .card{
+  width:92%;background:rgba(255,255,255,0.85);
+  border-radius:18px;padding:20px;margin-bottom:22px;
+  box-shadow:0 20px 40px rgba(0,0,0,.15);
+  transform:translateY(40px);transition:transform .25s cubic-bezier(.25,.8,.25,1);
+}
+#iosModal.open .card{transform:translateY(0);}
+#iosModal .actions{display:flex;gap:10px;margin-top:20px;}
+#iosModal button{
+  flex:1;padding:12px 16px;border-radius:12px;font-size:16px;
+  border:none;outline:none;
+}
+#iosCancel{background:#e5e5e5;}
+#iosConfirm{background:#ff3b30;color:white;position:relative;overflow:hidden;}
+#iosConfirm .bar{
+  position:absolute;left:0;top:0;bottom:0;width:0%;
+  background:rgba(255,255,255,.35);pointer-events:none;
+}
+</style>
+
+<div id="iosModal">
+  <div class="card">
+    <div id="iosTitle" style="font-size:18px;font-weight:600;margin-bottom:6px;">Confirmar</div>
+    <div id="iosMsg" style="font-size:14px;opacity:.8;">Mantén pulsado 1s para confirmar.</div>
+    <div class="actions">
+      <button id="iosCancel">Cancelar</button>
+      <button id="iosConfirm"><span class="lbl">Mantener 1s</span><div class="bar"></div></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const modal=document.getElementById('iosModal');
+  const title=document.getElementById('iosTitle');
+  const msg=document.getElementById('iosMsg');
+  const cancel=document.getElementById('iosCancel');
+  const confirmBtn=document.getElementById('iosConfirm');
+  const bar=confirmBtn.querySelector('.bar');
+  const lbl=confirmBtn.querySelector('.lbl');
+  let hold=null;
+
+  window.safeDelete=function(type,id){
+    modal.dataset.type=type;
+    modal.dataset.id=id||'';
+    if(type==='all'){
+      title.textContent='¿Eliminar todos los registros?';
+      msg.innerHTML='Mantén pulsado <strong>1 segundo</strong> para confirmar.';
+      lbl.textContent='Mantener 1s';
+    }else{
+      title.textContent='¿Eliminar este registro?';
+      msg.innerHTML='Mantén pulsado <strong>1 segundo</strong> para confirmar.';
+      lbl.textContent='Mantener 1s';
+    }
+    modal.classList.add('open');
+  };
+
+  cancel.onclick=function(){
+    modal.classList.remove('open');
+    bar.style.width='0%';
+    clearTimeout(hold);
+  };
+
+  function execute(){
+    modal.classList.remove('open');
+    const t=modal.dataset.type;
+    const id=Number(modal.dataset.id||0);
+    if(typeof showIsland==='function')
+      showIsland(t==='all'?'Registros eliminados':'Registro eliminado',1600);
+    if(t==='all'){
+      if(typeof clearAllRecords==='function') clearAllRecords();
+    }else{
+      if(typeof _performDeleteRecord==='function') _performDeleteRecord(id);
+    }
+    bar.style.width='0%';
+  }
+
+  function startHold(){
+    lbl.textContent='Manteniendo…';
+    bar.style.transition='width 1s linear';
+    bar.style.width='100%';
+    hold=setTimeout(execute,1000);
+  }
+
+  function cancelHold(){
+    clearTimeout(hold);
+    hold=null;
+    lbl.textContent='Mantener 1s';
+    bar.style.transition='width .25s';
+    bar.style.width='0%';
+  }
+
+  confirmBtn.addEventListener('touchstart',startHold);
+  confirmBtn.addEventListener('mousedown',startHold);
+  ['touchend','mouseup','mouseleave','touchcancel'].forEach(ev=>{
+    confirmBtn.addEventListener(ev,cancelHold);
+  });
+
+  // Replace deleteRecord and clear handlers
+  window.deleteRecord=function(id){ safeDelete('single',id); };
+  const clear=document.getElementById('clearAll');
+  if(clear) clear.onclick=(e)=>{ e.preventDefault(); safeDelete('all'); };
 })();
 </script>
 
