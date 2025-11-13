@@ -1,18 +1,3 @@
-
-<style>
-#confirmClear {
-  position: relative;
-  overflow: hidden;
-}
-#confirmClear .hold-progress {
-  position:absolute;
-  left:0; top:0; bottom:0;
-  width:0%;
-  background:rgba(255,255,255,0.35);
-  transition:width 1s linear;
-  pointer-events:none;
-}
-</style>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1878,6 +1863,26 @@ body{
 <!-- Toast -->
 <div class="toast" id="toast">Registro guardado</div>
 
+<!-- Modal de edición -->
+<div class="modal" id="editModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="modal-title" id="editTitle">Editar registro</div>
+    <div class="modal-row">
+      <input id="editMatricula" class="input" placeholder="Matrícula" />
+      <select id="editEstado">
+        <option value="CARGADA">CARGADA</option>
+        <option value="VACÍA">VACÍA</option>
+        <option value="AVERIADA">AVERIADA</option>
+      </select>
+    </div>
+    <textarea id="editContenido" class="textarea" placeholder="Contenido / problema"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="editCancel">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="editSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -1890,8 +1895,6 @@ let currentTab = 'TODAS'; let editingId = null;
 
 const STORAGE_KEY = 'plataformas-global';
 function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); plataformas=raw?JSON.parse(raw):[] }catch(e){ plataformas=[] } }
-loadData();
-
 function saveData(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(plataformas)); }catch(e){} }
 
 /* ===== Mantener tarjeta a la vista ===== */
@@ -2070,7 +2073,7 @@ function saveEdit(){
 function deleteRecord(id){
   const it = plataformas.find(p=>p.id===id);
   if(!it) return;
-  // removed old confirm
+  if(!confirm('¿Eliminar este registro?')) return;
   plataformas = plataformas.filter(p=>p.id!==id);
   saveData(); updateAll(); toast('Registro eliminado');
 }
@@ -2205,7 +2208,10 @@ window.addEventListener('DOMContentLoaded', () => {
   $('btnAveriada').addEventListener('click',()=>chooseEstado('AVERIADA'));
   $('btnRegistrar').addEventListener('click', registrar);
   $('genPdf').addEventListener('click', ()=>{ keepCardInView(); generatePDF(); });
-  
+  $('clearAll').addEventListener('click', ()=>{
+    if(!plataformas.length){ alert('No hay registros para limpiar'); keepCardInView(); return; }
+    if(confirm('¿Seguro que quieres eliminar todos los registros?')){ plataformas=[]; saveData(); updateAll(); resetFlow(); keepCardInView(); toast('Registros limpiados'); }
+  });
 
   // Segmented filter
   document.querySelectorAll('.segment button').forEach(btn=>{
@@ -2300,6 +2306,7 @@ function pulseCounter(id){
 }
 </script><script>
 /* Auto-focus y auto-scroll en pasos */
+document.addEventListener('DOMContentLoaded', ()=>{
   const inputs=document.querySelectorAll('input, textarea');
   inputs.forEach(el=>{
     el.addEventListener('focus', ()=>{
@@ -2328,6 +2335,7 @@ function updateStepCircles(step){
   });
 }
 
+document.addEventListener('DOMContentLoaded', ()=>{
   updateStepCircles(1);
 });</script><script>
 /* === Line Animation === */
@@ -2344,6 +2352,7 @@ updateStepCircles = function(step){
   setTimeout(()=>updateStepLine(step),150);
 };
 
+document.addEventListener('DOMContentLoaded', ()=>{
   updateStepLine(1);
 });
 </script><script>
@@ -2470,6 +2479,7 @@ document.addEventListener('click', e=>{
 </script>
 
 <script>
+document.addEventListener('DOMContentLoaded', ()=>{
   const wrap = $('recordsContainer');
   if(!wrap) return;
 
@@ -2612,7 +2622,20 @@ function toggleMenu(){
   }
 })();
 
-, duration);
+function showIsland(text = "Acción completada", duration = 1800) {
+  const island = document.getElementById("dynamicIsland");
+  const textEl = document.getElementById("diText");
+  const bar = document.getElementById("diBar");
+  if (!island) return;
+  textEl.textContent = text;
+  island.classList.remove("di-hide");
+  island.classList.add("di-show");
+  bar.style.width = "0%";
+  setTimeout(() => bar.style.width = "100%", 20);
+  setTimeout(() => {
+    island.classList.remove("di-show");
+    island.classList.add("di-hide");
+  }, duration);
 }
 
 </script>
@@ -2634,147 +2657,34 @@ window.addEventListener('scroll', ()=>{
 </style>
 
 
-
-<!-- Simplified iOS17 modal for CLEAR ALL only -->
-<style>
-#iosClearModal{
-  position:fixed;inset:0;display:flex;align-items:flex-end;
-  justify-content:center;background:rgba(0,0,0,.22);
-  backdrop-filter: blur(10px);opacity:0;pointer-events:none;transition:opacity .22s ease;
-  z-index:9999;
-}
-#iosClearModal.open{opacity:1;pointer-events:auto;}
-#iosClearModal .card{width:92%;background:rgba(255,255,255,0.95);border-radius:16px;padding:16px;margin-bottom:20px;box-shadow:0 18px 36px rgba(0,0,0,.12);transform:translateY(18px);transition:transform .28s cubic-bezier(.2,.9,.2,1);opacity:0;}
-#iosClearModal.open .card{transform:translateY(0);opacity:1;}
-#iosClearModal .title{font-size:18px;font-weight:700;margin-bottom:6px;color:#111;}
-#iosClearModal .msg{font-size:14px;opacity:.85;color:#333;}
-#iosClearModal .actions{display:flex;gap:10px;margin-top:14px;}
-#iosCancel{flex:1;padding:10px 12px;border-radius:12px;background:#efefef;border:none;font-weight:600;}
-#iosConfirm{flex:1;padding:10px 12px;border-radius:12px;background:#ff3b30;color:#fff;border:none;font-weight:700;position:relative;overflow:hidden;}
-#iosConfirm .bar{position:absolute;left:0;top:0;bottom:0;width:0%;background:rgba(255,255,255,0.35);pointer-events:none;transition:width 1s linear;}
-#iosConfirm .lbl{position:relative;z-index:2;}
-@media (min-width:900px){
-  #iosClearModal .card{width:420px;margin-bottom:36px;border-radius:14px;padding:18px;}
-}
-</style>
-
-<div id="iosClearModal" aria-hidden="true">
-  <div class="card" role="dialog" aria-modal="true">
-    <div class="title">Borrar todos los registros</div>
-    <div class="msg">Mantén pulsado <strong>1 segundo</strong> para confirmar. Esta acción no se puede deshacer.</div>
-    <div class="actions">
-      <button id="iosCancel" type="button">Cancelar</button>
-      <button id="iosConfirm" type="button"><span class="lbl">Mantener 1s</span><div class="bar"></div></button>
-    </div>
-  </div>
-</div>
-
 <script>
+// Long-press to delete
 (function(){
-  const modal = document.getElementById('iosClearModal');
-  const cancel = document.getElementById('iosCancel');
-  const confirmBtn = document.getElementById('iosConfirm');
-  const bar = confirmBtn.querySelector('.bar');
-  const lbl = confirmBtn.querySelector('.lbl');
-  let timer = null;
+  let delTimer=null;
+  const holdTime=700;
+  const container = document.getElementById('recordsContainer');
+  if(!container) return;
 
-  // open modal helper
-  function openClearModal(){
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden','false');
+  container.addEventListener('mousedown', startHold);
+  container.addEventListener('touchstart', startHold);
+  container.addEventListener('mouseup', cancelHold);
+  container.addEventListener('mouseleave', cancelHold);
+  container.addEventListener('touchend', cancelHold);
+  container.addEventListener('touchcancel', cancelHold);
+
+  function startHold(e){
+    const btn = e.target.closest('button[data-action="delete"]');
+    if(!btn) return;
+    const rec = btn.closest('.record');
+    if(!rec) return;
+    const id = Number(rec.getAttribute('data-id'));
+    delTimer = setTimeout(()=>{ deleteRecord(id); }, holdTime);
   }
-
-  // close helper
-  function closeClearModal(){
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden','true');
-    if(bar){ bar.style.transition=''; bar.style.width='0%'; }
-    lbl.textContent = 'Mantener 1s';
-    clearTimeout(timer);
-    timer = null;
-  }
-
-  // wire cancel
-  cancel.addEventListener('click', closeClearModal);
-
-  // start hold (touch + mouse)
-  function startHold(ev){
-    ev.preventDefault();
-    lbl.textContent = 'Manteniendo…';
-    if(bar){ bar.style.transition='width 1s linear'; bar.style.width='100%'; }
-    timer = setTimeout(function(){
-      // execute clear all
-      closeClearModal();
-      if(typeof showIsland === 'function') showIsland('Registros eliminados', 1400);
-      if(typeof clearAllRecords === 'function'){
-        clearAllRecords();
-      } else {
-        // fallback: clear plataformas array safely if defined
-        if(window.plataformas){ plataformas = []; if(typeof saveData==='function') saveData(); if(typeof updateAll==='function') updateAll(); if(typeof toast==='function') toast('Registros limpiados'); }
-      }
-    }, 1000);
-  }
-
   function cancelHold(){
-    if(timer){ clearTimeout(timer); timer = null; }
-    if(bar){ bar.style.transition='width .2s'; bar.style.width='0%'; }
-    lbl.textContent = 'Mantener 1s';
-  }
-
-  confirmBtn.addEventListener('touchstart', startHold);
-  confirmBtn.addEventListener('mousedown', startHold);
-  ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> confirmBtn.addEventListener(ev, cancelHold));
-
-  // ensure clearAll button opens modal and does NOT call confirm() directly
-  const clearBtn = document.getElementById('clearAll') || document.querySelector('[data-act="clear"]');
-  if(clearBtn){
-    // remove old onclick handlers if any
-    clearBtn.replaceWith(clearBtn.cloneNode(true));
-    const newClear = document.getElementById('clearAll') || document.querySelector('[data-act="clear"]');
-    if(newClear){
-      newClear.addEventListener('click', function(e){ e.preventDefault(); openClearModal(); });
-    }
+    if(delTimer){ clearTimeout(delTimer); delTimer=null; }
   }
 })();
 </script>
-
-
-<!-- Inserted clearAllRecords() - generated by assistant (A+C) -->
-<script>
-/**
- * clearAllRecords()
- * Centralized function to clear all registros in plataformas[],
- * persist changes, refresh UI and show feedback.
- */
-function clearAllRecords(){
-  try{
-    // defensive checks
-    if(!window.plataformas) window.plataformas = [];
-    // clear array
-    window.plataformas.length = 0; // keep same reference if others hold it
-    // persist if function exists
-    if(typeof saveData === 'function') {
-      try{ saveData(); } catch(e){ console.warn('saveData() failed:', e); }
-    } else {
-      try {  } catch(e) { /* ignore */ }
-    }
-    // update UI counters/lists
-    if(typeof updateAll === 'function') {
-      try{ updateAll(); } catch(e){ console.warn('updateAll() failed:', e); }
-    }
-    // visual feedback
-    if(typeof showIsland === 'function') showIsland('Registros eliminados', 1400);
-    if(typeof toast === 'function') toast('Registros limpiados');
-  }catch(err){
-    console.error('clearAllRecords error', err);
-    alert('No se pudo limpiar los registros. Revisa la consola.');
-  }
-}
-</script>
-<!-- End inserted clearAllRecords() -->
-
-
-
 
 </body>
 </html>
@@ -2921,14 +2831,3 @@ body{
 .app{
   background: transparent;
 }
-</style>
-
-<script>
-// progreso visual
-const holdBar = document.querySelector("#confirmClear .hold-progress");
-confirmClear.addEventListener("touchstart", ()=>{
-  if(holdBar){ holdBar.style.width="100%"; }
-});
-confirmClear.addEventListener("touchend", ()=>{
-  if(holdBar){ holdBar.style.width="0%"; }
-});
