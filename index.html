@@ -2793,6 +2793,175 @@ confirmClear.addEventListener("touchend",()=>{
 });
 </script>
 
+
+<script>
+// ---- Unified delete flow for ALL and SINGLE records (v5) ----
+(function(){
+  const modal = document.getElementById('confirmClearModal');
+  const clearAllBtn = document.getElementById('clearAll');
+  const cancelBtn = document.getElementById('cancelClear');
+  const confirmBtn = document.getElementById('confirmClear');
+  const labelSpan = confirmBtn ? confirmBtn.querySelector('.label') : null;
+  const holdBar = confirmBtn ? confirmBtn.querySelector('.hold-progress') : null;
+  let holdTimer = null;
+
+  if(!modal || !confirmBtn) return;
+
+  // Helper to open modal for type ('all'|'single') and optional id
+  function openDeleteModal(type, id){
+    modal.dataset.type = type || 'all';
+    modal.dataset.id = id || '';
+    // set texts
+    const title = modal.querySelector('.modal-title');
+    const p = modal.querySelector('p');
+    if(type === 'single'){
+      title.textContent = '¿Eliminar este registro?';
+      if(p) p.innerHTML = 'Mantén pulsado <strong>1 segundo</strong> para confirmar la eliminación de este registro.';
+      if(labelSpan) labelSpan.textContent = 'Mantener 1s para borrar';
+    } else {
+      title.textContent = '¿Borrar todos los registros?';
+      if(p) p.innerHTML = 'Mantén pulsado <strong>1 segundo</strong> para confirmar la eliminación de <strong>todos</strong> los registros.';
+      if(labelSpan) labelSpan.textContent = 'Mantener 1s para borrar';
+    }
+    // show modal
+    modal.classList.add('open');
+  }
+
+  // Replace any global deleteRecord so existing calls open the modal instead of deleting immediately
+  window.deleteRecord = function(id){
+    openDeleteModal('single', id);
+  };
+
+  // Make sure clearAllBtn opens modal as 'all'
+  if(clearAllBtn){
+    clearAllBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openDeleteModal('all', '');
+    });
+  }
+
+  // Cancel handler
+  cancelBtn.addEventListener('click', function(){
+    modal.classList.remove('open');
+    if(holdBar) { holdBar.style.transition = ''; holdBar.style.width = '0%'; }
+    if(labelSpan) labelSpan.textContent = 'Mantener 1s para borrar';
+    clearTimeout(holdTimer);
+    holdTimer = null;
+  });
+
+  // Touch start (hold) on confirmBtn
+  confirmBtn.addEventListener('touchstart', function(ev){
+    ev.preventDefault();
+    if(labelSpan) labelSpan.textContent = 'Manteniendo…';
+    if(holdBar){
+      holdBar.style.transition = 'width 1s linear';
+      // force reflow for transition consistency
+      void holdBar.offsetWidth;
+      holdBar.style.width = '100%';
+    }
+    holdTimer = setTimeout(function(){
+      // perform delete based on modal type
+      const t = modal.dataset.type || 'all';
+      modal.classList.remove('open');
+      if(holdBar){ holdBar.style.transition = ''; holdBar.style.width = '0%'; }
+      if(typeof showIsland === 'function'){
+        showIsland(t === 'all' ? 'Registros eliminados' : 'Registro eliminado', 1600);
+      }
+      if(t === 'all'){
+        if(typeof clearAllRecords === 'function'){ clearAllRecords(); }
+      } else {
+        const id = modal.dataset.id ? Number(modal.dataset.id) : null;
+        if(id && typeof _performDeleteRecord === 'function'){
+          _performDeleteRecord(id);
+        } else if(id){
+          // fallback: perform deletion inline here
+          window.plataformas = (window.plataformas || []).filter(p => p.id !== id);
+          if(typeof saveData === 'function') saveData();
+          if(typeof updateAll === 'function') updateAll();
+          if(typeof toast === 'function') toast('Registro eliminado');
+        }
+      }
+      holdTimer = null;
+    }, 1000);
+  });
+
+  // touchend cancels if released early
+  ['touchend','touchcancel','touchmove','mouseup','mouseleave'].forEach(evt=>{
+    confirmBtn.addEventListener(evt, function(){
+      if(holdTimer){
+        clearTimeout(holdTimer);
+        holdTimer = null;
+        if(holdBar){
+          holdBar.style.transition = 'width .2s';
+          holdBar.style.width = '0%';
+        }
+        if(labelSpan) labelSpan.textContent = 'Mantener 1s para borrar';
+      }
+    });
+  });
+
+  // Also support mouse users: mousedown/mouseup
+  confirmBtn.addEventListener('mousedown', function(ev){
+    ev.preventDefault();
+    if(labelSpan) labelSpan.textContent = 'Manteniendo…';
+    if(holdBar){
+      holdBar.style.transition = 'width 1s linear';
+      void holdBar.offsetWidth;
+      holdBar.style.width = '100%';
+    }
+    holdTimer = setTimeout(function(){
+      const t = modal.dataset.type || 'all';
+      modal.classList.remove('open');
+      if(holdBar){ holdBar.style.transition = ''; holdBar.style.width = '0%'; }
+      if(typeof showIsland === 'function'){
+        showIsland(t === 'all' ? 'Registros eliminados' : 'Registro eliminado', 1600);
+      }
+      if(t === 'all'){
+        if(typeof clearAllRecords === 'function'){ clearAllRecords(); }
+      } else {
+        const id = modal.dataset.id ? Number(modal.dataset.id) : null;
+        if(id && typeof _performDeleteRecord === 'function'){
+          _performDeleteRecord(id);
+        } else if(id){
+          window.plataformas = (window.plataformas || []).filter(p => p.id !== id);
+          if(typeof saveData === 'function') saveData();
+          if(typeof updateAll === 'function') updateAll();
+          if(typeof toast === 'function') toast('Registro eliminado');
+        }
+      }
+      holdTimer = null;
+    }, 1000);
+  });
+
+  confirmBtn.addEventListener('mouseup', function(){
+    if(holdTimer){
+      clearTimeout(holdTimer);
+      holdTimer = null;
+      if(holdBar){
+        holdBar.style.transition = 'width .2s';
+        holdBar.style.width = '0%';
+      }
+      if(labelSpan) labelSpan.textContent = 'Mantener 1s para borrar';
+    }
+  });
+
+  // Expose a safe internal deletion method that actually removes the record (used by the modal)
+  window._performDeleteRecord = function(id){
+    id = Number(id);
+    if(!id) return;
+    window.plataformas = (window.plataformas || []).filter(p => p.id !== id);
+    if(typeof saveData === 'function') saveData();
+    if(typeof updateAll === 'function') updateAll();
+    if(typeof toast === 'function') toast('Registro eliminado');
+  };
+
+  // Also ensure any existing menu that triggers clearAll uses modal (menu code uses element with data-act='clear' -> clicks clearAll)
+  // We already set clearAllBtn to open modal above.
+
+})();
+</script>
+
 </body>
 </html>
 <style>
@@ -2949,4 +3118,3 @@ confirmClear.addEventListener("touchstart", ()=>{
 confirmClear.addEventListener("touchend", ()=>{
   if(holdBar){ holdBar.style.width="0%"; }
 });
-</script>
