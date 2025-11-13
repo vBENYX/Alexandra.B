@@ -7,6 +7,7 @@
 
 <style>
 /* ===== Reset mínimo ===== */
+*{text-decoration:none !important;}
 *{box-sizing:border-box}html,
 h1,h2,h3,h4,p{margin:0}button,input,textarea,select{font:inherit}
 img,svg,video{display:block;max-width:100%}
@@ -267,15 +268,7 @@ content:""; position:sticky; bottom:0; left:0; right:0; height:20px;
 background:linear-gradient(to top, rgba(245,246,247,1), rgba(245,246,247,0));
 pointer-events:none; z-index:5;}
 
-/* Microinteractions typing */
-.typing-pulse{
-  animation: pulseInput 0.25s ease-out;
-}
-@keyframes pulseInput{
-  0%{transform:scale(1); box-shadow:0 0 0 rgba(0,0,0,0);}
-  40%{transform:scale(1.015); box-shadow:0 0 6px rgba(0,0,0,0.06);}
-  100%{transform:scale(1); box-shadow:0 0 0 rgba(0,0,0,0);}
-}
+
 
 
 /* Rhythm Vertical Enhancements */
@@ -1142,7 +1135,7 @@ header, .topbar, .navbar {
     transform: translateX(-50%) scale(0.92);
     opacity: 0;
     padding: 10px 26px;
-    background: rgba(255,255,255,0.45);
+    background: rgba(255,255,255,0.72);
     backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px);
     border-radius: 18px;
