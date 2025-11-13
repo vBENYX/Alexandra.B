@@ -1333,6 +1333,32 @@ body{
   scroll-behavior:smooth;
 }
 
+
+.brand { gap:22px !important; }
+.chip { padding-left:14px !important; padding-right:14px !important; }
+
+/* Animations */
+@keyframes popIn {
+  0% { opacity:0; transform:translateY(6px) scale(.94); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes fadeSlide {
+  0% { opacity:0; letter-spacing:2px; }
+  100% { opacity:1; letter-spacing:0px; }
+}
+.logo-svg .ani-pop { animation: popIn .55s ease-out forwards; }
+.logo-svg .ani-fade { animation: fadeSlide .9s ease-out forwards; }
+
+
+/* Premium Glass Header */
+.header{
+  background: rgba(255,255,255,0.28) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
 </style>
 
 <style>
@@ -1707,7 +1733,20 @@ body{
     <header class="header" id="glassHeader" data-depth="0.18">
       <div class="brand">
         <div class="chip">CODE</div>
-        <div class="logo-line"><span class="logo-xpo">XPO</span><span class="logo-log">LOGISTICS</span></div>
+        
+
+<div class="logo-svg">
+  <svg viewBox="0 0 260 40" style="width:150px; height:auto;">
+    <text x="0" y="30" font-size="30" font-weight="900" fill="#E30613">
+      <tspan class="ani-pop">XPO</tspan>
+    </text>
+    <text x="88" y="30" font-size="30" font-weight="900" fill="#1c1f24">
+      <tspan class="ani-fade">LOGISTICS</tspan>
+    </text>
+  </svg>
+</div>
+
+
       </div>
       <div class="headline">Registro de Plataformas</div>
     </header>
@@ -2617,6 +2656,47 @@ window.addEventListener('scroll', ()=>{
 }
 </style>
 
+
+<!-- Modal confirmación: limpiar registros -->
+<div id="confirmClearModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-title">¿Seguro que quieres borrar todo?</div>
+    <p>Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button id="cancelClear" class="btn btn-secondary">Cancelar</button>
+      <button id="confirmClear" class="btn btn-primary" style="background:#d40000;">Borrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Protección anti-toque para Limpiar registros
+const modalClear = document.getElementById("confirmClearModal");
+const clearAllBtn = document.getElementById("clearAll");
+const cancelClear = document.getElementById("cancelClear");
+const confirmClear = document.getElementById("confirmClear");
+
+if(clearAllBtn){
+  clearAllBtn.addEventListener("click", (e)=>{
+    e.preventDefault();
+    modalClear.classList.add("open");
+  });
+}
+
+if(cancelClear){
+  cancelClear.addEventListener("click", ()=>{
+    modalClear.classList.remove("open");
+  });
+}
+
+if(confirmClear){
+  confirmClear.addEventListener("click", ()=>{
+    modalClear.classList.remove("open");
+    if(typeof clearAllRecords === "function"){ clearAllRecords(); }
+  });
+}
+</script>
+
 </body>
 </html>
 <style>
@@ -2762,4 +2842,3 @@ body{
 .app{
   background: transparent;
 }
-</style>
