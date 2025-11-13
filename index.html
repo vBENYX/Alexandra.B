@@ -6,6 +6,8 @@
 <title>XPO — Registro de Plataformas (Apple FX+)</title>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* ===== Reset mínimo ===== */
 *{text-decoration:none !important;}
 *{box-sizing:border-box}html,
@@ -1362,6 +1364,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* Compactar registros debajo de los contadores */
 .record{
   padding:10px 12px !important;
@@ -1378,6 +1382,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* ================= Responsive ajustes ================= */
 
 /* Móviles: compactar layout */
@@ -1462,6 +1468,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* ===== Ultra‑compact Apple "list row" style ===== */
 .record{
   padding:8px 12px;
@@ -1515,6 +1523,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* Contenedor de registros con modo colapsado */
 .records-collapsed .record{
   display:none;
@@ -1543,6 +1553,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* ===== Version C+D — MICRO‑BURBUJAS LISTADAS ===== */
 
 /* Estilo general de la burbuja */
@@ -1625,6 +1637,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 .record.expanded .actions{
   display:flex !important;
 }
@@ -1634,6 +1648,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* Asegurar que las acciones aparecen */
 .record.expanded .actions{
   display:flex !important;
@@ -1654,6 +1670,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* ==== Compact records + last 3 preview (no rompe el flujo) ==== */
 #recordsContainer.records-collapsed .record{display:none;}
 #recordsContainer.records-collapsed .record:nth-last-child(-n+3){display:block;}
@@ -1707,6 +1725,8 @@ body{
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* Compact row visual */
 .rowline{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .rowline .mat{font-weight:600;max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -2651,43 +2671,73 @@ window.addEventListener('scroll', ()=>{
 </script>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 .panel.actions{
     margin-top:18px !important;
 }
 </style>
 
 
+
+
+
 <style>
 #clearHoldBar{
   position:absolute;
   left:0; bottom:0;
-  height:3px;
-  width:0%;
-  background:#ff3b30;
-  transition:width 0.7s linear;
+  height:3px; width:0%;
+  background:rgba(255,59,48,0.9);
   border-radius:2px;
+}
+.clear-tip{
+  position:absolute;
+  bottom:45px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:6px 12px;
+  background:rgba(255,255,255,0.85);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-radius:12px;
+  font-size:12px;
+  color:#333;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.2s, transform 0.2s;
+}
+.clear-tip.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(-4px);
 }
 #clearAll{ position:relative; overflow:hidden; }
 </style>
 
 <script>
-// Long press with progress animation for clearAll
 (function(){
   const btn = document.getElementById('clearAll');
   if(!btn) return;
 
-  let bar = document.createElement('div');
-  bar.id = "clearHoldBar";
+  // progress bar
+  let bar=document.createElement('div');
+  bar.id="clearHoldBar";
   btn.appendChild(bar);
 
+  // tooltip
+  let tip=document.createElement('div');
+  tip.className="clear-tip";
+  tip.textContent="Mantén pulsado para eliminar";
+  btn.appendChild(tip);
+
+  const hold=2000;
   let timer=null;
-  const hold=700;
 
   function start(){
+    tip.classList.remove('show');
     bar.style.transition="none";
     bar.style.width="0%";
     void bar.offsetWidth;
-    bar.style.transition="width 0.7s linear";
+    bar.style.transition=`width ${hold}ms linear`;
     bar.style.width="100%";
 
     timer=setTimeout(()=>{
@@ -2702,7 +2752,13 @@ window.addEventListener('scroll', ()=>{
   }
 
   function cancel(){
-    if(timer){ clearTimeout(timer); timer=null; }
+    if(timer){
+      clearTimeout(timer);
+      timer=null;
+      // show tooltip for short tap
+      tip.classList.add('show');
+      setTimeout(()=> tip.classList.remove('show'), 1600);
+    }
     bar.style.transition="none";
     bar.style.width="0%";
   }
@@ -2719,6 +2775,8 @@ window.addEventListener('scroll', ()=>{
 </body>
 </html>
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 section.card#flowCard {
   width: 100% !important;
   max-width: 760px !important;
@@ -2765,6 +2823,8 @@ section.card#flowCard .screen {
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 .panel.actions{
     background: transparent !important;
     box-shadow: none !important;
@@ -2773,6 +2833,8 @@ section.card#flowCard .screen {
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* Force all list-related containers to full width */
 [class*="list"], [class*="reg"], .list-body, .list-wrap, #list, #registros {
     width:100% !important;
@@ -2786,6 +2848,8 @@ section.card#flowCard .screen {
 </style>
 
 <style>
+#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+
 /* ======= FIX C: Registros totalmente adaptables (vertical y horizontal) ======= */
 
 /* 1) Grid fluido para el contenedor de registros */
