@@ -1,10 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" name="viewport"/>
 <title>XPO — Registro de Plataformas (Apple FX+)</title>
-
 <style>
 /* ===== Reset mínimo ===== */
 *{text-decoration:none !important;}
@@ -1360,7 +1360,6 @@ body{
 }
 
 </style>
-
 <style>
 /* Compactar registros debajo de los contadores */
 .record{
@@ -1376,7 +1375,6 @@ body{
   margin-top:4px !important;
 }
 </style>
-
 <style>
 /* ================= Responsive ajustes ================= */
 
@@ -1460,7 +1458,6 @@ body{
   }
 }
 </style>
-
 <style>
 /* ===== Ultra‑compact Apple "list row" style ===== */
 .record{
@@ -1513,7 +1510,6 @@ body{
   background:#fff;
 }
 </style>
-
 <style>
 /* Contenedor de registros con modo colapsado */
 .records-collapsed .record{
@@ -1541,7 +1537,6 @@ body{
   background:#F1F1F4;
 }
 </style>
-
 <style>
 /* ===== Version C+D — MICRO‑BURBUJAS LISTADAS ===== */
 
@@ -1623,7 +1618,6 @@ body{
   border-radius:8px;
 }
 </style>
-
 <style>
 .record.expanded .actions{
   display:flex !important;
@@ -1632,7 +1626,6 @@ body{
   display:inline-flex !important;
 }
 </style>
-
 <style>
 /* Asegurar que las acciones aparecen */
 .record.expanded .actions{
@@ -1652,7 +1645,6 @@ body{
   background:#F2F2F2;
 }
 </style>
-
 <style>
 /* ==== Compact records + last 3 preview (no rompe el flujo) ==== */
 #recordsContainer.records-collapsed .record{display:none;}
@@ -1705,7 +1697,6 @@ body{
   .quick-actions .qa{ font-size:12px; padding:6px 9px; }
 }
 </style>
-
 <style>
 /* Compact row visual */
 .rowline{display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -1723,172 +1714,152 @@ body{
 .list-toggle{width:100%;margin:8px 0 6px;padding:8px 12px;border-radius:12px;border:1px solid rgba(0,0,0,.1);background:#fff;font-weight:500}
 .list-toggle:hover{background:#F4F5F7}
 </style>
-
 <style>
 button{-webkit-user-select:none;user-select:none;}
 </style>
 </head>
 <body>
-<div id="dynamicIsland" class="di-hidden"><span id="diText">Acción completada</span><div class="bar" id="diBar"></div></div>
-
-  <div class="app">
-    <!-- Header -->
-    <header class="header" id="glassHeader" data-depth="0.18">
-      <div class="brand">
-        <div class="chip">CODE</div>
-        
-
+<div class="di-hidden" id="dynamicIsland"><span id="diText">Acción completada</span><div class="bar" id="diBar"></div></div>
+<div class="app">
+<!-- Header -->
+<header class="header" data-depth="0.18" id="glassHeader">
+<div class="brand">
+<div class="chip">CODE</div>
 <div class="logo-svg">
-  <svg viewBox="0 0 260 40" style="width:150px; height:auto;">
-    <text x="0" y="30" font-size="30" font-weight="900" fill="#E30613">
-      <tspan class="ani-pop">XPO</tspan>
-    </text>
-    <text x="88" y="30" font-size="30" font-weight="900" fill="#1c1f24">
-      <tspan class="ani-fade">LOGISTICS</tspan>
-    </text>
-  </svg>
+<svg style="width:150px; height:auto;" viewbox="0 0 260 40">
+<text fill="#E30613" font-size="30" font-weight="900" x="0" y="30">
+<tspan class="ani-pop">XPO</tspan>
+</text>
+<text fill="#1c1f24" font-size="30" font-weight="900" x="88" y="30">
+<tspan class="ani-fade">LOGISTICS</tspan>
+</text>
+</svg>
 </div>
-
-
-      </div>
-      <div class="headline">Registro de Plataformas</div>
-    </header>
-
-    <!-- Card de flujo -->
-    <section class="card" id="flowCard" aria-live="polite">
-      <div class="card-header">
-        <div class="chevron" aria-hidden="true">⟨</div>
-        <div class="title-lg" id="flowTitle">Matrícula</div>
-        <div class="chevron" aria-hidden="true">⟩</div>
-      </div>
-
-      <div class="card-content" id="screens">
-        <!-- S1 -->
-        <div class="screen active" id="s1" tabindex="-1">
-          <input id="matriculaInput" class="input" autocomplete="off" placeholder="Introduce la matrícula" />
-          <div class="row">
-            <button type="button" class="btn btn-primary" id="toS2" aria-label="Continuar a Estado">Continuar</button>
-          </div>
-        </div>
-
-        <!-- S2 -->
-        <div class="screen" id="s2" tabindex="-1">
-          <div class="meta" aria-live="polite">
-            <div class="item">Matrícula:</div>
-            <div class="item"><strong id="matriculaDisplay">—</strong></div>
-          </div>
-          <div class="row states" role="group" aria-label="Selecciona estado">
-            <button type="button" class="btn" id="btnCargada">CARGADA</button>
-            <button type="button" class="btn" id="btnVacia">VACÍA</button>
-            <button type="button" class="btn" id="btnAveriada">AVERIADA</button>
-          </div>
-          <div class="row">
-            <button type="button" class="btn btn-secondary" id="back1" aria-label="Volver a matrícula">Volver</button>
-          </div>
-        </div>
-
-        <!-- S3 -->
-        <div class="screen" id="s3" tabindex="-1">
-          <div class="meta" aria-live="polite">
-            <div class="item">Matrícula:</div>
-            <div class="item"><strong id="matriculaDisplay2">—</strong></div>
-            <div class="item">—</div>
-            <div class="item">Estado:</div>
-            <div class="item"><strong id="estadoDisplay">—</strong></div>
-          </div>
-          <textarea id="contenidoInput" class="textarea" placeholder="Describe el contenido o el problema…"></textarea>
-          <div class="row">
-            <button type="button" class="btn btn-primary" id="btnRegistrar">Registrar</button>
-            <button type="button" class="btn btn-secondary" id="back2">Volver</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="steps" aria-hidden="true">
-        <div class="dot active" id="d1"></div>
-        <div class="dot" id="d2"></div>
-        <div class="dot" id="d3"></div>
-      </div>
-    </section>
-    <section class="panel actions" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
-        <button id="genPdf" class="action-btn">Generar PDF</button>
-        <button id="clearAll" class="action-btn danger">Limpiar registros</button>
-    </section>
-
-    <!-- Resumen -->
-    <section class="panel">
-      <h3 style="text-align:center;margin:0 0 10px;font-size:16px">Resumen del día</h3>
-      <div class="pills" id="pillsWrap">
-        <div class="pill" id="pillCargadas" style="--fill:0%">
-          <div class="pill-inner">
-            <span class="label">Plataformas cargadas</span>
-            <span class="val" id="cargadasCount">0</span>
-          </div>
-        </div>
-        <div class="pill" id="pillVacias" style="--fill:0%">
-          <div class="pill-inner">
-            <span class="label">Plataformas vacías</span>
-            <span class="val" id="vaciasCount">0</span>
-          </div>
-        </div>
-        <div class="pill" id="pillAveriadas" style="--fill:0%">
-          <div class="pill-inner">
-            <span class="label">Averiadas</span>
-            <span class="val" id="averiadasCount">0</span>
-          </div>
-        </div>
-        <div class="pill" id="pillTotal" style="--fill:0%">
-          <div class="pill-inner">
-            <span class="label">Total</span>
-            <span class="val" id="totalCount">0</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Registros compactos con menú fijo -->
-    <section class="compact" id="compactPanel">
-      <div class="compact-header">
-        <div class="segment" role="tablist" aria-label="Filtrar registros">
-          <button type="button" class="active" data-tab="TODAS" role="tab" aria-selected="true">Todas <span class="badge" id="bAll">0</span></button>
-          <button type="button" data-tab="CARGADA" role="tab">Cargadas <span class="badge" id="bCargadas">0</span></button>
-          <button type="button" data-tab="VACÍA" role="tab">Vacías <span class="badge" id="bVacias">0</span></button>
-          <button type="button" data-tab="AVERIADA" role="tab">Averiadas <span class="badge" id="bAveriadas">0</span></button>
-        </div>
-      </div>
-      
-      <div class="compact-body" id="recordsContainer"></div>
-    </section>
-
-    
-  </div>
-
+</div>
+<div class="headline">Registro de Plataformas</div>
+</header>
+<!-- Card de flujo -->
+<section aria-live="polite" class="card" id="flowCard">
+<div class="card-header">
+<div aria-hidden="true" class="chevron">⟨</div>
+<div class="title-lg" id="flowTitle">Matrícula</div>
+<div aria-hidden="true" class="chevron">⟩</div>
+</div>
+<div class="card-content" id="screens">
+<!-- S1 -->
+<div class="screen active" id="s1" tabindex="-1">
+<input autocomplete="off" class="input" id="matriculaInput" placeholder="Introduce la matrícula"/>
+<div class="row">
+<button aria-label="Continuar a Estado" class="btn btn-primary" id="toS2" type="button">Continuar</button>
+</div>
+</div>
+<!-- S2 -->
+<div class="screen" id="s2" tabindex="-1">
+<div aria-live="polite" class="meta">
+<div class="item">Matrícula:</div>
+<div class="item"><strong id="matriculaDisplay">—</strong></div>
+</div>
+<div aria-label="Selecciona estado" class="row states" role="group">
+<button class="btn" id="btnCargada" type="button">CARGADA</button>
+<button class="btn" id="btnVacia" type="button">VACÍA</button>
+<button class="btn" id="btnAveriada" type="button">AVERIADA</button>
+</div>
+<div class="row">
+<button aria-label="Volver a matrícula" class="btn btn-secondary" id="back1" type="button">Volver</button>
+</div>
+</div>
+<!-- S3 -->
+<div class="screen" id="s3" tabindex="-1">
+<div aria-live="polite" class="meta">
+<div class="item">Matrícula:</div>
+<div class="item"><strong id="matriculaDisplay2">—</strong></div>
+<div class="item">—</div>
+<div class="item">Estado:</div>
+<div class="item"><strong id="estadoDisplay">—</strong></div>
+</div>
+<textarea class="textarea" id="contenidoInput" placeholder="Describe el contenido o el problema…"></textarea>
+<div class="row">
+<button class="btn btn-primary" id="btnRegistrar" type="button">Registrar</button>
+<button class="btn btn-secondary" id="back2" type="button">Volver</button>
+</div>
+</div>
+</div>
+<div aria-hidden="true" class="steps">
+<div class="dot active" id="d1"></div>
+<div class="dot" id="d2"></div>
+<div class="dot" id="d3"></div>
+</div>
+</section>
+<section class="panel actions" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+<button class="action-btn" id="genPdf">Generar PDF</button>
+<button class="action-btn danger" id="clearAll">Limpiar registros</button>
+</section>
+<!-- Resumen -->
+<section class="panel">
+<h3 style="text-align:center;margin:0 0 10px;font-size:16px">Resumen del día</h3>
+<div class="pills" id="pillsWrap">
+<div class="pill" id="pillCargadas" style="--fill:0%">
+<div class="pill-inner">
+<span class="label">Plataformas cargadas</span>
+<span class="val" id="cargadasCount">0</span>
+</div>
+</div>
+<div class="pill" id="pillVacias" style="--fill:0%">
+<div class="pill-inner">
+<span class="label">Plataformas vacías</span>
+<span class="val" id="vaciasCount">0</span>
+</div>
+</div>
+<div class="pill" id="pillAveriadas" style="--fill:0%">
+<div class="pill-inner">
+<span class="label">Averiadas</span>
+<span class="val" id="averiadasCount">0</span>
+</div>
+</div>
+<div class="pill" id="pillTotal" style="--fill:0%">
+<div class="pill-inner">
+<span class="label">Total</span>
+<span class="val" id="totalCount">0</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Registros compactos con menú fijo -->
+<section class="compact" id="compactPanel">
+<div class="compact-header">
+<div aria-label="Filtrar registros" class="segment" role="tablist">
+<button aria-selected="true" class="active" data-tab="TODAS" role="tab" type="button">Todas <span class="badge" id="bAll">0</span></button>
+<button data-tab="CARGADA" role="tab" type="button">Cargadas <span class="badge" id="bCargadas">0</span></button>
+<button data-tab="VACÍA" role="tab" type="button">Vacías <span class="badge" id="bVacias">0</span></button>
+<button data-tab="AVERIADA" role="tab" type="button">Averiadas <span class="badge" id="bAveriadas">0</span></button>
+</div>
+</div>
+<div class="compact-body" id="recordsContainer"></div>
+</section>
+</div>
 <!-- Toast -->
 <div class="toast" id="toast">Registro guardado</div>
-
 <!-- Modal de edición -->
-<div class="modal" id="editModal" aria-hidden="true">
-  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle">
-    <div class="modal-title" id="editTitle">Editar registro</div>
-    <div class="modal-row">
-      <input id="editMatricula" class="input" placeholder="Matrícula" />
-      <select id="editEstado">
-        <option value="CARGADA">CARGADA</option>
-        <option value="VACÍA">VACÍA</option>
-        <option value="AVERIADA">AVERIADA</option>
-      </select>
-    </div>
-    <textarea id="editContenido" class="textarea" placeholder="Contenido / problema"></textarea>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" id="editCancel">Cancelar</button>
-      <button type="button" class="btn btn-primary" id="editSave">Guardar</button>
-    </div>
-  </div>
+<div aria-hidden="true" class="modal" id="editModal">
+<div aria-labelledby="editTitle" aria-modal="true" class="modal-card" role="dialog">
+<div class="modal-title" id="editTitle">Editar registro</div>
+<div class="modal-row">
+<input class="input" id="editMatricula" placeholder="Matrícula"/>
+<select id="editEstado">
+<option value="CARGADA">CARGADA</option>
+<option value="VACÍA">VACÍA</option>
+<option value="AVERIADA">AVERIADA</option>
+</select>
 </div>
-
+<textarea class="textarea" id="editContenido" placeholder="Contenido / problema"></textarea>
+<div class="modal-actions">
+<button class="btn btn-secondary" id="editCancel" type="button">Cancelar</button>
+<button class="btn btn-primary" id="editSave" type="button">Guardar</button>
+</div>
+</div>
+</div>
 <!-- jsPDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ===== Utils/State ===== */
 const $ = (id)=>document.getElementById(id);
@@ -2437,7 +2408,6 @@ document.addEventListener('click', ev=>{
   row.classList.toggle('expanded');
 });
 </script>
-
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
   const wrap = document.getElementById('recordsContainer');
@@ -2464,7 +2434,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 });
 </script>
-
 <script>
 <!-- old expansion removed -->
   const rec = e.target.closest('.record');
@@ -2472,7 +2441,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   rec.classList.toggle('expanded');
 });
 </script>
-
 <script>
 // Expansión inteligente: no cerrar al pulsar Editar o Eliminar
 document.addEventListener('click', e=>{
@@ -2490,7 +2458,6 @@ document.addEventListener('click', e=>{
 
 });
 </script>
-
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
   const wrap = $('recordsContainer');
@@ -2541,7 +2508,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 </script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function(){
   const btn = document.getElementById('toggleAllBtn');
@@ -2556,7 +2522,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 </script>
-
 <script>
 function showIsland(text, duration=2200){
   const island=document.getElementById('dynamicIsland');
@@ -2583,12 +2548,12 @@ function showIsland(text, duration=2200){
     setTimeout(()=>{ island.classList.remove('di-hide'); island.classList.add('di-hidden'); }, 260);
   }, duration);
 }, 2200);
+});
 function toggleMenu(){
     const m=document.querySelector('.menu-apple');
     m.classList.toggle('show');
 }
 </script>
-
 <script>
 (function(){
   const btn=document.getElementById('moreActionsBtn');
@@ -2652,7 +2617,6 @@ function showIsland(text = "Acción completada", duration = 1800) {
 }
 
 </script>
-
 <script>
 window.addEventListener('scroll', ()=>{
     if(window.scrollY>10){
@@ -2662,14 +2626,11 @@ window.addEventListener('scroll', ()=>{
     }
 });
 </script>
-
 <style>
 .panel.actions{
     margin-top:18px !important;
 }
 </style>
-
-
 <style>
 #clearHoldBar{
   position:absolute;
@@ -2702,68 +2663,150 @@ window.addEventListener('scroll', ()=>{
 }
 #clearAll{ position:relative; overflow:visible; }
 </style>
+<script>
+
+<!-- Replaced: Apple Glass Fullscreen Confirmation Modal for "Eliminar todo" -->
+<style>
+/* Apple Glass full-screen modal (sheet) */
+.apple-modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,0.36); backdrop-filter:blur(8px) saturate(1.1);
+  display:none; align-items:center; justify-content:center; z-index:99999;
+  animation:fadeIn .22s ease forwards;
+}
+.apple-modal-sheet{
+  width:clamp(320px,86%,720px);
+  max-height:86vh;
+  background:linear-gradient(180deg, rgba(255,255,255,0.88), rgba(245,246,250,0.9));
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  border-radius:20px;
+  box-shadow:0 20px 50px rgba(15,20,30,0.32);
+  padding:20px; display:flex; flex-direction:column; gap:14px; overflow:auto;
+  transform:translateY(18px) scale(0.995); opacity:0; transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .22s ease;
+}
+.apple-modal-sheet.show{ transform:none; opacity:1; }
+.apple-modal-title{ font-size:20px; font-weight:700; color:#0b1220; }
+.apple-modal-desc{ color:#39414a; opacity:.95; font-size:15px; line-height:1.4; }
+.apple-modal-actions{ display:flex; gap:12px; justify-content:flex-end; margin-top:6px; flex-wrap:wrap; }
+.btn-apple { min-width:120px; padding:12px 14px; border-radius:12px; font-weight:700; border:1px solid rgba(0,0,0,0.06); background:rgba(255,255,255,0.98); cursor:pointer; }
+.btn-apple:active{ transform:scale(.995); }
+.btn-apple.secondary{ background:transparent; border:1px solid rgba(0,0,0,0.06); color:#0b1220; }
+.btn-apple.destructive{ background:linear-gradient(180deg,#FFECEC,#FFD6D6); color:#9b1c1c; border:1px solid rgba(155,28,28,0.08); box-shadow:0 6px 14px rgba(155,28,28,0.06); }
+@keyframes fadeIn{ from { opacity:0 } to { opacity:1 } }
+</style>
+
+<div id="appleModalOverlay" class="apple-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="apple-modal-sheet" role="document" aria-labelledby="appleModalTitle">
+    <div>
+      <div id="appleModalTitle" class="apple-modal-title">Eliminar todos los registros</div>
+      <div class="apple-modal-desc">Esta acción borrará <strong>todos</strong> los registros guardados permanentemente. Esta acción <em>no</em> se puede deshacer. Si quieres conservarlos, cancela ahora.</div>
+    </div>
+    <div style="display:flex;flex-direction:row;gap:12px;align-items:center;justify-content:flex-start;margin-top:6px;">
+      <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;color:#28323a;">
+        <input id="confirmCheckbox" type="checkbox" style="width:18px;height:18px;border-radius:6px;"/> Confirmo que quiero eliminar todo
+      </label>
+    </div>
+    <div class="apple-modal-actions">
+      <button id="appleCancelBtn" class="btn-apple secondary">Cancelar</button>
+      <button id="appleDeleteBtn" class="btn-apple destructive" disabled>Eliminar todo</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function(){
-  const btn=document.getElementById('clearAll');
-  if(!btn) return;
+  // Remove previous ephemeral elements added by old script in case they exist
+  try{
+    const oldBar = document.getElementById('clearHoldBar');
+    if(oldBar && oldBar.parentNode) oldBar.parentNode.removeChild(oldBar);
+  }catch(e){}
+  try{
+    document.querySelectorAll('.vision-bubble').forEach(n=>n.remove());
+  }catch(e){}
 
-  let bar=document.createElement('div');
-  bar.id="clearHoldBar";
-  btn.appendChild(bar);
+  const overlay = document.getElementById('appleModalOverlay');
+  const openBtn = document.getElementById('clearAll');
+  const cancelBtn = document.getElementById('appleCancelBtn');
+  const deleteBtn = document.getElementById('appleDeleteBtn');
+  const checkbox = document.getElementById('confirmCheckbox');
 
-  let bubble=document.createElement('div');
-  bubble.className="vision-bubble";
-  bubble.textContent="Mantén pulsado para eliminar";
-  btn.appendChild(bubble);
-
-  let timer=null;
-  const hold=2000;
-
-  function startHold(){
-    bubble.classList.remove('show');
-    bar.style.transition="none";
-    bar.style.width="0%";
-    void bar.offsetWidth;
-    bar.style.transition=`width ${hold}ms linear`;
-    bar.style.width="100%";
-    timer=setTimeout(()=>{
-      if(!window.plataformas) window.plataformas=[];
-      plataformas.length=0;
-      try{ saveData(); }catch(e){}
-      try{ updateAll(); }catch(e){}
-      try{ resetFlow(); }catch(e){}
-      try{ keepCardInView(); }catch(e){}
-      try{ toast('Registros eliminados'); }catch(e){}
-    }, hold);
+  if(!overlay || !openBtn || !cancelBtn || !deleteBtn) {
+    // If essential elements are missing, do nothing but avoid errors
+    return;
   }
 
-  function cancelHold(){
-    if(timer){
-      clearTimeout(timer);
-      timer=null;
-      bubble.classList.add('show');
-      setTimeout(()=>bubble.classList.remove('show'),1800);
+  function openModal(){
+    overlay.style.display='flex';
+    document.documentElement.style.overflow='hidden';
+    overlay.setAttribute('aria-hidden','false');
+    setTimeout(()=> overlay.querySelector('.apple-modal-sheet').classList.add('show'),12);
+    // focus management
+    checkbox.focus();
+    // reset checkbox
+    checkbox.checked=false;
+    deleteBtn.disabled=true;
+  }
+
+  function closeModal(){
+    overlay.querySelector('.apple-modal-sheet').classList.remove('show');
+    overlay.setAttribute('aria-hidden','true');
+    setTimeout(()=>{
+      overlay.style.display='none';
+      document.documentElement.style.overflow='';
+    },260);
+    try{ openBtn.focus(); }catch(e){}
+  }
+
+  // Open on click
+  openBtn.removeEventListener('click', openModal);
+  openBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    openModal();
+  });
+
+  // checkbox enables delete
+  checkbox.addEventListener('change', function(e){
+    deleteBtn.disabled = !checkbox.checked;
+  });
+
+  // cancel
+  cancelBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    closeModal();
+  });
+
+  // destructive action
+  deleteBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    // safety double-check
+    if(!checkbox.checked) return;
+    // perform deletion with graceful try/catch calls to existing functions
+    try{
+      if(!window.plataformas) window.plataformas = [];
+      plataformas.length = 0;
+    }catch(e){}
+    try{ if(typeof saveData === 'function') saveData(); }catch(e){}
+    try{ if(typeof updateAll === 'function') updateAll(); }catch(e){}
+    try{ if(typeof resetFlow === 'function') resetFlow(); }catch(e){}
+    try{ if(typeof keepCardInView === 'function') keepCardInView(); }catch(e){}
+    try{ if(typeof toast === 'function') toast('Registros eliminados'); }catch(e){}
+    closeModal();
+  });
+
+  // close on overlay click outside sheet
+  overlay.addEventListener('click', function(ev){
+    if(ev.target === overlay) closeModal();
+  });
+
+  // keyboard accessibility: Esc to close
+  document.addEventListener('keydown', function(ev){
+    if(ev.key === 'Escape' && overlay.style.display === 'flex'){
+      closeModal();
     }
-    bar.style.transition="none";
-    bar.style.width="0%";
-  }
-
-  btn.addEventListener('mousedown', ()=>bubble.classList.add('show'));
-  btn.addEventListener('touchstart', ()=>bubble.classList.add('show'));
-
-  btn.addEventListener('mouseup', ()=>bubble.classList.remove('show'));
-  btn.addEventListener('touchend', ()=>bubble.classList.remove('show'));
-
-  btn.addEventListener('mousedown', startHold);
-  btn.addEventListener('touchstart', startHold);
-  btn.addEventListener('mouseup', cancelHold);
-  btn.addEventListener('mouseleave', cancelHold);
-  btn.addEventListener('touchend', cancelHold);
-  btn.addEventListener('touchcancel', cancelHold);
+  });
 })();
 </script>
-
+<!-- End of modal replacement -->
+</script>
 </body>
 </html>
 <style>
@@ -2811,7 +2854,6 @@ section.card#flowCard .screen {
   }
 }
 </style>
-
 <style>
 .panel.actions{
     background: transparent !important;
@@ -2819,7 +2861,6 @@ section.card#flowCard .screen {
     border: none !important;
 }
 </style>
-
 <style>
 /* Force all list-related containers to full width */
 [class*="list"], [class*="reg"], .list-body, .list-wrap, #list, #registros {
@@ -2832,7 +2873,6 @@ section.card#flowCard .screen {
     flex: 1 1 100% !important;
 }
 </style>
-
 <style>
 /* ======= FIX C: Registros totalmente adaptables (vertical y horizontal) ======= */
 
@@ -2910,7 +2950,6 @@ body{
   background: transparent;
 }
 </style>
-
 <style>
 
 /* ==== Dynamic Island FIX visible + sin barra ==== */
@@ -2930,7 +2969,6 @@ body{
 }
 
 </style>
-
 <style>
 
 /* ==== Dynamic Island POP Animation ==== */
@@ -2945,7 +2983,6 @@ body{
 }
 
 </style>
-
 <style>
 
 /* ==== Dynamic Island EXIT Animation — SHRINK FADE ==== */
