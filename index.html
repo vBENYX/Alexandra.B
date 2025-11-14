@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" name="viewport"/>
-<title>XPO — Registro de Plataformas (Apple FX+)</title>
+<title>XPO — Registro de Plataformas </title>
 <style>
 /* ===== Reset mínimo ===== */
 *{text-decoration:none !important;}
@@ -2664,148 +2664,64 @@ window.addEventListener('scroll', ()=>{
 #clearAll{ position:relative; overflow:visible; }
 </style>
 <script>
-
-<!-- Replaced: Apple Glass Fullscreen Confirmation Modal for "Eliminar todo" -->
-<style>
-/* Apple Glass full-screen modal (sheet) */
-.apple-modal-overlay{
-  position:fixed; inset:0; background:rgba(0,0,0,0.36); backdrop-filter:blur(8px) saturate(1.1);
-  display:none; align-items:center; justify-content:center; z-index:99999;
-  animation:fadeIn .22s ease forwards;
-}
-.apple-modal-sheet{
-  width:clamp(320px,86%,720px);
-  max-height:86vh;
-  background:linear-gradient(180deg, rgba(255,255,255,0.88), rgba(245,246,250,0.9));
-  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
-  border-radius:20px;
-  box-shadow:0 20px 50px rgba(15,20,30,0.32);
-  padding:20px; display:flex; flex-direction:column; gap:14px; overflow:auto;
-  transform:translateY(18px) scale(0.995); opacity:0; transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .22s ease;
-}
-.apple-modal-sheet.show{ transform:none; opacity:1; }
-.apple-modal-title{ font-size:20px; font-weight:700; color:#0b1220; }
-.apple-modal-desc{ color:#39414a; opacity:.95; font-size:15px; line-height:1.4; }
-.apple-modal-actions{ display:flex; gap:12px; justify-content:flex-end; margin-top:6px; flex-wrap:wrap; }
-.btn-apple { min-width:120px; padding:12px 14px; border-radius:12px; font-weight:700; border:1px solid rgba(0,0,0,0.06); background:rgba(255,255,255,0.98); cursor:pointer; }
-.btn-apple:active{ transform:scale(.995); }
-.btn-apple.secondary{ background:transparent; border:1px solid rgba(0,0,0,0.06); color:#0b1220; }
-.btn-apple.destructive{ background:linear-gradient(180deg,#FFECEC,#FFD6D6); color:#9b1c1c; border:1px solid rgba(155,28,28,0.08); box-shadow:0 6px 14px rgba(155,28,28,0.06); }
-@keyframes fadeIn{ from { opacity:0 } to { opacity:1 } }
-</style>
-
-<div id="appleModalOverlay" class="apple-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="apple-modal-sheet" role="document" aria-labelledby="appleModalTitle">
-    <div>
-      <div id="appleModalTitle" class="apple-modal-title">Eliminar todos los registros</div>
-      <div class="apple-modal-desc">Esta acción borrará <strong>todos</strong> los registros guardados permanentemente. Esta acción <em>no</em> se puede deshacer. Si quieres conservarlos, cancela ahora.</div>
-    </div>
-    <div style="display:flex;flex-direction:row;gap:12px;align-items:center;justify-content:flex-start;margin-top:6px;">
-      <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;color:#28323a;">
-        <input id="confirmCheckbox" type="checkbox" style="width:18px;height:18px;border-radius:6px;"/> Confirmo que quiero eliminar todo
-      </label>
-    </div>
-    <div class="apple-modal-actions">
-      <button id="appleCancelBtn" class="btn-apple secondary">Cancelar</button>
-      <button id="appleDeleteBtn" class="btn-apple destructive" disabled>Eliminar todo</button>
-    </div>
-  </div>
-</div>
-
-<script>
 (function(){
-  // Remove previous ephemeral elements added by old script in case they exist
-  try{
-    const oldBar = document.getElementById('clearHoldBar');
-    if(oldBar && oldBar.parentNode) oldBar.parentNode.removeChild(oldBar);
-  }catch(e){}
-  try{
-    document.querySelectorAll('.vision-bubble').forEach(n=>n.remove());
-  }catch(e){}
+  const btn=document.getElementById('clearAll');
+  if(!btn) return;
 
-  const overlay = document.getElementById('appleModalOverlay');
-  const openBtn = document.getElementById('clearAll');
-  const cancelBtn = document.getElementById('appleCancelBtn');
-  const deleteBtn = document.getElementById('appleDeleteBtn');
-  const checkbox = document.getElementById('confirmCheckbox');
+  let bar=document.createElement('div');
+  bar.id="clearHoldBar";
+  btn.appendChild(bar);
 
-  if(!overlay || !openBtn || !cancelBtn || !deleteBtn) {
-    // If essential elements are missing, do nothing but avoid errors
-    return;
+  let bubble=document.createElement('div');
+  bubble.className="vision-bubble";
+  bubble.textContent="Mantén pulsado para eliminar";
+  btn.appendChild(bubble);
+
+  let timer=null;
+  const hold=2000;
+
+  function startHold(){
+    bubble.classList.remove('show');
+    bar.style.transition="none";
+    bar.style.width="0%";
+    void bar.offsetWidth;
+    bar.style.transition=`width ${hold}ms linear`;
+    bar.style.width="100%";
+    timer=setTimeout(()=>{
+      if(!window.plataformas) window.plataformas=[];
+      plataformas.length=0;
+      try{ saveData(); }catch(e){}
+      try{ updateAll(); }catch(e){}
+      try{ resetFlow(); }catch(e){}
+      try{ keepCardInView(); }catch(e){}
+      try{ toast('Registros eliminados'); }catch(e){}
+    }, hold);
   }
 
-  function openModal(){
-    overlay.style.display='flex';
-    document.documentElement.style.overflow='hidden';
-    overlay.setAttribute('aria-hidden','false');
-    setTimeout(()=> overlay.querySelector('.apple-modal-sheet').classList.add('show'),12);
-    // focus management
-    checkbox.focus();
-    // reset checkbox
-    checkbox.checked=false;
-    deleteBtn.disabled=true;
-  }
-
-  function closeModal(){
-    overlay.querySelector('.apple-modal-sheet').classList.remove('show');
-    overlay.setAttribute('aria-hidden','true');
-    setTimeout(()=>{
-      overlay.style.display='none';
-      document.documentElement.style.overflow='';
-    },260);
-    try{ openBtn.focus(); }catch(e){}
-  }
-
-  // Open on click
-  openBtn.removeEventListener('click', openModal);
-  openBtn.addEventListener('click', function(e){
-    e.preventDefault();
-    openModal();
-  });
-
-  // checkbox enables delete
-  checkbox.addEventListener('change', function(e){
-    deleteBtn.disabled = !checkbox.checked;
-  });
-
-  // cancel
-  cancelBtn.addEventListener('click', function(e){
-    e.preventDefault();
-    closeModal();
-  });
-
-  // destructive action
-  deleteBtn.addEventListener('click', function(e){
-    e.preventDefault();
-    // safety double-check
-    if(!checkbox.checked) return;
-    // perform deletion with graceful try/catch calls to existing functions
-    try{
-      if(!window.plataformas) window.plataformas = [];
-      plataformas.length = 0;
-    }catch(e){}
-    try{ if(typeof saveData === 'function') saveData(); }catch(e){}
-    try{ if(typeof updateAll === 'function') updateAll(); }catch(e){}
-    try{ if(typeof resetFlow === 'function') resetFlow(); }catch(e){}
-    try{ if(typeof keepCardInView === 'function') keepCardInView(); }catch(e){}
-    try{ if(typeof toast === 'function') toast('Registros eliminados'); }catch(e){}
-    closeModal();
-  });
-
-  // close on overlay click outside sheet
-  overlay.addEventListener('click', function(ev){
-    if(ev.target === overlay) closeModal();
-  });
-
-  // keyboard accessibility: Esc to close
-  document.addEventListener('keydown', function(ev){
-    if(ev.key === 'Escape' && overlay.style.display === 'flex'){
-      closeModal();
+  function cancelHold(){
+    if(timer){
+      clearTimeout(timer);
+      timer=null;
+      bubble.classList.add('show');
+      setTimeout(()=>bubble.classList.remove('show'),1800);
     }
-  });
+    bar.style.transition="none";
+    bar.style.width="0%";
+  }
+
+  btn.addEventListener('mousedown', ()=>bubble.classList.add('show'));
+  btn.addEventListener('touchstart', ()=>bubble.classList.add('show'));
+
+  btn.addEventListener('mouseup', ()=>bubble.classList.remove('show'));
+  btn.addEventListener('touchend', ()=>bubble.classList.remove('show'));
+
+  btn.addEventListener('mousedown', startHold);
+  btn.addEventListener('touchstart', startHold);
+  btn.addEventListener('mouseup', cancelHold);
+  btn.addEventListener('mouseleave', cancelHold);
+  btn.addEventListener('touchend', cancelHold);
+  btn.addEventListener('touchcancel', cancelHold);
 })();
-</script>
-<!-- End of modal replacement -->
 </script>
 </body>
 </html>
@@ -2985,7 +2901,7 @@ body{
 </style>
 <style>
 
-/* ==== Dynamic Island EXIT Animation — SHRINK FADE ==== */
+/* ==== Dynamic Islandg EXIT Animation — SHRINK FADE ==== */
 @keyframes islandShrink {
   0%   { transform: translateX(-50%) scale(1); opacity: 1; }
   100% { transform: translateX(-50%) scale(0.86); opacity: 0; }
@@ -2995,3 +2911,4 @@ body{
   animation: islandShrink .28s ease-out forwards !important;
 }
 
+</style>
