@@ -2211,11 +2211,6 @@ window.addEventListener('DOMContentLoaded', () => {
   $('btnAveriada').addEventListener('click',()=>chooseEstado('AVERIADA'));
   $('btnRegistrar').addEventListener('click', registrar);
   $('genPdf').addEventListener('click', ()=>{ keepCardInView(); generatePDF(); });
-  $('clearAll').addEventListener('click', ()=>{
-    if(!plataformas.length){ alert('No hay registros para limpiar'); keepCardInView(); return; }
-    if(confirm('¿Seguro que quieres eliminar todos los registros?')){ plataformas=[]; saveData(); updateAll(); resetFlow(); keepCardInView(); toast('Registros limpiados'); }
-  });
-
   // Segmented filter
   document.querySelectorAll('.segment button').forEach(btn=>{
     btn.addEventListener('click', ()=>{
