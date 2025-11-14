@@ -6,8 +6,6 @@
 <title>XPO — Registro de Plataformas (Apple FX+)</title>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* ===== Reset mínimo ===== */
 *{text-decoration:none !important;}
 *{box-sizing:border-box}html,
@@ -1364,8 +1362,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* Compactar registros debajo de los contadores */
 .record{
   padding:10px 12px !important;
@@ -1382,8 +1378,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* ================= Responsive ajustes ================= */
 
 /* Móviles: compactar layout */
@@ -1468,8 +1462,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* ===== Ultra‑compact Apple "list row" style ===== */
 .record{
   padding:8px 12px;
@@ -1523,8 +1515,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* Contenedor de registros con modo colapsado */
 .records-collapsed .record{
   display:none;
@@ -1553,8 +1543,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* ===== Version C+D — MICRO‑BURBUJAS LISTADAS ===== */
 
 /* Estilo general de la burbuja */
@@ -1637,8 +1625,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 .record.expanded .actions{
   display:flex !important;
 }
@@ -1648,8 +1634,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* Asegurar que las acciones aparecen */
 .record.expanded .actions{
   display:flex !important;
@@ -1670,8 +1654,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* ==== Compact records + last 3 preview (no rompe el flujo) ==== */
 #recordsContainer.records-collapsed .record{display:none;}
 #recordsContainer.records-collapsed .record:nth-last-child(-n+3){display:block;}
@@ -1725,8 +1707,6 @@ body{
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* Compact row visual */
 .rowline{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .rowline .mat{font-weight:600;max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -1744,6 +1724,9 @@ body{
 .list-toggle:hover{background:#F4F5F7}
 </style>
 
+<style>
+button{-webkit-user-select:none;user-select:none;}
+</style>
 </head>
 <body>
 <div id="dynamicIsland" class="di-hidden"><span id="diText">Acción completada</span><div class="bar" id="diBar"></div></div>
@@ -2671,15 +2654,10 @@ window.addEventListener('scroll', ()=>{
 </script>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 .panel.actions{
     margin-top:18px !important;
 }
 </style>
-
-
-
 
 
 <style>
@@ -2690,56 +2668,55 @@ window.addEventListener('scroll', ()=>{
   background:rgba(255,59,48,0.9);
   border-radius:2px;
 }
-.clear-tip{
+.vision-bubble{
   position:absolute;
-  bottom:45px;
+  top:-55px;
   left:50%;
-  transform:translateX(-50%);
-  padding:6px 12px;
-  background:rgba(255,255,255,0.85);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  border-radius:12px;
-  font-size:12px;
-  color:#333;
+  transform:translateX(-50%) scale(0.7);
+  padding:10px 18px;
+  background:rgba(255,255,255,0.65);
+  backdrop-filter:blur(22px) saturate(180%);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  border-radius:18px;
+  font-size:13px;
+  color:#000;
   opacity:0;
   pointer-events:none;
-  transition:opacity 0.2s, transform 0.2s;
+  box-shadow:0 8px 20px rgba(0,0,0,0.18);
+  transition:transform 0.3s cubic-bezier(.25,.8,.25,1),
+             opacity 0.25s ease-out;
 }
-.clear-tip.show{
+.vision-bubble.show{
   opacity:1;
-  transform:translateX(-50%) translateY(-4px);
+  transform:translateX(-50%) scale(1);
 }
-#clearAll{ position:relative; overflow:hidden; }
+#clearAll{ position:relative; overflow:visible; }
 </style>
 
 <script>
 (function(){
-  const btn = document.getElementById('clearAll');
+  const btn=document.getElementById('clearAll');
   if(!btn) return;
 
-  // progress bar
   let bar=document.createElement('div');
   bar.id="clearHoldBar";
   btn.appendChild(bar);
 
-  // tooltip
-  let tip=document.createElement('div');
-  tip.className="clear-tip";
-  tip.textContent="Mantén pulsado para eliminar";
-  btn.appendChild(tip);
+  let bubble=document.createElement('div');
+  bubble.className="vision-bubble";
+  bubble.textContent="Mantén pulsado para eliminar";
+  btn.appendChild(bubble);
 
-  const hold=2000;
   let timer=null;
+  const hold=2000;
 
-  function start(){
-    tip.classList.remove('show');
+  function startHold(){
+    bubble.classList.remove('show');
     bar.style.transition="none";
     bar.style.width="0%";
     void bar.offsetWidth;
     bar.style.transition=`width ${hold}ms linear`;
     bar.style.width="100%";
-
     timer=setTimeout(()=>{
       if(!window.plataformas) window.plataformas=[];
       plataformas.length=0;
@@ -2751,32 +2728,35 @@ window.addEventListener('scroll', ()=>{
     }, hold);
   }
 
-  function cancel(){
+  function cancelHold(){
     if(timer){
       clearTimeout(timer);
       timer=null;
-      // show tooltip for short tap
-      tip.classList.add('show');
-      setTimeout(()=> tip.classList.remove('show'), 1600);
+      bubble.classList.add('show');
+      setTimeout(()=>bubble.classList.remove('show'),1800);
     }
     bar.style.transition="none";
     bar.style.width="0%";
   }
 
-  btn.addEventListener('mousedown', start);
-  btn.addEventListener('touchstart', start);
-  btn.addEventListener('mouseup', cancel);
-  btn.addEventListener('mouseleave', cancel);
-  btn.addEventListener('touchend', cancel);
-  btn.addEventListener('touchcancel', cancel);
+  btn.addEventListener('mousedown', ()=>bubble.classList.add('show'));
+  btn.addEventListener('touchstart', ()=>bubble.classList.add('show'));
+
+  btn.addEventListener('mouseup', ()=>bubble.classList.remove('show'));
+  btn.addEventListener('touchend', ()=>bubble.classList.remove('show'));
+
+  btn.addEventListener('mousedown', startHold);
+  btn.addEventListener('touchstart', startHold);
+  btn.addEventListener('mouseup', cancelHold);
+  btn.addEventListener('mouseleave', cancelHold);
+  btn.addEventListener('touchend', cancelHold);
+  btn.addEventListener('touchcancel', cancelHold);
 })();
 </script>
 
 </body>
 </html>
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 section.card#flowCard {
   width: 100% !important;
   max-width: 760px !important;
@@ -2823,8 +2803,6 @@ section.card#flowCard .screen {
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 .panel.actions{
     background: transparent !important;
     box-shadow: none !important;
@@ -2833,8 +2811,6 @@ section.card#flowCard .screen {
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* Force all list-related containers to full width */
 [class*="list"], [class*="reg"], .list-body, .list-wrap, #list, #registros {
     width:100% !important;
@@ -2848,8 +2824,6 @@ section.card#flowCard .screen {
 </style>
 
 <style>
-#clearAll, #clearAll * { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-
 /* ======= FIX C: Registros totalmente adaptables (vertical y horizontal) ======= */
 
 /* 1) Grid fluido para el contenedor de registros */
@@ -2925,3 +2899,4 @@ body{
 .app{
   background: transparent;
 }
+</style>
