@@ -2211,10 +2211,20 @@ window.addEventListener('DOMContentLoaded', () => {
   $('btnAveriada').addEventListener('click',()=>chooseEstado('AVERIADA'));
   $('btnRegistrar').addEventListener('click', registrar);
   $('genPdf').addEventListener('click', ()=>{ keepCardInView(); generatePDF(); });
-  $('clearAll').addEventListener('click', ()=>{
-    if(!plataformas.length){ alert('No hay registros para limpiar'); keepCardInView(); return; }
-    if(confirm('¿Seguro que quieres eliminar todos los registros?')){ plataformas=[]; saveData(); updateAll(); resetFlow(); keepCardInView(); toast('Registros limpiados'); }
-  });
+  
+$('clearAll').addEventListener('pointerdown', ()=>{
+  window.__clearHold = setTimeout(()=>{
+    if(!plataformas.length){
+      showIsland('No hay registros para limpiar');
+      return;
+    }
+    plataformas=[]; saveData(); updateAll(); resetFlow(); keepCardInView();
+    showIsland('Registros limpiados');
+  }, 900);
+});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>{
+  $('clearAll').addEventListener(ev, ()=> clearTimeout(window.__clearHold));
+});
 
   // Segmented filter
   document.querySelectorAll('.segment button').forEach(btn=>{
@@ -2918,3 +2928,33 @@ body{
 #dynamicIsland .bar{
   display: none !important;
 }
+
+</style>
+
+<style>
+
+/* ==== Dynamic Island POP Animation ==== */
+@keyframes islandPop {
+  0%   { transform: translateX(-50%) scale(0.85); opacity: 0; }
+  50%  { transform: translateX(-50%) scale(1.08); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+#dynamicIsland.di-show {
+  animation: islandPop .38s cubic-bezier(.25, .75, .35, 1.4) !important;
+}
+
+</style>
+
+<style>
+
+/* ==== Dynamic Island EXIT Animation — SHRINK FADE ==== */
+@keyframes islandShrink {
+  0%   { transform: translateX(-50%) scale(1); opacity: 1; }
+  100% { transform: translateX(-50%) scale(0.86); opacity: 0; }
+}
+
+#dynamicIsland.di-hide {
+  animation: islandShrink .28s ease-out forwards !important;
+}
+
